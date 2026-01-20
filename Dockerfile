@@ -19,4 +19,4 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
 # 啟動 Spring Boot
-CMD ["java", "-jar", "target/*.jar"]
+CMD ["java", "-jar", "target/synote-0.0.1-SNAPSHOT.jar"]
