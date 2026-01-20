@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>搜尋結果｜GoodDeal 商品比價</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="manifest" href="manifest.json">
+<style>
+.hero {
+	background: #f7f7f7;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.hero h2 {
+	margin-top: 0;
+	font-size: 24px;
+	color: #222;
+}
+
+#search-sticky-wrapper {
+    width: 90%; /* 手機版佔比 */
+    max-width: 420px; /* 桌機版限制寬度，與之前的 form-group 保持一致 */
+    margin: 0 auto;
+    min-height: 50px;
+}
+
+.search-box {
+	display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 25px; /* 膠囊形狀 */
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.search-box input {
+	flex: 1;
+    border: none; /* 移除邊框，由父容器控制 */
+    padding: 12px 20px;
+    font-size: 16px;
+    outline: none;
+    background: transparent;
+}
+
+.search-box input:focus {
+	border-color: var(--primary-color);
+}
+
+.search-box button {
+	background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 50px; /* 固定寬度，使其成圓形或方塊 */
+    height: 46px; /* 與輸入框高度匹配 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+	background: #333;
+}
+
+/* SVG 圖示大小控制 */
+.search-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* 當輸入框獲取焦點時，整個容器變色 */
+.search-box:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+#resultList {
+	max-width: 1100px;
+	margin: 30px auto;
+	padding: 0 20px;
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 25px;
+}
+
+.item {
+	background: white;
+	border-radius: 16px;
+	padding: 16px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+	text-align: center;
+	transition: 0.3s;
+	border: 1px solid #f9f9f9;
+}
+
+.item:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.item img {
+	width: 100%;
+	height: 160px;
+	object-fit: cover;
+	border-radius: 12px;
+	margin-bottom: 12px;
+	background: #f0f0f0;
+}
+
+.item-name {
+	font-size: 15px;
+	font-weight: 500;
+	height: 42px;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	margin-bottom: 8px;
+}
+
+.item a {
+	display: block;
+	margin-top: 10px;
+	padding: 8px;
+	background: #000;
+	color: #fff;
+	border-radius: 8px;
+	text-decoration: none;
+	font-size: 14px;
+	transition: 0.2s;
+}
+
+.loading { grid-column: 1 / -1; text-align: center; padding: 50px; color: #999; }
+
+.view-controls {
+    max-width: 1100px;
+    margin: 15px auto 0;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.view-toggle {
+    cursor: pointer;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* === 直列模式 (List View) === */
+#resultList.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#resultList.list-view .item {
+    display: flex;
+    text-align: left;
+    align-items: center;
+    padding: 12px;
+}
+
+#resultList.list-view .item img {
+    width: 80px;  /* 列表模式圖片縮小 */
+    height: 80px;
+    margin-bottom: 0;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+#resultList.list-view .item-name {
+    height: auto;
+    margin-bottom: 0;
+    flex-grow: 1;
+    font-size: 16px;
+}
+
+#resultList.list-view .item a {
+    margin-top: 0;
+    margin-left: 10px;
+    white-space: nowrap; /* 避免按鈕文字斷行 */
+}
+
+@media ( max-width : 768px) {
+	.nav-links {
+		display: none;
+		flex-direction: column;
+		background: #fff;
+		position: absolute;
+		top: 60px;
+		right: 20px;
+		width: 180px;
+		border-radius: 12px;
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+		padding: 15px;
+		border: 1px solid var(--border-color);
+	}
+	.nav-links.active {
+		display: flex;
+	}
+	.hamburger {
+		display: block;
+	}
+	.hero h1 {
+		font-size: 1.8rem;
+	}
+	.search-box {
+		flex-direction: column;
+	}
+	#resultList {
+		grid-template-columns: repeat(2, 1fr); 
+		gap: 12px;
+		padding: 0 10px;
+	}
+
+	.item {
+		padding: 10px;  /* 稍微減少內距 */
+	}
+
+	.item img {
+		height: 120px;  /* 稍微降低圖片高度，避免手機畫面被撐太長 */
+	}
+
+	.item-name {
+		font-size: 13px; /* 縮小文字，確保兩行能顯示完整 */
+		height: 38px;
+	}
+	.item a {
+		font-size: 13px;
+		padding: 6px;
+	}
+}
+</style>
+</head>
+
+<body>
+
+
+
+<section class="hero">
+	<h2 id="searchTitle">搜尋結果</h2>
+	<div id="search-sticky-wrapper">
+    	<div class="search-box" id="mainSearchBox">
+        	<input id="keyword" type="text" placeholder="輸入商品名稱或條碼" aria-label="搜尋商品">
+        	<button onclick="goSearch()" aria-label="搜尋">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        	</button>
+    	</div>
+	</div>
+</section>
+
+<div class="view-controls">
+    <div class="results-count">共 <span id="countNum">0</span> 件商品</div>
+    <div class="view-toggle" onclick="toggleView()">
+        <svg id="gridIcon" style="display:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <svg id="listIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+    </div>
+</div>
+
+<ul id="resultList">
+	<li class="loading">正在為您找尋好物...</li>
+</ul>
+
+<footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
+
+
+
+<script src="js/mock-products.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+/* ========================
+   基礎設定與 UI
+======================== */
+const $ = id => document.getElementById(id);
+const getParam = key => new URLSearchParams(location.search).get(key);
+
+// 支援 Enter 鍵搜尋
+$("keyword").addEventListener("keypress", e => {
+    if (e.key === "Enter") goSearch();
+});
+
+/* ========================
+   搜尋邏輯
+======================== */
+function goSearch() {
+    const key = $("keyword").value.trim();
+    if (!key) return;
+
+    // 判斷條碼 (8-20碼數字)
+    if (/^\d{8,20}$/.test(key)) {
+        location.href = `search.html?barcode=${key}`;
+    } else {
+        location.href = `search.html?q=${encodeURIComponent(key)}`;
+    }
+}
+
+function toggleView() {
+    const list = $("resultList");
+    const gridIcon = $("gridIcon");
+    const listIcon = $("listIcon");
+    
+    // 切換 Class
+    list.classList.toggle("list-view");
+    
+    // 切換圖示顯示
+    if (list.classList.contains("list-view")) {
+        gridIcon.style.display = "block";
+        listIcon.style.display = "none";
+    } else {
+        gridIcon.style.display = "none";
+        listIcon.style.display = "block";
+    }
+}
+
+/* ========================
+   資料渲染
+======================== */
+function renderProducts(list, title = "搜尋結果") {
+    $("searchTitle").textContent = title;
+    $("countNum").textContent = list ? list.length : 0; // 更新數量
+    
+    if (!list || list.length === 0) {
+        $("resultList").innerHTML = `<li class="loading">查無相關商品，換個關鍵字試試看？</li>`;
+        return;
+    }
+
+    $("resultList").innerHTML = list.map(p => `
+    <li class="item">
+        <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
+        <div class="item-name">${p.brand ? `${p.brand} ` : ""}${p.productName}</div>
+        <a href="product.html?id=${p.productId}">查看商品</a>
+    </li>
+`).join("");
+}
+
+// 從比價清單過濾出唯一商品
+function uniqueProductsFromPrices(priceList) {
+    const map = new Map();
+    priceList.forEach(item => {
+        const p = item.product;
+        if (!map.has(p.productId)) {
+            // 可順便把價格帶入商品物件
+            p.minPrice = item.price; 
+            map.set(p.productId, p);
+        }
+    });
+    return Array.from(map.values());
+}
+
+/* ========================
+   主初始化流程
+======================== */
+async function initPage() {
+    try {
+        // 1. 條碼搜尋
+        const barcode = getParam("barcode");
+        if (barcode) {
+            $("keyword").value = barcode;
+            if (location.hostname.includes("github.io")) {
+                const result = MOCK_PRODUCTS.filter(p => p.barcode === barcode);
+                renderProducts(result, `條碼搜尋：${barcode}`);
+            } else {
+                const list = await apiGetPublic(`/products/barcode?code=${barcode}`);
+                renderProducts(list, `條碼搜尋：${barcode}`);
+            }
+            return;
+        }
+
+        // 2. 商店搜尋
+        const storeId = getParam("store");
+        if (storeId) {
+            const list = await apiGetPublic(`/prices/group/${storeId}`);
+            const products = uniqueProductsFromPrices(list);
+            renderProducts(products, `商店專區`); // 實務上可根據 ID 獲取商店名
+            return;
+        }
+
+        // 3. 分類搜尋
+        const catId = getParam("cat");
+        if (catId) {
+            const list = await apiGetPublic(`/products/category/${catId}`);
+            renderProducts(list, `分類搜尋`);
+            return;
+        }
+
+        // 4. 關鍵字搜尋
+        const keyword = getParam("q");
+        if (keyword) {
+            $("keyword").value = keyword;
+            const list = await apiGetPublic(`/products/search?keyword=${encodeURIComponent(keyword)}`);
+            renderProducts(list, `關鍵字：${keyword}`);
+            return;
+        }
+        
+        // 若無參數
+        $("resultList").innerHTML = `<li class="loading">請輸入關鍵字開始搜尋</li>`;
+
+    } catch (err) {
+        console.error("初始化失敗", err);
+        $("resultList").innerHTML = `<li class="loading" style="color:red;">連線失敗，請檢查網路狀態</li>`;
+    }
+}
+
+// 執行
+initPage();
+
+// Service Worker 註冊 (保持原樣)
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(console.error);
+    });
+}
+</script>
+
+</body>
+</html>

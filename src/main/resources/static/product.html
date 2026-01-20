@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GoodDeal｜商品比價平台</title>
+<link rel="stylesheet" href="css/style.css" />
+<!-- PWA 註冊 -->
+<link rel="manifest" href="manifest.json">
+
+<style>
+
+/* 商品卡片 */
+#productInfo {
+	max-width: 1100px;
+	margin: 20px auto;
+	background: white;
+	border-radius: 14px;
+	padding: 20px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+	text-align: center;
+}
+
+#productInfo img {
+	width: 180px;
+	height: 180px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 16px;
+}
+
+.product-name {
+	font-size: 22px;
+	margin-bottom: 10px;
+	font-weight: bold;
+}
+
+.product-desc {
+	font-size: 15px;
+	color: #555;
+	margin-bottom: 20px;
+	line-height: 1.6;
+}
+
+/* 最低價卡片容器 */
+.price-summary {
+    display: inline-block;
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.price-item:last-child { margin-bottom: 0; }
+
+.label-pill {
+    background: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.price-item.history .label-pill {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.price-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.store-name {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: right;
+}
+
+.price-hint {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #059669; /* 預設綠色 (建議入手) */
+    text-align: center;
+}
+
+/* 唯一的最低價標籤樣式 */
+.best-price-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 15px 30px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.best-price-label {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 50px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+/* 歷史最低：金紅色調 */
+.label-history {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+}
+
+/* 近期最低：藍色調 */
+.label-recent {
+    background: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.best-price-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.best-price-store {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 5px;
+}
+
+/* 按鈕統一樣式 */
+a.button {
+	display: inline-block;
+	padding: 12px 20px;
+	background: black;
+	color: white;
+	border-radius: 10px;
+	text-decoration: none;
+	font-size: 16px;
+	margin: 10px;
+	transition: 0.2s;
+}
+
+a.button:hover {
+	background: #333;
+}
+
+.report-item {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.report-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.report-details {
+    font-size: 14px;
+}
+
+.report-store-tag {
+    font-size: 11px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+.report-price {
+    font-weight: 700;
+    color: #ef4444;
+}
+
+.report-time {
+    font-size: 12px;
+    color: #94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+
+<div id="productInfo">
+	<!-- JS 動態注入內容。例如：
+    <img src="...">
+    <div class="product-name">商品名稱</div>
+    <div class="product-desc">描述內容</div>
+    -->
+</div>
+
+<div style="text-align: center; margin-top: 10px;">
+    <button onclick="openReportModal()" style="background: #FF4500; border: none;" class="button">
+        📢 我要回報新價格
+    </button>
+</div>
+
+<div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:25px; border-radius:16px; width:90%; max-width:400px; position:relative;">
+        <h3>回報商品價格</h3>
+        <p id="modalProductName" style="color:#666; font-size:14px;"></p>
+        
+        <div style="margin-bottom:15px; text-align:left;">
+            <label style="display:block; margin-bottom:5px;">通路店家</label>
+            <select id="reportStore" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+    			<option value="">請選擇店家</option>
+			</select>
+        </div>
+
+        <div style="margin-bottom:20px; text-align:left;">
+            <label style="display:block; margin-bottom:5px;">回報價格 ($)</label>
+            <input type="number" id="reportPrice" placeholder="請輸入看到的價格" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+        </div>
+
+        <button onclick="submitReport()" style="width:100%; background:#FF4500;" class="button">送出回報</button>
+        <button onclick="closeReportModal()" style="width:100%; background:#999;" class="button">取消</button>
+    </div>
+</div>
+
+<div class="report-section" style="max-width: 1100px; margin: 30px auto; padding: 0 20px; text-align: left;">
+    <h3 style="font-size: 18px; border-left: 4px solid #FF4500; padding-left: 10px; margin-bottom: 15px;">
+        最新會員回報價格
+    </h3>
+    <ul id="reportList" style="list-style: none; padding: 0;">
+        <li style="color: #94a3b8; text-align: center; padding: 20px;">載入回報紀錄中...</li>
+    </ul>
+</div>
+
+<div style="text-align: center;">
+	<a id="compareBtn" class="button">查看比價</a> <a id="historyBtn" class="button">查看歷史價格</a>
+</div>
+
+<footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
+
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const productId = params.get("id");
+
+if (productId) {
+    initProductPage(productId);
+}
+
+async function initProductPage(id) {
+    try {
+        // 1. 同時獲取商品資訊與價格數據 (並行請求效能更好)
+        const [product, prices] = await Promise.all([
+            apiGet(`/products/${id}`),
+            apiGet(`/products/${id}/price-lowest`)
+        ]);
+
+        renderProductBasic(product);
+        renderPriceSummary(prices);
+        renderReportList(id);
+    } catch (err) {
+        console.error("載入失敗", err);
+    }
+}
+
+async function loadStoreOptions() {
+    const select = document.getElementById("reportStore");
+    select.innerHTML = `<option value="">請選擇店家</option>`;
+
+    try {
+        const stores = await apiGet("/stores");
+
+        stores.forEach(store => {
+            const opt = document.createElement("option");
+            opt.value = store.storeId;          // ⭐ 一定是 ID
+            opt.textContent = store.storeName;
+            select.appendChild(opt);
+        });
+
+    } catch (err) {
+        console.error("載入店家失敗", err);
+        select.innerHTML = `<option value="">無法載入店家</option>`;
+    }
+}
+
+async function renderReportList(productId) {
+    const listContainer = document.getElementById("reportList");
+    listContainer.innerHTML = `<li style="color:#94a3b8; text-align:center;">載入中...</li>`;
+
+    try {
+        const reports = await apiGet(
+            `/price-reports/product/${productId}?limit=5`
+        );
+
+        if (!reports || reports.length === 0) {
+            listContainer.innerHTML = `
+                <li style="color:#94a3b8; text-align:center;">
+                    尚無會員回報價格
+                </li>`;
+            return;
+        }
+
+        listContainer.innerHTML = reports.map(r => `
+            <li class="report-item">
+                <div class="report-user-info">
+                    <div class="user-avatar">
+                        ${r.user.username.charAt(0)}
+                    </div>
+                    <div class="report-details">
+                        <span class="report-store-tag">${r.store.storeName}</span>
+                        <strong>${r.user.username}</strong> 回報
+                        <span class="report-price">$${r.reportedPrice}</span>
+                    </div>
+                </div>
+                <div class="report-time">
+                    ${formatTimeAgo(r.reportedAt)}
+                </div>
+            </li>
+        `).join("");
+
+    } catch (err) {
+        console.error(err);
+        listContainer.innerHTML = `
+            <li style="color:#ef4444; text-align:center;">
+                回報紀錄載入失敗
+            </li>`;
+    }
+}
+
+function formatTimeAgo(time) {
+    const diff = (Date.now() - new Date(time)) / 1000;
+    if (diff < 60) return "剛剛";
+    if (diff < 3600) return `${Math.floor(diff / 60)} 分鐘前`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} 小時前`;
+    return `${Math.floor(diff / 86400)} 天前`;
+}
+
+function renderProductBasic(p) {
+    document.getElementById("productInfo").innerHTML = `
+        <h2 class="product-name">${p.brand} ${p.productName}</h2>
+        <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
+        <div id="price-container"></div> <p class="product-desc">${p.description || "無商品介紹"}</p>
+        <div style="color: #64748b; font-size: 14px;">
+            <p>規格：${p.spec}</p>
+            <p>條碼：${p.barcode}</p>
+        </div>
+    `;
+    
+    // 更新下方按鈕連結
+    document.getElementById("compareBtn").href = `compare.html?id=${p.productId}`;
+    document.getElementById("historyBtn").href = `history.html?productId=${p.productId}`;
+}
+
+function renderPriceSummary(data) {
+    const container = document.getElementById("price-container");
+    const history = data.historical;
+    const recent = data.recent30Days;
+
+    if (!history && !recent) {
+        container.innerHTML = `<p style="color:#94a3b8">目前暫無價格紀錄</p>`;
+        return;
+    }
+
+    // 決定顯示哪一筆資料的邏輯
+    let displayData = null;
+    let labelText = "";
+    let labelClass = "";
+
+    // 如果 30天最低比歷史最低還高，或者根本沒有30天資料，就顯示歷史最低
+    if (!recent || (history && history.price <= recent.price)) {
+        displayData = history;
+        labelText = "🏆 回報最低價";
+        labelClass = "label-history";
+    } else {
+        // 否則顯示近期最低 (代表最近真的有感降價)
+        displayData = recent;
+        labelText = "⚡ 近 30 天最低";
+        labelClass = "label-recent";
+    }
+
+    container.innerHTML = `
+        <div class="best-price-card">
+            <span class="best-price-label ${labelClass}">${labelText}</span>
+            <div class="best-price-value">$${displayData.price}</div>
+        </div>
+    `;
+}
+
+//1. 開啟彈窗
+function openReportModal() {
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    if (!user) {
+        alert("請先登入會員才能回報價格喔！");
+        location.href = "login.html";
+        return;
+    }
+
+    document.getElementById("modalProductName").textContent =
+        document.querySelector(".product-name").textContent;
+
+    loadStoreOptions(); // ⭐⭐⭐ 關鍵
+
+    document.getElementById("reportModal").style.display = "flex";
+}
+
+// 2. 關閉彈窗
+function closeReportModal() {
+    document.getElementById("reportModal").style.display = "none";
+}
+
+// 3. 送出回報
+async function submitReport() {
+    const storeId = document.getElementById("reportStore").value;
+    const price = document.getElementById("reportPrice").value;
+    const user = getCurrentUser();
+
+    if (!storeId || !price) {
+        alert("請填寫店家與價格");
+        return;
+    }
+
+    try {
+        await apiPost("/price-reports", {
+            productId: productId,
+            storeId: storeId,
+            reportedPrice: parseFloat(price),
+            userId: user.id
+        });
+
+        alert("回報成功！等待管理者審核 👀");
+
+        closeReportModal();
+        renderReportList(productId); // 重新抓資料
+
+    } catch (err) {
+        alert(err.message || "回報失敗");
+    }
+}
+
+if ("serviceWorker" in navigator) {
+  	window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then(() => console.log("✅ Service Worker 已註冊"))
+      .catch(err => console.error("❌ SW 註冊失敗", err));
+  	});
+}
+
+
+</script>
+
+</body>
+</html>

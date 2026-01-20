@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的購物清單｜GoodDeal</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        .container { padding: 20px 16px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
+        
+        /* 店家區塊 */
+        .store-group { margin-bottom: 25px; }
+        .store-header { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 2px solid var(--primary-color); margin-bottom: 12px;
+        }
+        .store-name { font-size: 18px; font-weight: 800; color: #1e293b; }
+        .store-subtotal { font-size: 14px; color: #64748b; }
+
+        /* 商品卡片優化 */
+        .wish-item {
+            display: flex; align-items: center; background: white;
+            padding: 12px; border-radius: 12px; margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: opacity 0.3s;
+        }
+        .wish-item.checked { opacity: 0.5; text-decoration: line-through; }
+        .wish-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .wish-info { flex: 1; margin-left: 15px; }
+        .wish-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .wish-price { color: #ef4444; font-weight: 700; font-size: 16px; }
+
+        /* 勾選框樣式 */
+        .check-btn {
+            width: 24px; height: 24px; border: 2px solid #cbd5e1;
+            border-radius: 50%; margin-right: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .checked .check-btn { background: #059669; border-color: #059669; color: white; }
+
+        /* 底部結算欄 */
+        .summary-bar {
+            position: fixed; bottom: 70px; left: 0; right: 0;
+            background: #1e293b; color: white; padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+        }
+        .total-label { font-size: 14px; opacity: 0.8; }
+        .total-amount { font-size: 20px; font-weight: 800; color: #fbbf24; }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="wishlistContent">
+        </div>
+</div>
+
+<div class="summary-bar" id="summaryBar" style="display: none;">
+    <div>
+        <span class="total-label">預計採買總額</span>
+        <div class="total-amount" id="grandTotal">$0</div>
+    </div>
+    <button onclick="clearChecked()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; font-size:12px;">清除已購項目</button>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        renderWishlist();
+    });
+
+    function renderWishlist() {
+        const user = getCurrentUser();
+        if (!user) {
+            location.href = "login.html";
+            return;
+        }
+
+        const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`)) || [];
+        const container = document.getElementById("wishlistContent");
+        
+        if (wishlist.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size: 50px;">🛒</div>
+                    <h3>清單目前是空的</h3>
+                    <p>在比價時點擊愛心，把划算的商品存下來吧！</p>
+                    <a href="index.html" class="button" style="display:inline-block; margin-top:20px; background:var(--primary-color);">去逛逛</a>
+                </div>`;
+            document.getElementById("summaryBar").style.display = "none";
+            return;
+        }
+
+        // 1. 按店家分組資料
+        const groups = wishlist.reduce((acc, item) => {
+            if (!acc[item.storeName]) acc[item.storeName] = [];
+            acc[item.storeName].push(item);
+            return acc;
+        }, {});
+
+        // 2. 渲染 HTML
+        let html = "";
+        let grandTotal = 0;
+
+        for (const storeName in groups) {
+            const items = groups[storeName];
+            const subtotal = items.reduce((sum, i) => sum + i.price, 0);
+            grandTotal += subtotal;
+
+            html += `
+                <div class="store-group">
+                    <div class="store-header">
+                        <span class="store-name">📍 ${storeName}</span>
+                        <span class="store-subtotal">共 ${items.length} 項, 小計 $${subtotal}</span>
+                    </div>
+                    ${items.map((item, idx) => `
+                        <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.priceId}">
+                            <div class="check-btn" onclick="toggleCheck('${item.priceId}')">
+                                ${item.checked ? '✓' : ''}
+                            </div>
+                            <img src="${item.productImg}" alt="">
+                            <div class="wish-info">
+                                <div class="wish-title">${item.productName}</div>
+                                <div class="wish-price">$${item.price}</div>
+                            </div>
+                            <button onclick="removeItem('${item.priceId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px;">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+        document.getElementById("grandTotal").innerText = `$${grandTotal}`;
+        document.getElementById("summaryBar").style.display = "flex";
+    }
+
+    // 勾選功能 (模擬放入購物車)
+    function toggleCheck(priceId) {
+        const user = getCurrentUser();
+        let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+        const index = wishlist.findIndex(i => i.priceId === priceId);
+        if (index !== -1) {
+            wishlist[index].checked = !wishlist[index].checked;
+            localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+            renderWishlist();
+        }
+    }
+
+    // 移除單一項目
+    function removeItem(priceId) {
+        if (!confirm("確定要從清單移除嗎？")) return;
+        const user = getCurrentUser();
+        let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+        wishlist = wishlist.filter(i => i.priceId !== priceId);
+        localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+        renderWishlist();
+    }
+
+    // 清除所有已勾選項目 (採買完畢)
+    function clearChecked() {
+        const user = getCurrentUser();
+        let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+        wishlist = wishlist.filter(i => !i.checked);
+        localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+        renderWishlist();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin｜分類管理</title>
+<style>
+:root {
+      --primary: #2563eb;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --sidebar-bg: #0f172a;
+    }
+
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #1e293b; }
+
+    /* 佈局結構 */
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    /* 側邊欄 (桌面版預設顯示) */
+    .sidebar { width: 240px; background: var(--sidebar-bg); color: #e5e7eb; padding: 20px 0; flex-shrink: 0; transition: transform 0.3s ease; }
+    .sidebar h2 { text-align: center; font-size: 18px; margin-bottom: 24px; color: #fff; }
+    .sidebar a { display: block; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; }
+    .sidebar a:hover { background: #1e293b; color: #fff; }
+    .sidebar a.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+    /* 內容區 */
+    .admin-content { flex: 1; padding: 40px; }
+    .admin-container { background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+    /* 手機版頂部條 (隱藏預設) */
+    .mobile-header { display: none; background: var(--sidebar-bg); color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 1000; align-items: center; }
+    .menu-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
+/* 表格樣式 */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f8fafc; text-align: left; padding: 12px 16px; font-size: 13px; color: #64748b; text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid #f1f5f9; }
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+/* 按鈕 */
+    .btn-add { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-edit { background: #e0e7ff; color: var(--primary); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px; }
+    .btn-delete { background: #fee2e2; color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+/* Modal 現代化樣式 */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+    .modal-content { background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .modal-content label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+    .modal-content input { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* --- 手機版響應式設計 --- */
+    @media (max-width: 768px) {
+      .mobile-header { display: flex; }
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 3000; transform: translateX(-100%); }
+      .sidebar.active { transform: translateX(0); }
+      .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; }
+      .sidebar-overlay.active { display: block; }
+      
+      .admin-content { padding: 15px; }
+      .admin-container { padding: 20px; }
+      
+      /* 表格轉卡片 */
+      thead { display: none; }
+      tr { display: flex; flex-direction: column; padding: 15px; border: 1px solid #f1f5f9; border-radius: 12px; margin-bottom: 15px; background: #fff; }
+      td { border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+      td:nth-child(1)::before { content: "ID："; color: #94a3b8; font-size: 13px; }
+      td:nth-child(2)::before { content: "名稱："; color: #94a3b8; font-weight: 600; }
+    }
+</style>
+</head>
+
+<body>
+<div class="admin-layout">
+  <main class="admin-content">
+    <div class="admin-container">
+      <header style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin:0;">📂 分類管理</h2>
+        <button class="btn-add" onclick="openCreateCategory()">➕ 新增分類</button>
+      </header>
+
+      <table>
+        <thead>
+          <tr>
+            <th width="15%">ID</th>
+            <th width="60%">分類名稱</th>
+            <th width="25%">操作</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTable"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div id="categoryModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle" style="margin-top:0;">分類</h3>
+    <input type="hidden" id="editCategoryId">
+    <label>分類名稱</label>
+    <input type="text" id="editCategoryName" placeholder="輸入分類名稱...">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeCategoryModal()" style="background:#f1f5f9; border:none; padding:10px 15px; border-radius:8px; cursor:pointer;">取消</button>
+      <button class="btn-primary" onclick="saveCategory()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600;">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-category.js"></script>
+<script>
+// 權限檢查
+if (typeof isAdmin === 'function' && !isAdmin()) {
+  alert("無管理員權限");
+  location.href = "/login.html";
+}
+</script>
+
+</body>
+</html>

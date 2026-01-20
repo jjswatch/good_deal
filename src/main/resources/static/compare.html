@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GoodDeal｜商品比價平台</title>
+<link rel="stylesheet" href="css/style.css" />
+<!-- PWA 註冊 -->
+<link rel="manifest" href="manifest.json">
+<style>
+/* 商品區塊 */
+.product-header {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fafafa;
+    border-radius: 14px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.product-header img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.product-info h2 {
+    margin: 0;
+}
+
+.product-info p {
+    margin: 4px 0;
+    color: #666;
+}
+
+/* 比價清單 */
+#priceList {
+    max-width: 1100px;
+    margin: 20px auto;
+}
+
+.price-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 12px;
+}
+
+.price-store {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.price-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #d62828;
+}
+
+.price-card a {
+    padding: 8px 14px;
+    background: black;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.price-card a:hover {
+    background: #333;
+}
+
+
+</style>
+</head>
+
+<body>
+
+
+
+<!-- 商品基本資訊 -->
+<div id="productBlock" class="product-header" style="display:none;">
+    <img id="productImg" src="">
+    <div class="product-info">
+        <h2 id="productName"></h2>
+        <p id="productBrand"></p>
+        <p id="productSpec"></p>
+    </div>
+</div>
+
+<!-- 價格列表 -->
+<div id="priceList"></div>
+
+<footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
+
+
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+	window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then(() => console.log("✅ Service Worker 已註冊"))
+      .catch(err => console.error("❌ SW 註冊失敗", err));
+  	});
+}
+
+window.addEventListener("pageshow", () => {
+    loadPrices();
+});
+
+const user = getCurrentUser();
+
+function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+async function loadProduct() {
+    const id = getQueryParam("id");
+    if (!id) return;
+
+    const product = await apiGet(`/products/${id}`);
+
+    if (!product) return;
+
+    document.getElementById("productBlock").style.display = "flex";
+    document.getElementById("productImg").src = product.imageUrl || "assets/placeholder.png";
+    document.getElementById("productName").innerText = product.productName;
+    document.getElementById("productBrand").innerText = product.brand ? "品牌：" + product.brand : "";
+    document.getElementById("productSpec").innerText = product.spec ? "規格：" + product.spec : "";
+}
+
+async function loadPrices() {
+    const id = getQueryParam("id");
+    if (!id) return;
+
+    const prices = await apiGet(`/prices/product/${id}`);
+    const list = document.getElementById("priceList");
+
+    if (!prices || prices.length === 0) {
+        list.innerHTML = "<p style='text-align:center;color:#666;'>尚無比價資料</p>";
+        return;
+    }
+
+    prices.sort((a, b) => a.price - b.price);
+
+    list.innerHTML = prices.map(p => `
+    <div class="price-card">
+        <div class="price-store">
+            ${p.store.storeName}
+            <div style="font-size:12px; color:#999; font-weight:normal;">回報於：${p.updatedAt || '今日'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div class="price-value">$${p.price}</div>
+            <button onclick="addToWishlist('${p.priceId}', '${p.store.storeName}', ${p.price})" 
+                    style="background:none; border:none; cursor:pointer; padding:5px; color:#FF4500;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+`).join("");
+}
+
+function addToWishlist(priceId, storeName, price) {
+    const user = getCurrentUser();
+    if (!user) {
+        alert("請先登入後再加入購物清單喔！");
+        return;
+    }
+
+    // 取得目前的商品基本資訊
+    const productName = document.getElementById("productName").innerText;
+    const productImg = document.getElementById("productImg").src;
+
+    // 取得現有的清單 (如果沒有就建立空陣列)
+    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`)) || [];
+
+    // 檢查是否重複加入
+    if (wishlist.some(item => item.priceId === priceId)) {
+        alert("這項商品價格已經在清單中囉！");
+        return;
+    }
+
+    // 加入新項目
+    const newItem = {
+        priceId,
+        productName,
+        productImg,
+        storeName,
+        price,
+        addedAt: new Date().toLocaleDateString()
+    };
+
+    wishlist.push(newItem);
+    localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+
+    alert(`已將 ${storeName} 的價格加入清單！`);
+    
+    // 選項：加入後可以跳轉到清單頁，或更新 UI
+}
+
+// 初始化
+loadProduct();
+loadPrices();
+</script>
+
+</body>
+</html>

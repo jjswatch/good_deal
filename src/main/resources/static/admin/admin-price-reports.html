@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin｜價格回報審核</title>
+
+<style>
+/* 新增：顏色變數與細節優化 */
+:root {
+  --sidebar-bg: #0f172a;
+  --sidebar-hover: #1e293b;
+  --primary: #2563eb;
+  --text-main: #1e293b;
+  --text-sub: #64748b;
+  --bg-light: #f8fafc;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #ca8a04;
+  --info: #2563eb;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --- Sidebar 桌面版樣式 --- */
+.sidebar {
+  width: 240px;
+  background: var(--sidebar-bg);
+  color: #e5e7eb;
+  padding: 20px 0;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar h2 { text-align: center; font-size: 18px; margin-bottom: 24px; color: #fff; }
+.sidebar a { display: block; padding: 12px 24px; color: #cbd5f5; text-decoration: none; font-size: 15px; }
+.sidebar a:hover { background: var(--sidebar-hover); color: #fff; }
+.sidebar a.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+.admin-content { flex: 1; padding: 40px; }
+
+.card {
+  padding: 0; /* 讓表格滿版 */
+  overflow: hidden;
+}
+
+/* 表格內縮圖與文字排版 */
+.product-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.price-tag {
+  font-weight: 700;
+  color: var(--danger);
+  font-size: 16px;
+}
+
+.user-tag {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.time-tag {
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+/* 按鈕美化 */
+.btn-action {
+  font-weight: 600;
+  transition: transform 0.1s, filter 0.2s;
+}
+
+.btn-action:active { transform: scale(0.95); }
+
+/* --- 手機版 RWD 強力優化 (表格轉卡片) --- */
+@media (max-width: 769px) {
+	.mobile-header {
+    display: flex;
+    align-items: center;
+    background: var(--sidebar-bg);
+    color: white;
+    padding: 15px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .menu-toggle {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3000;
+    transform: translateX(-100%); /* 隱藏 */
+  }
+
+  .sidebar.active { transform: translateX(0); }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2500;
+  }
+
+  .sidebar-overlay.active { display: block; }
+
+  .admin-content { padding: 20px; }
+  
+  #reportTable, #reportTable thead, #reportTable tbody, #reportTable th, #reportTable td, #reportTable tr {
+    display: block;
+  }
+  
+  #reportTable thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  #reportTable tr {
+    border-bottom: 8px solid #f1f5f9;
+    padding: 16px;
+  }
+
+  #reportTable td {
+    border: none;
+    position: relative;
+    padding-left: 40% !important;
+    text-align: right !important;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  #reportTable td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 35%;
+    font-weight: 600;
+    color: var(--text-sub);
+    text-align: left;
+  }
+
+  .product-info-cell { justify-content: flex-end; }
+}
+
+@media (min-width: 769px) {
+  .mobile-header { display: none; }
+}
+</style>
+</head>
+
+<body>
+<div class="admin-layout">
+  <main class="admin-content">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px;">
+    <div>
+      <h2 style="margin:0;">💰 價格回報審核</h2>
+      <p style="color:var(--text-sub); margin:4px 0 0;">請檢查會員回報的價格是否合理，審核通過後將更新至前台。</p>
+    </div>
+    <div style="background:var(--sidebar-bg); color:white; padding:8px 16px; border-radius:12px; font-size:14px;">
+      待處理：<span id="pendingCount" style="color:#fbbf24; font-weight:700;">0</span> 筆
+    </div>
+  </div>
+
+  <div class="card">
+    <table id="reportTable">
+      <thead>
+        <tr>
+          <th style="padding-left:24px;">商品資訊</th>
+          <th>店家</th>
+          <th>回報價格</th>
+          <th>回報者</th>
+          <th>時間</th>
+          <th style="text-align:right; padding-right:24px;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="reportBody">
+        <tr><td colspan="6" class="empty">🔍 正在搜尋待審核資料...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-price-reports.js"></script>
+
+<script>
+//側邊欄控制邏輯
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+  });
+}
+
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+}
+
+// 權限檢查
+if (typeof isAdmin === 'function' && !isAdmin()) {
+  alert("無管理員權限");
+  location.href = "/login.html";
+}
+</script>
+
+</body>
+</html>

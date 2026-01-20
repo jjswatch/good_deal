@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin｜商品管理</title>
+</head>
+<style>
+:root {
+  --primary: #2563eb;
+  --danger: #ef4444;
+  --bg: #f8fafc;
+  --text: #1e293b;
+}
+
+body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; }
+
+.category-row td {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+  padding: 14px 16px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.admin-layout { display: flex; min-height: 100vh; }
+
+.sidebar { width: 240px; background: #0f172a; color: #e5e7eb; padding: 20px 0; flex-shrink: 0; }
+    .sidebar h2 { text-align: center; font-size: 18px; margin-bottom: 24px; color: #fff; }
+    .sidebar a { display: block; padding: 12px 24px; color: #cbd5e1; text-decoration: none; font-size: 15px; transition: 0.2s; }
+    .sidebar a:hover { background: #1e293b; color: #fff; }
+    .sidebar a.active { background: #2563eb; color: #fff; font-weight: 600; }
+
+.admin-content { flex: 1; padding: 40px; }
+
+/* 商品管理專屬樣式 */
+    .admin-container { background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .category-row td { background: #f1f5f9; font-weight: 600; color: #334155; padding: 14px 16px; border-top: 2px solid #e2e8f0; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* 表格優化 */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { background: #f8fafc; text-align: left; padding: 12px 16px; font-size: 13px; color: #64748b; text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
+
+tr:hover { background: #f8fafc; }
+
+/* 按鈕優化 */
+button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.btn-add-small {
+  background: #e0e7ff;
+  color: #2563eb;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-add-small:hover {
+  background: #c7d2fe;
+}
+
+.btn-edit { background: #e0e7ff; color: var(--primary); margin-right: 4px; }
+.btn-delete { background: #fee2e2; color: var(--danger); }
+button:hover { opacity: 0.8; transform: translateY(-1px); }
+
+/* Modal 修正 */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5); /* 深色透明背景 */
+  backdrop-filter: blur(6px);       /* 背景模糊，增加層次感 */
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden; /* 確保圓角裁切內容 */
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header 區域 */
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+.close-x {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Body 區域 */
+.modal-body {
+  padding: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 二欄佈局 */
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: span 2; /* 佔滿整行 */
+}
+
+/* 表單元件 */
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.form-group input, 
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Footer 區域 */
+.modal-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 按鈕樣式提升 */
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary:hover { background: #f1f5f9; }
+
+/* --- 手機版響應式設計 (Media Queries) --- */
+@media (max-width: 768px) {
+  /* 1. 隱藏桌面佈局，改為垂直疊放 */
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  /* 2. 側邊欄變為抽屜式 */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3000;
+    transform: translateX(-100%); /* 預設隱藏在左側 */
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.active {
+    transform: translateX(0); /* 打開選單 */
+  }
+
+  /* 3. 手機頂部條顯示 */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    background: #0f172a;
+    color: white;
+    padding: 15px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  #menuToggle {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2500;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  /* 4. 內容區縮小內距 */
+  .admin-content {
+    padding: 15px;
+  }
+
+  .admin-container {
+    padding: 15px;
+  }
+
+  /* 5. 強大功能：將表格轉換為卡片清單 */
+  thead { display: none; } /* 隱藏表頭 */
+  
+  #productTable tr:not(.category-row) {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  #productTable td {
+    border: none;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* 利用 CSS 偽元素手動加上標籤 */
+  #productTable td:nth-child(1)::before { content: "ID："; color: #94a3b8; font-size: 13px; }
+  #productTable td:nth-child(2)::before { content: "品牌："; color: #94a3b8; font-size: 13px; }
+  #productTable td:nth-child(3)::before { content: "名稱："; color: #94a3b8; font-size: 13px; }
+
+  /* 6. Modal 調整：改為單欄 */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .category-row td {
+    display: block !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* 非手機版隱藏頂部條 */
+@media (min-width: 769px) {
+  .mobile-header { display: none; }
+}
+
+/* 分類列鼠標手勢 */
+.category-row {
+  cursor: pointer;
+  user-select: none; /* 防止頻繁點擊時選取到文字 */
+}
+
+.category-row:hover {
+  background: #e2e8f0;
+}
+
+/* 旋轉箭頭圖示 */
+.toggle-icon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  margin-right: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* 當分類收合時，旋轉箭頭並隱藏商品 */
+.category-row.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* 隱藏行的樣式 */
+.product-row.is-hidden {
+  display: none !important; /* 使用 !important 確保在手機版 flex 模式下也能隱藏 */
+}
+</style>
+<body>
+<div class="admin-layout">
+  <main class="admin-content">
+    <div class="admin-container">
+      <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin:0;">📦 商品清單</h2>
+        <button class="btn-primary" onclick="openCreate()" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600;">➕ 新增商品</button>
+      </header>
+
+      <table>
+        <thead>
+          <tr>
+            <th width="10%">ID</th>
+            <th width="20%">品牌</th>
+            <th width="45%">商品名稱</th>
+            <th width="25%">操作</th>
+          </tr>
+        </thead>
+        <tbody id="productTable">
+          </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- 商品編輯 Modal -->
+<div id="productModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">編輯商品</h3>
+      <button class="close-x" onclick="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="editProductId">
+
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="editProductName">商品名稱</label>
+          <input type="text" id="editProductName" placeholder="例如：可口可樂">
+        </div>
+
+        <div class="form-group">
+          <label for="editBrand">品牌</label>
+          <input type="text" id="editBrand" placeholder="例如：太古">
+        </div>
+
+        <div class="form-group">
+          <label for="editCategory">分類</label>
+          <select id="editCategory">
+            </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="editSpec">規格說明</label>
+          <input type="text" id="editSpec" placeholder="例如：600ml*24入">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="editImageUrl">圖片連結 (URL)</label>
+          <input type="text" id="editImageUrl" placeholder="https://example.com/image.jpg">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn-primary" onclick="saveProduct()">儲存變更</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-product.js"></script>
+<script>
+//側邊欄控制邏輯
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+  });
+}
+
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+}
+
+// 權限檢查
+if (typeof isAdmin === 'function' && !isAdmin()) {
+  alert("無管理員權限");
+  location.href = "/login.html";
+}
+</script>
+</body>
+</html>

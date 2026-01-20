@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<style>
+:root {
+  --sidebar-bg: #0f172a;
+  --sidebar-hover: #1e293b;
+  --primary: #2563eb;
+  --text-main: #1e293b;
+  --text-sub: #64748b;
+  --bg-light: #f8fafc;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --- Sidebar 桌面版樣式 --- */
+.sidebar {
+  width: 240px;
+  background: var(--sidebar-bg);
+  color: #e5e7eb;
+  padding: 20px 0;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar h2 { text-align: center; font-size: 18px; margin-bottom: 24px; color: #fff; }
+.sidebar a { display: block; padding: 12px 24px; color: #cbd5f5; text-decoration: none; font-size: 15px; }
+.sidebar a:hover { background: var(--sidebar-hover); color: #fff; }
+.sidebar a.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+/* --- 內容區 --- */
+.admin-content { flex: 1; padding: 40px; }
+
+/* 統計圖卡容器 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card p { margin: 12px 0 0; font-size: 32px; font-weight: 700; color: var(--primary); }
+
+/* --- 手機版專屬 CSS (Media Queries) --- */
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    background: var(--sidebar-bg);
+    color: white;
+    padding: 15px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .menu-toggle {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3000;
+    transform: translateX(-100%); /* 隱藏 */
+  }
+
+  .sidebar.active { transform: translateX(0); }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2500;
+  }
+
+  .sidebar-overlay.active { display: block; }
+
+  .admin-content { padding: 20px; }
+  
+  .stats-grid {
+    grid-template-columns: 1fr; /* 手機上一列一個 */
+    gap: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-header { display: none; }
+}
+
+/* 最近商品清單優化 */
+.recent-list-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+}
+
+.product-item:last-child { border-bottom: none; }
+.product-item:hover { background: #f8fafc; }
+
+.product-icon {
+  width: 40px;
+  height: 40px;
+  background: #eff6ff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 20px;
+}
+
+.product-info h4 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.product-info span {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+</style>
+</head>
+
+<body>
+<div class="admin-layout">
+  <main class="admin-content">
+    <header style="margin-bottom: 30px;">
+      <h2 style="font-size: 24px; margin:0;">📊 管理後台總覽</h2>
+      <p style="color: #64748b; margin: 8px 0 0;">歡迎回來，這是您今日的數據摘要。</p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>📦 商品總數</h3>
+        <p id="productCount">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>📂 分類總數</h3>
+        <p id="categoryCount">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>🔥 今日更新</h3>
+        <p id="updateCount">0</p>
+      </div>
+    </div>
+
+    <section>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0;">🆕 最近新增商品</h3>
+        <a href="admin-products.html" style="font-size: 14px; color: var(--primary); text-decoration: none; font-weight: 600;">查看全部</a>
+      </div>
+      
+      <div class="recent-list-container" id="latestProducts">
+        <p style="padding: 20px; color: #94a3b8;">載入中...</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-dashboard.js"></script>
+<script>
+// 側邊欄控制邏輯
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+  });
+}
+
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+}
+
+// 權限檢查
+if (typeof isAdmin === 'function' && !isAdmin()) {
+  alert("無管理員權限");
+  location.href = "/login.html";
+}
+</script>
+
+</body>
+</html>

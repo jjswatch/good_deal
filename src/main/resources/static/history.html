@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GoodDeal｜歷史價格</title>
+<link rel="stylesheet" href="css/style.css" />
+<!-- PWA 註冊 -->
+<link rel="manifest" href="manifest.json">
+
+<style>
+/* 商品資訊 */
+.product-info {
+	max-width: 1100px;
+	margin: 30px auto;
+	display: flex;
+	gap: 20px;
+	padding: 0 20px;
+}
+
+.product-info img {
+	width: 160px;
+	height: 160px;
+	object-fit: cover;
+	border-radius: 12px;
+}
+
+.product-meta h3 {
+	margin: 0 0 10px;
+}
+
+.product-meta .brand {
+	color: #777;
+	font-size: 14px;
+}
+
+/* 價格表 */
+.price-table {
+	max-width: 1100px;
+	margin: 30px auto;
+	padding: 0 20px;
+}
+
+.price-table table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.price-table th,
+.price-table td {
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+	text-align: left;
+	font-size: 15px;
+}
+
+.price-table th {
+	background: #fafafa;
+}
+
+.price {
+	color: #d32f2f;
+	font-weight: bold;
+}
+
+</style>
+</head>
+
+<body>
+
+
+<section class="product-info" id="productInfo"></section>
+
+<section class="price-table">
+	<table>
+		<thead>
+			<tr>
+				<th>日期</th>
+				<th>商店</th>
+				<th>地區</th>
+				<th>價格</th>
+			</tr>
+		</thead>
+		<tbody id="priceList"></tbody>
+	</table>
+</section>
+
+<footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
+
+
+
+<script src="js/mock-products.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script>
+if (!isLoggedIn()) {
+	const goLogin = confirm("此功能需要登入，是否前往登入？");
+
+	if (goLogin) {
+		// 把目前頁面記起來
+	    const redirect = encodeURIComponent(location.href);
+	    location.href = `login.html?redirect=${redirect}`;
+	} else {
+	    // 取消 → 回上一頁
+	    history.back();
+	}
+}
+
+const user = getCurrentUser();
+
+function toggleMenu() {
+    document.getElementById("navMenu").classList.toggle("active");
+}
+
+const qs = key => new URLSearchParams(location.search).get(key);
+const $ = id => document.getElementById(id);
+
+/* ========================
+   Render：商品資訊
+======================== */
+function renderProduct(p) {
+	$("productInfo").innerHTML = `
+		<img src="${p.imageUrl || 'assets/placeholder.png'}">
+		<div class="product-meta">
+			<h3>${p.productName}</h3>
+			<div class="brand">${p.brand || ""}</div>
+		</div>
+	`;
+}
+
+/* ========================
+   Render：價格紀錄
+======================== */
+function renderPrices(list) {
+	if (!list || list.length === 0) {
+		$("priceList").innerHTML = `
+			<tr><td colspan="4">尚無價格紀錄</td></tr>
+		`;
+		return;
+	}
+
+	console.log("price list:", list);
+
+	$("priceList").innerHTML = list.map(p => `
+		<tr>
+			<td>${p.changedAt.split("T")[0]}</td>
+			<td>${p.store.storeName}</td>
+			<td>${p.store.location}</td>
+			<td class="price">$${p.newPrice}</td>
+		</tr>
+	`).join("");
+}
+
+/* ========================
+   主流程
+======================== */
+(async function init() {
+	const productId = qs("productId");
+	if (!productId) return;
+
+	// GitHub Pages mock
+	if (location.hostname.includes("github.io")) {
+		const product = MOCK_PRODUCTS.find(p => p.productId == productId);
+		renderProduct(product);
+
+		renderPrices([
+			{ date: "2025-01-01", storeName: "全聯", branch: "台北A", price: 95 },
+			{ date: "2025-02-01", storeName: "全聯", branch: "台北A", price: 89 },
+			{ date: "2025-03-01", storeName: "全聯", branch: "台北B", price: 92 }
+		]);
+		return;
+	}
+
+	// 正式 API
+	const product = await apiGet(`/products/${productId}`);
+	renderProduct(product);
+
+	const prices = await apiGet(`/history/product/${productId}`);
+	renderPrices(prices);
+})();
+</script>
+
+</body>
+</html>
