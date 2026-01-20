@@ -53,4 +53,11 @@ public class AdminService {
         admin.setPasswordHash(passwordEncoder.encode(rawPassword));
         return adminsRepository.save(admin);
     }
+    
+    public void createAdminIfNotExists(String username, String password) {
+        if (!adminsRepository.existsByUsername(username)) {
+            createAdmin(username, password);
+        }
+    }
+
 }

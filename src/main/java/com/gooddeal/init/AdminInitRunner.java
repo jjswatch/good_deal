@@ -14,13 +14,7 @@ public class AdminInitRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-
-        try {
-            adminService.createAdmin("admin", "123456");
-            System.out.println("✅ 預設管理員建立完成");
-        } catch (Exception e) {
-            System.out.println("ℹ️ 管理員已存在，略過建立");
-        }
+    public void run(String... args) {
+        adminService.createAdminIfNotExists("admin", "123456");
     }
 }
