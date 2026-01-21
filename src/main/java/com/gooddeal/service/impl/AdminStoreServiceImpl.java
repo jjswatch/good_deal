@@ -37,7 +37,8 @@ public class AdminStoreServiceImpl implements AdminStoreService {
         Stores db = getStoreById(id);
         db.setStoreName(store.getStoreName());
         db.setLocation(store.getLocation());
-        //db.setChain(store.getChain());
+        db.setWebsite(store.getWebsite());
+        db.setStoreGroup(store.getStoreGroup());
         return storesRepository.save(db);
     }
 

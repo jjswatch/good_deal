@@ -294,12 +294,12 @@ button:hover { opacity: 0.8; transform: translateY(-1px); }
     align-items: center;
   }
 
-  /* 利用 CSS 偽元素手動加上標籤 */
-  #productTable td:nth-child(1)::before { content: "ID："; color: #94a3b8; font-size: 13px; }
-  #productTable td:nth-child(2)::before { content: "品牌："; color: #94a3b8; font-size: 13px; }
-  #productTable td:nth-child(3)::before { content: "名稱："; color: #94a3b8; font-size: 13px; }
+#productTable td:nth-child(1)::before { content: "ID："; color: #94a3b8; font-size: 13px; }
+#productTable td:nth-child(2)::before { content: "品牌："; color: #94a3b8; font-size: 13px; }
+#productTable td:nth-child(3)::before { content: "名稱/條碼："; color: #94a3b8; font-size: 13px; }
+#productTable td:nth-child(4)::before { content: "規格："; color: #94a3b8; font-size: 13px; }
+#productTable td:nth-child(5)::before { content: "操作："; color: #94a3b8; font-size: 13px; }
 
-  /* 6. Modal 調整：改為單欄 */
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -360,11 +360,12 @@ button:hover { opacity: 0.8; transform: translateY(-1px); }
       <table>
         <thead>
           <tr>
-            <th width="10%">ID</th>
-            <th width="20%">品牌</th>
-            <th width="45%">商品名稱</th>
-            <th width="25%">操作</th>
-          </tr>
+      		<th width="10%">ID</th>
+      		<th width="15%">品牌</th>
+      		<th width="35%">商品名稱</th>
+      		<th width="15%">規格</th> 
+      		<th width="25%">操作</th>
+    	  </tr>
         </thead>
         <tbody id="productTable">
           </tbody>
@@ -389,6 +390,11 @@ button:hover { opacity: 0.8; transform: translateY(-1px); }
           <label for="editProductName">商品名稱</label>
           <input type="text" id="editProductName" placeholder="例如：可口可樂">
         </div>
+        
+        <div class="form-group">
+      		<label for="editBarcode">條碼 (Barcode)</label>
+      		<input type="text" id="editBarcode" placeholder="EAN 條碼">
+   	 	</div>
 
         <div class="form-group">
           <label for="editBrand">品牌</label>

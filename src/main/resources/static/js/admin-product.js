@@ -8,7 +8,6 @@ function renderByCategory(products) {
   const tbody = document.getElementById("productTable");
   const htmlBuffer = []; // 使用陣列暫存字串
 
-  // 1. 進行分組
   const group = {};
   products.forEach(p => {
     const c = p.category;
@@ -25,7 +24,7 @@ function renderByCategory(products) {
     // 分類標題列
 	htmlBuffer.push(`
 	      <tr class="category-row" onclick="toggleCategory(${categoryId}, this)">
-	        <td colspan="4">
+	        <td colspan="5">
 	          <div style="display:flex; justify-content:space-between; align-items:center;">
 	            <div>
 	              <span class="toggle-icon">▼</span>
@@ -44,15 +43,19 @@ function renderByCategory(products) {
     // 商品列
 	cat.items.forEach(p => {
 	      htmlBuffer.push(`
-	        <tr class="product-row" data-cat-id="${categoryId}">
-	          <td><code style="color:#64748b;">#${p.productId}</code></td>
-	          <td>${p.brand || '<span style="color:#cbd5e1;">-</span>'}</td>
-	          <td><strong>${p.productName}</strong></td>
-	          <td>
-	            <button class="btn-edit" onclick="prepareEdit(${p.productId})">✏️ 編輯</button>
-	            <button class="btn-delete" onclick="removeProduct(${p.productId})">🗑 刪除</button>
-	          </td>
-	        </tr>
+			<tr class="product-row" data-cat-id="${categoryId}">
+			    <td><code style="color:#64748b;">#${p.productId}</code></td>
+			    <td>${p.brand || '-'}</td>
+			    <td>
+			      <strong>${p.productName}</strong><br>
+			      <small style="color:#94a3b8;">${p.barcode || '無'}</small> 
+				</td>
+				<td><span style="color:#475569;">${p.spec || '-'}</span></td>
+			    <td>
+			      <button class="btn-edit" onclick="prepareEdit(${p.productId})">✏️ 編輯</button>
+			      <button class="btn-delete" onclick="removeProduct(${p.productId})">🗑 刪除</button>
+			    </td>
+			  </tr>
 	      `);
 	    });
 	  });
@@ -134,6 +137,7 @@ async function prepareEdit(id) {
 
   document.getElementById("editProductId").value = p.productId;
   document.getElementById("editProductName").value = p.productName;
+  document.getElementById("editBarcode").value = p.barcode || "";
   document.getElementById("editBrand").value = p.brand || "";
   document.getElementById("editSpec").value = p.spec || "";
   document.getElementById("editImageUrl").value = p.imageUrl || "";
@@ -163,7 +167,8 @@ async function saveProduct() {
   const id = document.getElementById("editProductId").value;
   const body = {
     productName: document.getElementById("editProductName").value,
-    brand: document.getElementById("editBrand").value,
+	barcode: document.getElementById("editBarcode").value,
+	brand: document.getElementById("editBrand").value,
     spec: document.getElementById("editSpec").value,
     imageUrl: document.getElementById("editImageUrl").value,
     categoryId: Number(document.getElementById("editCategory").value)
@@ -171,10 +176,8 @@ async function saveProduct() {
 
   try {
     if (id) {
-      // 編輯
       await apiPut(`/admin/products/${id}`, body);
     } else {
-      // 新增 (假設 API 路徑為 /admin/products)
       await apiPost(`/admin/products`, body);
     }
     closeModal();
@@ -186,7 +189,7 @@ async function saveProduct() {
 }
 
 function clearForm() {
-  const fields = ["editProductName", "editBrand", "editSpec", "editImageUrl"];
+  const fields = ["editProductName", "editBarcode", "editBrand", "editSpec", "editImageUrl"];
   fields.forEach(f => document.getElementById(f).value = "");
 }
 

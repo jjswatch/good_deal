@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin｜商店管理</title>
+    <link rel="stylesheet" href="../css/admin-style.css"> 
+</head>
+<body>
+<div class="admin-layout">
+  <main class="admin-content">
+    <div class="admin-container">
+      <header style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin:0;">🏪 商店管理</h2>
+        <button class="btn-add" onclick="openCreateStore()">➕ 新增商店</button>
+      </header>
+
+      <table>
+        <thead>
+          <tr>
+            <th width="10%">ID</th>
+            <th width="20%">商店名稱</th>
+            <th width="10%">群組</th>
+            <th width="25%">地址/地點</th>
+            <th width="15%">網站</th>
+            <th width="20%">操作</th>
+          </tr>
+        </thead>
+        <tbody id="storeTableBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div id="storeModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">商店資訊</h3>
+    <input type="hidden" id="editStoreId">
+    
+    <label>商店名稱</label>
+    <input type="text" id="storeName" placeholder="例如：全聯 台北店">
+    
+    <label>商店群組 (編號)</label>
+    <input type="number" id="storeGroup" placeholder="例如：1 (連鎖體系代碼)">
+    
+    <label>地址/地點</label>
+    <input type="text" id="location" placeholder="輸入地址或區域">
+    
+    <label>官方網站</label>
+    <input type="text" id="website" placeholder="https://...">
+
+    <div class="modal-actions">
+      <button onclick="closeStoreModal()">取消</button>
+      <button class="btn-add" onclick="saveStore()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-store.js"></script>
+</body>
+</html>

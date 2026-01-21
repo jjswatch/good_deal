@@ -48,7 +48,7 @@ function renderTable(prices) {
             <td><strong>${p.product.productName}</strong></td>
             <td>${p.store.storeName}</td>
             <td class="price-tag">$${p.price}</td>
-            <td>${new Date(p.priceDate).toLocaleDateString()}</td>
+            <td class="price-tag">$${Math.round(p.price)}</td> <td>${new Date(p.priceDate).toLocaleDateString()}</td>
             <td>
                 <button onclick="editPrice(${p.id || p.priceId})">編輯</button>
                 <button onclick="deletePrice(${p.id || p.priceId})" style="color:var(--danger); margin-left:8px;">刪除</button>
@@ -171,15 +171,17 @@ async function editPrice(id) {
         
         const pSelect = document.getElementById("productId");
         pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.productName}</option>`;
+		pSelect.value = p.product.productId;
         
-        document.getElementById("storeId").value = p.store.storeId;
-        document.getElementById("price").value = p.price;
-        
+		const sSelect = document.getElementById("storeId");
+		sSelect.innerHTML = `<option value="${p.store.storeId}">${p.store.storeName}</option>`;
+		sSelect.value = p.store.storeId;
+				
+        document.getElementById("price").value = Math.round(p.price);
         document.getElementById("priceDate").value = getTodayDateString();
 
-        // 3. 鎖定關鍵欄位，僅允許修改價格
-        document.getElementById("productId").disabled = true;
-        document.getElementById("storeId").disabled = true;
+		pSelect.disabled = true;
+		sSelect.disabled = true;
         document.getElementById("priceDate").disabled = true;
 
         document.getElementById("modalTitle").innerText = "編輯價格 (僅限調整金額)";

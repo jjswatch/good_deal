@@ -8,5 +8,6 @@ public class ProductRequest {
     private String brand;
     private String spec;
     private String imageUrl;
+    private String barcode;
     private Integer categoryId;
 }

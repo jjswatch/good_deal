@@ -33,9 +33,10 @@ function renderAdminLayout() {
         <aside class="sidebar" id="sidebar">
             <h2>🛠 Admin</h2>
             <a href="admin-dashboard.html" data-page="dashboard">📊 Dashboard</a>
+			<a href="admin-stores.html" data-page="stores">🏪 商店管理</a>
+			<a href="admin-categories.html" data-page="categories">📂 分類管理</a>
             <a href="admin-products.html" data-page="products">📦 商品管理</a>
             <a href="admin-prices.html" data-page="prices">🏷️ 商品價格維護</a>
-            <a href="admin-categories.html" data-page="categories">📂 分類管理</a>
             <a href="admin-price-reports.html" data-page="price-reports">💰 價格回報審核</a>
             <hr style="border-color: #1e293b; margin: 20px 0; opacity: 0.5;">
             <a href="../index.html" target="_blank" style="color: #10b981;">🏠 前往賣場首頁</a>
