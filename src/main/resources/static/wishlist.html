@@ -1,73 +1,327 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的購物清單｜GoodDeal</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <style>
-        .container { padding: 20px 16px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
-        
-        /* 店家區塊 */
-        .store-group { margin-bottom: 25px; }
-        .store-header { 
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0; border-bottom: 2px solid var(--primary-color); margin-bottom: 12px;
-        }
-        .store-name { font-size: 18px; font-weight: 800; color: #1e293b; }
-        .store-subtotal { font-size: 14px; color: #64748b; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>我的購物清單｜GoodDeal</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+/* 智能分析儀表板總體樣式 */
+.analysis-dashboard {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 24px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
 
-        /* 商品卡片優化 */
-        .wish-item {
-            display: flex; align-items: center; background: white;
-            padding: 12px; border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: opacity 0.3s;
-        }
-        .wish-item.checked { opacity: 0.5; text-decoration: line-through; }
-        .wish-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
-        .wish-info { flex: 1; margin-left: 15px; }
-        .wish-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
-        .wish-price { color: #ef4444; font-weight: 700; font-size: 16px; }
+/* 裝飾用的背景光圈 */
+.analysis-dashboard::after {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: rgba(251, 191, 36, 0.1);
+    filter: blur(50px);
+    border-radius: 50%;
+}
 
-        /* 勾選框樣式 */
-        .check-btn {
-            width: 24px; height: 24px; border: 2px solid #cbd5e1;
-            border-radius: 50%; margin-right: 12px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .checked .check-btn { background: #059669; border-color: #059669; color: white; }
+.strategy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 18px;
+}
 
-        /* 底部結算欄 */
-        .summary-bar {
-            position: fixed; bottom: 70px; left: 0; right: 0;
-            background: #1e293b; color: white; padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 100;
-        }
-        .total-label { font-size: 14px; opacity: 0.8; }
-        .total-amount { font-size: 20px; font-weight: 800; color: #fbbf24; }
-        
-        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
-    </style>
+/* 策略卡片基礎樣式 */
+.strategy-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.strategy-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* 特別強調：拆單購買 (最省錢) */
+.best-mix {
+    border: 1.5px solid #fbbf24;
+    background: rgba(251, 191, 36, 0.05);
+}
+
+.strategy-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.strategy-price {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fbbf24;
+    margin: 4px 0;
+}
+
+.strategy-desc {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.4;
+    margin-top: auto;
+}
+
+/* 最佳店家的小皇冠圖示 (用 CSS 繪製) */
+.best-store-highlight::before {
+    content: "👑";
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* 購物清單中的店家標題優化 */
+.store-header {
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 12px 12px 0 0;
+    border-left: 4px solid #1e293b;
+}
+
+.container {
+	padding: 20px 16px;
+	max-width: 600px;
+	margin: 0 auto;
+	padding-bottom: 100px;
+}
+
+/* 店家區塊 */
+.store-group {
+	margin-bottom: 25px;
+}
+
+.store-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 2px solid var(--primary-color);
+	margin-bottom: 12px;
+}
+
+.store-name {
+	font-size: 18px;
+	font-weight: 800;
+	color: #1e293b;
+}
+
+.store-subtotal {
+	font-size: 14px;
+	color: #64748b;
+}
+
+/* 商品卡片優化 */
+.wish-item {
+	display: flex;
+	align-items: center;
+	background: white;
+	padding: 12px;
+	border-radius: 12px;
+	margin-bottom: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	transition: opacity 0.3s;
+}
+
+.wish-item.checked {
+	opacity: 0.5;
+	text-decoration: line-through;
+}
+
+.wish-item img {
+	width: 60px;
+	height: 60px;
+	border-radius: 8px;
+	object-fit: cover;
+}
+
+.wish-info {
+	flex: 1;
+	margin-left: 15px;
+}
+
+.wish-title {
+	font-weight: 600;
+	font-size: 15px;
+	margin-bottom: 4px;
+}
+
+.wish-price {
+	color: #ef4444;
+	font-weight: 700;
+	font-size: 16px;
+}
+
+/* 勾選框樣式 */
+.check-btn {
+	width: 24px;
+	height: 24px;
+	border: 2px solid #cbd5e1;
+	border-radius: 50%;
+	margin-right: 12px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.checked .check-btn {
+	background: #059669;
+	border-color: #059669;
+	color: white;
+}
+
+/* 底部結算欄 */
+.summary-bar {
+	position: fixed;
+	bottom: 70px;
+	left: 0;
+	right: 0;
+	background: #1e293b;
+	color: white;
+	padding: 15px 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	z-index: 100;
+}
+
+.total-label {
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+.total-amount {
+	font-size: 20px;
+	font-weight: 800;
+	color: #fbbf24;
+}
+
+.empty-state {
+	text-align: center;
+	padding: 50px 20px;
+	color: #94a3b8;
+}
+</style>
 </head>
 <body>
+	<div id="comparisonDashboard" class="analysis-dashboard"
+		style="display: none;">
+		<h3 style="margin: 0 0 15px 0; font-size: 16px;">💡 採買方案分析</h3>
+		<div class="strategy-grid">
+			<div class="strategy-card best-mix">
+				<div class="strategy-label">拆單購買 (最低價組合)</div>
+				<div class="strategy-price" id="mixPrice">$0</div>
+				<div class="strategy-desc">需跑不同店家，但最省錢</div>
+			</div>
+			<div class="strategy-card best-store">
+				<div class="strategy-label">一站式購足 (最佳店家)</div>
+				<div class="strategy-price" id="bestStorePrice">$0</div>
+				<div id="bestStoreName" class="strategy-desc">計算中...</div>
+			</div>
+		</div>
+	</div>
 
-<div class="container">
-    <div id="wishlistContent">
-        </div>
-</div>
+	<div class="container">
+		<div id="wishlistContent"></div>
+	</div>
 
-<div class="summary-bar" id="summaryBar" style="display: none;">
-    <div>
-        <span class="total-label">預計採買總額</span>
-        <div class="total-amount" id="grandTotal">$0</div>
-    </div>
-    <button onclick="clearChecked()" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; font-size:12px;">清除已購項目</button>
-</div>
+	<div class="summary-bar" id="summaryBar" style="display: none;">
+		<div>
+			<span class="total-label">預計採買總額</span>
+			<div class="total-amount" id="grandTotal">$0</div>
+		</div>
+		<button onclick="clearChecked()"
+			style="background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px;">清除已購項目</button>
+	</div>
 
-<script src="js/auth.js"></script>
-<script src="js/components.js"></script>
-<script>
+	<script src="js/auth.js"></script>
+	<script src="js/components.js"></script>
+	<script>
+async function calculateBestStrategy(wishlist) {
+    const productIds = wishlist.map(item => item.productId);
+    if (productIds.length === 0) return;
+
+    try {
+        // 1. 從後端獲取所有相關價格 (ids 為陣列 [1, 2, 3...])
+        const priceData = await apiGetPublic(`/price-reports/compare-basket?ids=${productIds.join(',')}`);
+        
+        // 2. 計算「拆單購買」：每個商品找最低價
+        let splitTotal = 0;
+        productIds.forEach(id => {
+            const items = priceData.filter(p => p.productId === id);
+            if (items.length > 0) {
+                const min = Math.min(...items.map(i => i.price));
+                splitTotal += min;
+            }
+        });
+
+        // 3. 計算「一站式購足」：按店家分組總計
+        const storeMap = {}; 
+        priceData.forEach(p => {
+            if (!storeMap[p.storeName]) storeMap[p.storeName] = { total: 0, count: 0 };
+            storeMap[p.storeName].total += p.price;
+            storeMap[p.storeName].count += 1;
+        });
+
+        // 找出哪家店東西最齊全且最便宜
+        let bestStore = { name: "無匹配店家", total: 0 };
+        let minStoreTotal = Infinity;
+
+        for (const [name, data] of Object.entries(storeMap)) {
+            // 優先找品項最齊全的（count 等於清單長度）
+            if (data.count === productIds.length) {
+                if (data.total < minStoreTotal) {
+                    minStoreTotal = data.total;
+                    bestStore = { name: name, total: data.total };
+                }
+            }
+        }
+
+        // 4. 更新 UI
+        document.getElementById("comparisonDashboard").style.display = "block";
+        document.getElementById("mixPrice").innerText = `$${splitTotal}`;
+        
+        if (minStoreTotal !== Infinity) {
+            document.getElementById("bestStorePrice").innerText = `$${bestStore.total}`;
+            document.getElementById("bestStoreName").innerHTML = `<span class="best-store-highlight">推薦前往：${bestStore.name}</span>`;
+        } else {
+            document.getElementById("bestStorePrice").innerText = "--";
+            document.getElementById("bestStoreName").innerText = "無法一站購齊";
+        }
+
+        const savings = bestStore.total - splitTotal;
+        if (savings > 0) {
+            console.log(`拆單購買可再省下 $${savings}`);
+            // 你可以在 UI 上加一個「拆單可多省 $XX」的標籤
+        }
+
+    } catch (err) {
+        console.error("分析失敗", err);
+    }
+}
+
     document.addEventListener("DOMContentLoaded", () => {
         renderWishlist();
     });

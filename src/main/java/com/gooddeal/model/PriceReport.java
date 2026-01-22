@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +23,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "price_reports")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class PriceReport {
 
     @Id
@@ -61,6 +64,6 @@ public class PriceReport {
     private LocalDateTime approvedAt;
 
     @CreationTimestamp
-    @Column(name = "reported_at")
+    @Column(name = "reported_at", updatable = false)
     private LocalDateTime reportedAt;
 }

@@ -343,7 +343,10 @@ function renderProducts(list, title = "搜尋結果") {
     $("resultList").innerHTML = list.map(p => `
     <li class="item">
         <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
-        <div class="item-name">${p.brand ? `${p.brand} ` : ""}${p.productName}</div>
+        <div class="item-name">
+        	${p.brand ? `${p.brand} ` : ""}${p.productName}
+        	<div style="font-size:12px; color:#999; font-weight:normal;">${p.spec || ''}</div>
+        </div>
         <a href="product.html?id=${p.productId}">查看商品</a>
     </li>
 `).join("");

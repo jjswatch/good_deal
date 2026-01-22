@@ -1,7 +1,6 @@
 package com.gooddeal.dto;
 
 import java.math.BigDecimal;
-
 import lombok.Data;
 
 @Data

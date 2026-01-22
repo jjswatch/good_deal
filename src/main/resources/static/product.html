@@ -271,7 +271,7 @@ a.button:hover {
 </div>
 
 <div style="text-align: center;">
-	<a id="compareBtn" class="button">查看比價</a> <a id="historyBtn" class="button">查看歷史價格</a>
+	<a id="compareBtn" class="button" onclick="goCompare()">查看比價</a> <a id="historyBtn" class="button" onclick="goHistory()">查看歷史價格</a>
 </div>
 
 <footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
@@ -292,8 +292,8 @@ async function initProductPage(id) {
     try {
         // 1. 同時獲取商品資訊與價格數據 (並行請求效能更好)
         const [product, prices] = await Promise.all([
-            apiGet(`/products/${id}`),
-            apiGet(`/products/${id}/price-lowest`)
+        	apiGetPublic(`/products/${id}`),
+        	apiGetPublic(`/products/${id}/price-lowest`)
         ]);
 
         renderProductBasic(product);
@@ -309,7 +309,7 @@ async function loadStoreOptions() {
     select.innerHTML = `<option value="">請選擇店家</option>`;
 
     try {
-        const stores = await apiGet("/stores");
+        const stores = await apiGetPublic("/stores");
 
         stores.forEach(store => {
             const opt = document.createElement("option");
@@ -329,7 +329,7 @@ async function renderReportList(productId) {
     listContainer.innerHTML = `<li style="color:#94a3b8; text-align:center;">載入中...</li>`;
 
     try {
-        const reports = await apiGet(
+        const reports = await apiGetPublic(
             `/price-reports/product/${productId}?limit=5`
         );
 
@@ -345,22 +345,22 @@ async function renderReportList(productId) {
             <li class="report-item">
                 <div class="report-user-info">
                     <div class="user-avatar">
-                        ${r.user.username.charAt(0)}
+                        ${(r.userName || "U").charAt(0)} 
                     </div>
                     <div class="report-details">
-                        <span class="report-store-tag">${r.store.storeName}</span>
-                        <strong>${r.user.username}</strong> 回報
-                        <span class="report-price">$${r.reportedPrice}</span>
+                        <span class="report-store-tag">${r.storeName}</span>
+                        <strong>${r.userName}</strong> 回報
+                        <span class="report-price">$${r.price}</span>
                     </div>
                 </div>
                 <div class="report-time">
-                    ${formatTimeAgo(r.reportedAt)}
+                    ${formatTimeAgo(r.date)}
                 </div>
             </li>
         `).join("");
 
     } catch (err) {
-        console.error(err);
+        console.error("渲染清單失敗:", err);
         listContainer.innerHTML = `
             <li style="color:#ef4444; text-align:center;">
                 回報紀錄載入失敗
@@ -476,6 +476,24 @@ async function submitReport() {
     } catch (err) {
         alert(err.message || "回報失敗");
     }
+}
+
+function goCompare() {
+    if (!getCurrentUser()) {
+        alert("查看比價需要先登入會員喔！");
+        location.href = "login.html";
+        return;
+    }
+    location.href = `compare.html?id=${productId}`;
+}
+
+function goHistory() {
+    if (!getCurrentUser()) {
+        alert("查看歷史價格需要先登入會員喔！");
+        location.href = "login.html";
+        return;
+    }
+    location.href = `history.html?productId=${productId}`;
 }
 
 if ("serviceWorker" in navigator) {

@@ -5,6 +5,8 @@ import com.gooddeal.model.Products;
 import com.gooddeal.model.Stores;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,5 +32,10 @@ public interface ProductPricesRepository extends JpaRepository<ProductPrices, In
             Stores store
     );
 
-   
+    @Query("""
+            SELECT pp
+            FROM ProductPrices pp
+            WHERE pp.product.productId IN :productIds
+        """)
+        List<ProductPrices> findPricesForBasket(List<Integer> productIds);
 }
