@@ -30,20 +30,7 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
              @Param("productId") Integer productId, 
              @Param("status") ReportStatus status);
     
-    @Query("""
-            SELECT pr
-            FROM PriceReport pr
-            WHERE pr.status = 'APPROVED'
-              AND pr.reportedAt = (
-                  SELECT MAX(pr2.reportedAt)
-                  FROM PriceReport pr2
-                  WHERE pr2.product.productId = pr.product.productId
-                    AND pr2.store.storeId = pr.store.storeId
-                    AND pr2.status = 'APPROVED'
-              )
-              AND pr.product.productId IN :productIds
-        """)
-        List<PriceReport> findLatestPricesForProducts(List<Integer> productIds);
+    
     
     
 }

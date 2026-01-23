@@ -38,4 +38,6 @@ public interface ProductPricesRepository extends JpaRepository<ProductPrices, In
             WHERE pp.product.productId IN :productIds
         """)
         List<ProductPrices> findPricesForBasket(List<Integer> productIds);
+    
+    
 }

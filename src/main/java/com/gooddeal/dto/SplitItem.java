@@ -1,14 +1,15 @@
 package com.gooddeal.dto;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class BasketPriceDTO {
+public class SplitItem {
+
     private Integer productId;
-    private String productName;
-    private Integer storeId;
     private String storeName;
-    private Integer price;
+    private BigDecimal price;
 }

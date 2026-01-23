@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>我的最愛｜GoodDeal</title>
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 16px 100px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.favorite-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.favorite-card img {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.favorite-info {
+    flex: 1;
+    margin-left: 14px;
+}
+
+.favorite-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.favorite-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ef4444;
+}
+
+.favorite-store {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.favorite-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.btn-add {
+    background: #1e293b;
+    color: white;
+}
+
+.btn-remove {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="page-title">❤️ 我的最愛商品</div>
+    <div id="favoriteList"></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", loadFavorites);
+
+async function loadFavorites() {
+	const user = await apiGet("/user/profile");
+    if (!user) {
+        location.href = "login.html";
+        return;
+    }
+
+    try {
+        const favorites = await apiGet(`/favorites/user/${user.userId}`);
+        const container = document.getElementById("favoriteList");
+
+        if (favorites.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size:48px;">❤️</div>
+                    <h3>你還沒有收藏商品</h3>
+                    <p>看到划算的商品就先收藏起來吧！</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = favorites.map(f => `
+            <div class="favorite-card">
+                <img src="${f.product.imageUrl || 'img/no-image.png'}">
+                <div class="favorite-info">
+                    <div class="favorite-title">${f.product.productName}</div>
+                    <div class="favorite-price">$${f.product.lowestPrice || '--'}</div>
+                    <div class="favorite-store">最便宜：${f.product.bestStore || '比價中'}</div>
+                </div>
+                <div class="favorite-actions">
+                    <button class="btn btn-add" onclick="addToWishlist(${f.product.productId})">
+                        加入清單
+                    </button>
+                    <button class="btn btn-remove" onclick="removeFavorite(${f.favoriteId})">
+                        移除
+                    </button>
+                </div>
+            </div>
+        `).join("");
+
+    } catch (e) {
+        console.error(e);
+        alert("載入收藏失敗");
+    }
+}
+
+function addToWishlist(productId) {
+    // 👉 這裡只做概念（實際你會抓最低價 priceId）
+    alert("已加入購物清單（示意）");
+}
+
+async function removeFavorite(favoriteId) {
+    if (!confirm("確定要移除收藏嗎？")) return;
+    await apiDelete(`/favorites/${favoriteId}`);
+    loadFavorites();
+}
+</script>
+
+</body>
+</html>

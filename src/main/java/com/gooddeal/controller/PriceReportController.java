@@ -1,18 +1,13 @@
 package com.gooddeal.controller;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gooddeal.dto.PriceComparisonDTO;
 import com.gooddeal.dto.PriceReportRequest;
 import com.gooddeal.dto.PriceReportResponse;
 import com.gooddeal.model.PriceReport;
@@ -80,29 +75,8 @@ public class PriceReportController {
         )).limit(5).toList();
     }
     
-    @GetMapping("/compare-basket")
-    public List<PriceComparisonDTO> compareBasket(
-            @RequestParam String ids
-    ) {
-        // 1️⃣ "1,2,3" → List<Integer>
-        List<Integer> productIds = Arrays.stream(ids.split(","))
-                .map(String::trim)
-                .map(Integer::valueOf)
-                .toList();
-
-        // 2️⃣ 查詢最新價格
-        List<PriceReport> reports =
-                reportRepo.findLatestPricesForProducts(productIds);
-
-        // 3️⃣ 轉成前端需要的 DTO
-        return reports.stream()
-                .map(r -> new PriceComparisonDTO(
-                        r.getProduct().getProductId(),
-                        r.getProduct().getProductName(),
-                        r.getStore().getStoreName(),
-                        r.getReportedPrice()
-                ))
-                .collect(Collectors.toList());
-    }
+    
+    
+    
 
 }

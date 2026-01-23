@@ -175,18 +175,13 @@ async function loadPrices() {
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
             <div class="price-value">$${p.price}</div>
-            <button onclick="addToWishlist('${p.priceId}', '${p.store.storeName}', ${p.price})" 
-                    style="background:none; border:none; cursor:pointer; padding:5px; color:#FF4500;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-            </button>
+            <button onclick="addToWishlist('${id}', '${p.priceId}', '${p.store.storeName}', ${p.price})" style="background:none; border:none; cursor:pointer; padding:5px;"> 🛒 </button>
         </div>
     </div>
 `).join("");
 }
 
-function addToWishlist(priceId, storeName, price) {
+function addToWishlist(productId, priceId, storeName, price) {
     const user = getCurrentUser();
     if (!user) {
         alert("請先登入後再加入購物清單喔！");
@@ -208,6 +203,7 @@ function addToWishlist(priceId, storeName, price) {
 
     // 加入新項目
     const newItem = {
+    	productId: parseInt(productId),
         priceId,
         productName,
         productImg,
