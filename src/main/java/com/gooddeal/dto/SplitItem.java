@@ -10,6 +10,8 @@ import lombok.Data;
 public class SplitItem {
 
     private Integer productId;
+    private String brand;
+    private String productName;
     private String storeName;
     private BigDecimal price;
 }

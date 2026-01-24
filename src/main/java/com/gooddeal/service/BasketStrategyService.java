@@ -1,6 +1,7 @@
 package com.gooddeal.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class BasketStrategyService {
         List<SplitItem> splitItems = cheapestPerProduct.values().stream()
                 .map(pp -> new SplitItem(
                         pp.getProduct().getProductId(),
+                        pp.getProduct().getBrand(),
+                        pp.getProduct().getProductName(),
                         pp.getStore().getStoreName(),
                         pp.getPrice()
                 ))
@@ -68,40 +71,67 @@ public class BasketStrategyService {
                 new SplitStrategy(splitTotal, splitItems);
 
         /* ========= 2️⃣ 一站購齊 ========= */
+        Map<Integer, String> productNameMap =
+                prices.stream()
+                      .map(ProductPrices::getProduct)
+                      .distinct()
+                      .collect(Collectors.toMap(
+                          p -> p.getProductId(),
+                          p -> p.getBrand() + " " + p.getProductName()
+                      ));
+        
         Map<Stores, List<ProductPrices>> byStore =
                 prices.stream()
                       .collect(Collectors.groupingBy(ProductPrices::getStore));
 
         StoreStrategy bestStore = null;
-        int maxCovered = 0;
 
         for (var entry : byStore.entrySet()) {
 
-            // 該店家能買到幾個商品（去重）
-            int coveredCount = entry.getValue().stream()
-                    .map(pp -> pp.getProduct().getProductId())
-                    .collect(Collectors.toSet())
-                    .size();
+            Stores store = entry.getKey();
+            List<ProductPrices> storePrices = entry.getValue();
 
-            BigDecimal total = entry.getValue().stream()
+            Map<Integer, ProductPrices> productMap =
+                    storePrices.stream()
+                               .collect(Collectors.toMap(
+                                   pp -> pp.getProduct().getProductId(),
+                                   pp -> pp,
+                                   (a, b) -> a
+                               ));
+
+            List<String> missing = new ArrayList<>();
+
+            for (Integer pid : productIds) {
+                if (!productMap.containsKey(pid)) {
+                	String name = productNameMap.get(pid);
+                    if (name != null) {
+                        missing.add(name);
+                    }
+                }
+            }
+
+            BigDecimal total = storePrices.stream()
                     .map(ProductPrices::getPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // 優先比較：覆蓋商品數量，其次比較總價
-            if (
-                bestStore == null ||
-                coveredCount > maxCovered ||
-                (coveredCount == maxCovered && total.compareTo(bestStore.getTotal()) < 0)
-            ) {
-                maxCovered = coveredCount;
-                bestStore = new StoreStrategy(
-                        entry.getKey().getStoreName(),
-                        total,
-                        coveredCount,
-                        productIds.size()
-                );
+            StoreStrategy candidate = new StoreStrategy(
+                    store.getStoreName(),
+                    total,
+                    productMap.size(),
+                    productIds.size(),
+                    missing
+            );
+
+            // ⭐ 選「最接近一站購齊」的店
+            if (bestStore == null
+                || candidate.getCoveredCount() > bestStore.getCoveredCount()
+                || (candidate.getCoveredCount() == bestStore.getCoveredCount()
+                    && candidate.getTotal().compareTo(bestStore.getTotal()) < 0)) {
+
+                bestStore = candidate;
             }
         }
+
 
 
         /* ========= 3️⃣ 推薦策略 ========= */

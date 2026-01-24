@@ -97,6 +97,7 @@
 	text-align: center;
 	transition: 0.3s;
 	border: 1px solid #f9f9f9;
+	position: relative;
 }
 
 .item:hover {
@@ -133,6 +134,33 @@
 	text-decoration: none;
 	font-size: 14px;
 	transition: 0.2s;
+}
+
+.fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s, color 0.2s;
+    z-index: 5;
+    color: #cbd5e1; /* 預設灰色 */
+}
+
+.fav-btn:hover {
+    transform: scale(1.1);
+}
+
+.fav-btn.active {
+    color: #ef4444; /* 收藏後的紅色 */
 }
 
 .loading { grid-column: 1 / -1; text-align: center; padding: 50px; color: #999; }
@@ -342,10 +370,15 @@ function renderProducts(list, title = "搜尋結果") {
 
     $("resultList").innerHTML = list.map(p => `
     <li class="item">
+        <button class="fav-btn" onclick="toggleFavorite(this, ${p.productId})" title="加入我的最愛">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+        </button>
         <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
         <div class="item-name">
-        	${p.brand ? `${p.brand} ` : ""}${p.productName}
-        	<div style="font-size:12px; color:#999; font-weight:normal;">${p.spec || ''}</div>
+            ${p.brand ? `${p.brand} ` : ""}${p.productName}
+            <div style="font-size:12px; color:#999;">${p.spec || ''}</div>
         </div>
         <a href="product.html?id=${p.productId}">查看商品</a>
     </li>
@@ -417,6 +450,34 @@ async function initPage() {
     } catch (err) {
         console.error("初始化失敗", err);
         $("resultList").innerHTML = `<li class="loading" style="color:red;">連線失敗，請檢查網路狀態</li>`;
+    }
+}
+
+async function toggleFavorite(btn, productId) {
+    const user = getCurrentUser();
+    if (!user) {
+        if (confirm("收藏功能需要登入，是否前往登入？")) {
+            location.href = "login.html?redirect=" + encodeURIComponent(location.href);
+        }
+        return;
+    }
+
+    try {
+        // 假設後端 POST /favorites 代表「新增」
+        // 如果你的 API 支援 Toggle，或是判斷邏輯在後端更好
+        const response = await apiPost("/favorites", { 
+            userId: user.userId, 
+            productId: productId 
+        });
+
+        if (response) {
+            btn.classList.add("active");
+            alert("已成功加入我的最愛！");
+        }
+    } catch (err) {
+        console.error("收藏失敗", err);
+        // 如果噴 409 (已存在)，也可以提示使用者
+        alert("這項商品可能已經在你的收藏中囉！");
     }
 }
 

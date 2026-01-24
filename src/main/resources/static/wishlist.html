@@ -70,6 +70,10 @@
     padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.1); /* 加一條分隔線 */
 }
+.strategy-desc div span {
+    color: #fbbf24;
+    font-weight: 600;
+}
 .best-mix {
     border: 2px solid #fbbf24 !important;
     background: rgba(251, 191, 36, 0.1) !important;
@@ -223,7 +227,7 @@
         <div class="strategy-card best-mix">
             <div class="strategy-label">最省組合 (分開買)</div>
             <div class="strategy-price" id="mixPrice">$0</div>
-            <div class="strategy-desc">前往不同店家採買</div>
+            <div class="strategy-desc" id="splitDetail"></div>
         </div>
         <div class="strategy-card best-store">
             <div class="strategy-label" id="bestStoreName">最佳單一店家</div>
@@ -273,26 +277,66 @@ function renderStrategyDashboard(data) {
     dashboard.style.display = "block";
 
     /* ========= 拆單策略 ========= */
-    const splitTotal = data?.splitStrategy?.total;
-    document.getElementById("mixPrice").innerText =
-        splitTotal != null ? `$${splitTotal}` : "--";
+    const split = data?.splitStrategy;
+
+if (split?.total != null) {
+    document.getElementById("mixPrice").innerText = `$${split.total}`;
+
+    const detailEl = document.getElementById("splitDetail");
+
+    const grouped = split.items.reduce((acc, item) => {
+        if (!acc[item.storeName]) acc[item.storeName] = [];
+        acc[item.storeName].push(item);
+        return acc;
+    }, {});
+
+    detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => `
+    <div style="margin-bottom:12px;">
+        <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">
+            📍 ${store}
+        </div>
+        ${items.map(i => `
+            <div style="padding-left:10px; font-size:12px;">
+                - ${i.brand} ${i.productName}
+                <span style="float:right;">$${i.price}</span>
+            </div>
+        `).join("")}
+    </div>
+`).join("");
+} else {
+	document.getElementById("mixPrice").innerText = "--";
+    document.getElementById("splitDetail").innerText = "無拆單建議";
+}
 
     /* ========= 一站購齊策略 ========= */
     const storePriceEl = document.getElementById("bestStorePrice");
     const storeNameEl = document.getElementById("bestStoreName");
+    const descEl = document.getElementById("bestStoreDesc");
 
     if (data?.bestStore) {
         storePriceEl.innerText = `$${data.bestStore.total}`;
         storeNameEl.innerHTML =
             `<span class="best-store-highlight">📍 ${data.bestStore.storeName}</span>`;
-    } else {
-        storePriceEl.innerText = "--";
-        storeNameEl.innerText = "無法一站購齊";
+            
+            if (
+            	    data?.bestStore &&
+            	    data.bestStore.coveredCount < data.bestStore.totalCount &&
+            	    Array.isArray(data.bestStore.missingItems) &&
+            	    data.bestStore.missingItems.length > 0
+            	) {
+            	    // 👉 顯示缺少商品（優先）
+            	    descEl.innerHTML = `
+            	        ❌ 缺少 ${data.bestStore.totalCount - data.bestStore.coveredCount} 項商品<br>
+            	        <span style="font-size:11px;">
+            	            缺少：${data.bestStore.missingItems.join("、")}
+            	        </span>
+            	    `;
+            	} else {
+            	    // 👉 沒缺才顯示推薦理由
+            	    descEl.innerText = data?.recommendation || "一站式購足最方便";
+            	}
     }
 
-    /* ========= 推薦理由 ========= */
-    const descEl = document.getElementById("bestStoreDesc");
-    descEl.innerText = data?.recommendation || "尚無推薦策略";
     descEl.style.color = "#fbbf24";
 
     /* ========= 高亮推薦 ========= */
