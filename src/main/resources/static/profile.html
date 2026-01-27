@@ -227,27 +227,54 @@
 <script>
 // JavaScript 邏輯保持不變...
 async function loadProfile() {
-	loadStoreSummary();
-    try {
-        // 優先顯示清單資訊 (本地資料，較快)
-      	loadWishlistSummary();
-
-      	// 同步 API 會員資料
-      	const user = await apiGet("/user/profile");
-      	if(user) {
-        	document.getElementById("username").value = user.username || "";
-        	document.getElementById("email").value = user.email || "";
-      	}
+	loadWishlistSummary();
+	try {
+        const user = await apiGet("/user/profile");
+        if (user) {
+            document.getElementById("username").value = user.username || "";
+            document.getElementById("email").value = user.email || "";
+            
+            // 登入後才執行的遠端資料載入
+            loadStoreSummary(user.userId);
+            loadFavoriteSummary(user.userId); // 🚀 補齊這行
+        }
     } catch (err) {
-      	console.warn("API 載入失敗或未登入");
+        console.warn("API 載入失敗或未登入");
     }
 }
 
-async function loadStoreSummary() {
-	const user = await apiGet("/user/profile");
-    if (!user) return;
+async function loadFavoriteSummary(userId) {
     try {
-        const stores = await apiGet(`/user/preferred-stores/${user.userId}`);
+        // 取得收藏清單 (對應你的後端 Controller: /api/favorites/user/{userId})
+        const favorites = await apiGet(`/favorites/user/${userId}`);
+        const count = favorites.length;
+        
+        const summaryElement = document.getElementById("favoriteSummary");
+        const tagElement = document.getElementById("favoriteCountTag");
+
+        if (count > 0) {
+            // 顯示前兩個收藏的商品名稱作為摘要
+            const names = favorites.slice(0, 2).map(f => f.product.productName).join('、');
+            const moreText = count > 2 ? `...等 ${count} 件商品` : ` 共 ${count} 件商品`;
+            
+            summaryElement.innerHTML = `目前已收藏：<b>${names}${moreText}</b>`;
+            
+            // 顯示紅色小標籤
+            tagElement.innerText = count;
+            tagElement.style.display = "block";
+        } else {
+            summaryElement.innerText = "尚未加入任何最愛商品";
+            tagElement.style.display = "none";
+        }
+    } catch (e) {
+        console.error("無法載入我的最愛摘要", e);
+        document.getElementById("favoriteSummary").innerText = "無法載入收藏資訊";
+    }
+}
+
+async function loadStoreSummary(userId) {
+    try {
+        const stores = await apiGet(`/user/preferred-stores/${userId}`);
         const count = stores.length;
         if (count > 0) {
             document.getElementById("storeSummary").innerHTML = 

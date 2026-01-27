@@ -100,17 +100,22 @@ public class UserPreferredStoreService {
     
     @Transactional
     public void syncPreferredStores(Integer userId, List<Integer> storeIds) {
-        // 1. 清空舊資料
+    	List<Integer> uniqueStoreIds = storeIds.stream()
+                .distinct()
+                .limit(3)
+                .toList();
+    	// 1. 清空舊資料
         repo.deleteByUserUserId(userId);
+        
+        repo.flush();
 
         // 2. 取得使用者
         Users user = usersRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("找不到使用者"));
 
         // 3. 依序存入 (最多 3 筆)
-        int limit = Math.min(storeIds.size(), 3);
-        for (int i = 0; i < limit; i++) {
-            Integer sId = storeIds.get(i);
+        for (int i = 0; i < uniqueStoreIds.size(); i++) {
+            Integer sId = uniqueStoreIds.get(i);
             Stores store = storesRepo.findById(sId)
                     .orElseThrow(() -> new IllegalArgumentException("找不到賣場 ID: " + sId));
 

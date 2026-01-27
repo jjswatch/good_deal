@@ -359,7 +359,7 @@ function toggleView() {
 /* ========================
    資料渲染
 ======================== */
-function renderProducts(list, title = "搜尋結果") {
+function renderProducts(list, title = "搜尋結果", myFavIds = []) {
     $("searchTitle").textContent = title;
     $("countNum").textContent = list ? list.length : 0; // 更新數量
     
@@ -368,21 +368,25 @@ function renderProducts(list, title = "搜尋結果") {
         return;
     }
 
-    $("resultList").innerHTML = list.map(p => `
-    <li class="item">
-        <button class="fav-btn" onclick="toggleFavorite(this, ${p.productId})" title="加入我的最愛">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-        </button>
+    $("resultList").innerHTML = list.map(p => {
+        // 檢查此商品是否在收藏清單中
+        const isFav = myFavIds.includes(p.productId);
+        
+        return `
+        <li class="item">
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(this, ${p.productId})" title="加入我的最愛">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </button>
         <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
         <div class="item-name">
             ${p.brand ? `${p.brand} ` : ""}${p.productName}
             <div style="font-size:12px; color:#999;">${p.spec || ''}</div>
         </div>
         <a href="product.html?id=${p.productId}">查看商品</a>
-    </li>
-`).join("");
+        </li>`;
+        }).join("");
 }
 
 // 從比價清單過濾出唯一商品
@@ -404,48 +408,44 @@ function uniqueProductsFromPrices(priceList) {
 ======================== */
 async function initPage() {
     try {
-        // 1. 條碼搜尋
+    	let myFavIds = [];
+        const user = getCurrentUser();
+        if (user) {
+        	try {
+                const favs = await apiGet(`/favorites/user/${user.userId || user.id}`);
+                myFavIds = favs.map(f => f.product.productId);
+            } catch (e) {
+                console.warn("無法取得收藏清單", e);
+            }
+        }
+
         const barcode = getParam("barcode");
+        const storeId = getParam("store");
+        const catId = getParam("cat");
+        const keyword = getParam("q");
+
         if (barcode) {
             $("keyword").value = barcode;
-            if (location.hostname.includes("github.io")) {
-                const result = MOCK_PRODUCTS.filter(p => p.barcode === barcode);
-                renderProducts(result, `條碼搜尋：${barcode}`);
-            } else {
-                const list = await apiGetPublic(`/products/barcode?code=${barcode}`);
-                renderProducts(list, `條碼搜尋：${barcode}`);
-            }
-            return;
-        }
-
-        // 2. 商店搜尋
-        const storeId = getParam("store");
-        if (storeId) {
+            const list = await apiGetPublic(`/products/barcode?code=${barcode}`);
+            renderProducts(list, `條碼搜尋：${barcode}`, myFavIds); // 傳入 myFavIds
+        } 
+        else if (storeId) {
             const list = await apiGetPublic(`/prices/group/${storeId}`);
             const products = uniqueProductsFromPrices(list);
-            renderProducts(products, `商店專區`); // 實務上可根據 ID 獲取商店名
-            return;
-        }
-
-        // 3. 分類搜尋
-        const catId = getParam("cat");
-        if (catId) {
+            renderProducts(products, `商店專區`, myFavIds); // 傳入 myFavIds
+        } 
+        else if (catId) {
             const list = await apiGetPublic(`/products/category/${catId}`);
-            renderProducts(list, `分類搜尋`);
-            return;
-        }
-
-        // 4. 關鍵字搜尋
-        const keyword = getParam("q");
-        if (keyword) {
+            renderProducts(list, `分類搜尋`, myFavIds); // 傳入 myFavIds
+        } 
+        else if (keyword) {
             $("keyword").value = keyword;
             const list = await apiGetPublic(`/products/search?keyword=${encodeURIComponent(keyword)}`);
-            renderProducts(list, `關鍵字：${keyword}`);
-            return;
+            renderProducts(list, `關鍵字：${keyword}`, myFavIds); // 傳入 myFavIds
+        } 
+        else {
+            $("resultList").innerHTML = `<li class="loading">請輸入關鍵字開始搜尋</li>`;
         }
-        
-        // 若無參數
-        $("resultList").innerHTML = `<li class="loading">請輸入關鍵字開始搜尋</li>`;
 
     } catch (err) {
         console.error("初始化失敗", err);
@@ -462,22 +462,26 @@ async function toggleFavorite(btn, productId) {
         return;
     }
 
+    const userId = user.userId || user.id;
+
     try {
-        // 假設後端 POST /favorites 代表「新增」
-        // 如果你的 API 支援 Toggle，或是判斷邏輯在後端更好
-        const response = await apiPost("/favorites", { 
-            userId: user.userId, 
-            productId: productId 
+        const result = await apiPost("/favorites/toggle", {
+            userId: userId,
+            productId: productId
         });
 
-        if (response) {
+        if (result.favorited) {
+            console.log("已加入收藏！");
             btn.classList.add("active");
             alert("已成功加入我的最愛！");
+        } else {
+            console.log("已移除收藏！");
+            btn.classList.remove("active");
+            alert("已從我的最愛中刪除！");
         }
     } catch (err) {
-        console.error("收藏失敗", err);
-        // 如果噴 409 (已存在)，也可以提示使用者
-        alert("這項商品可能已經在你的收藏中囉！");
+    	console.error(err);
+        alert("操作失敗，請稍後再試");
     }
 }
 

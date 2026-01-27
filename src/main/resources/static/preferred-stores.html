@@ -168,16 +168,25 @@
 
     async function savePreferredStores() {
         const user = getCurrentUser();
+        const userId = user.userId || user.id;
+        if (!userId) {
+            alert("找不到使用者資訊，請重新登入");
+            location.href = "login.html";
+            return;
+        }
         const payload = {
-            userId: user.userId,
+            userId: userId,
             storeIds: selectedStoreIds // 確保這是 [1, 2, 3] 這樣的陣列
         };
+
+        console.log("準備傳送的資料：", payload);
 
         try {
             await apiPost("/user/preferred-stores/sync", payload);
             alert("賣場偏好已更新！");
             location.href = "profile.html";
         } catch (err) {
+        	console.error("同步失敗:", err);
             alert("儲存失敗：" + err.message);
         }
     }
