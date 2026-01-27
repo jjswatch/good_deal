@@ -159,6 +159,15 @@
 
 
 <div class="container">
+	<div class="card store-entrance" onclick="location.href='preferred-stores.html'" style="cursor:pointer; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #ddd6fe !important;">
+    	<div style="display: flex; align-items: center;">
+        	<h2 style="margin: 0; color: #7c3aed;">🏪 常去賣場設定</h2>
+        	<span id="storeCountTag" class="wishlist-stats" style="background: #8b5cf6; display:none;">0/3</span>
+    	</div>
+    	<p id="storeSummary" style="color: #5b21b6; font-size: 14px; margin-top: 8px;">設定您最常去的 3 間賣場，比價更精準</p>
+    	<div class="view-all-label" style="color: #7c3aed;">立即設定 <span style="margin-left:5px">→</span></div>
+	</div>
+	
 	<div class="card favorite-entrance" onclick="location.href='favorites.html'" style="cursor:pointer;"> 
 		<div style="display:flex; align-items:center;"> 
 			<h2 style="margin:0;">❤️ 我的最愛</h2> 
@@ -218,6 +227,7 @@
 <script>
 // JavaScript 邏輯保持不變...
 async function loadProfile() {
+	loadStoreSummary();
     try {
         // 優先顯示清單資訊 (本地資料，較快)
       	loadWishlistSummary();
@@ -231,6 +241,22 @@ async function loadProfile() {
     } catch (err) {
       	console.warn("API 載入失敗或未登入");
     }
+}
+
+async function loadStoreSummary() {
+	const user = await apiGet("/user/profile");
+    if (!user) return;
+    try {
+        const stores = await apiGet(`/user/preferred-stores/${user.userId}`);
+        const count = stores.length;
+        if (count > 0) {
+            document.getElementById("storeSummary").innerHTML = 
+                `目前已設定：<b>${stores.map(s => s.store.storeName).join('、')}</b>`;
+            const tag = document.getElementById("storeCountTag");
+            tag.innerText = `${count}/3`;
+            tag.style.display = "block";
+        }
+    } catch (e) { console.error("無法載入賣場摘要"); }
 }
 
 async function updateProfile() {

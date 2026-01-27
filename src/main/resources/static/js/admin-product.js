@@ -165,9 +165,10 @@ async function loadCategories(selectedId) {
 // 儲存邏輯 (判斷是 POST 還是 PUT)
 async function saveProduct() {
   const id = document.getElementById("editProductId").value;
+  const rawBarcode = document.getElementById("editBarcode").value.trim();
   const body = {
     productName: document.getElementById("editProductName").value,
-	barcode: document.getElementById("editBarcode").value,
+	barcode: rawBarcode === "" ? null : rawBarcode,
 	brand: document.getElementById("editBrand").value,
     spec: document.getElementById("editSpec").value,
     imageUrl: document.getElementById("editImageUrl").value,

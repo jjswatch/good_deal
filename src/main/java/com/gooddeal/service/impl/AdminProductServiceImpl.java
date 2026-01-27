@@ -80,7 +80,11 @@ public class AdminProductServiceImpl implements AdminProductService {
         p.setBrand(req.getBrand());
         p.setSpec(req.getSpec());
         p.setImageUrl(req.getImageUrl());
-        p.setBarcode(req.getBarcode());
+        if (req.getBarcode() == null || req.getBarcode().trim().isEmpty()) {
+            p.setBarcode(null);
+        } else {
+            p.setBarcode(req.getBarcode().trim());
+        }
         p.setCategory(category);
     }
 }
