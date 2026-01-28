@@ -138,6 +138,8 @@ function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
 
+let currentProduct = null;
+
 async function loadProduct() {
     const id = getQueryParam("id");
     if (!id) return;
@@ -145,6 +147,8 @@ async function loadProduct() {
     const product = await apiGet(`/products/${id}`);
 
     if (!product) return;
+
+    currentProduct = product;
 
     document.getElementById("productBlock").style.display = "flex";
     document.getElementById("productImg").src = product.imageUrl || "assets/placeholder.png";
@@ -205,8 +209,9 @@ function addToWishlist(productId, priceId, storeName, price) {
     const newItem = {
     	productId: parseInt(productId),
         priceId,
-        productName,
-        productImg,
+        brand: currentProduct ? currentProduct.brand : "",
+        productName: currentProduct ? currentProduct.productName : "未知名商品",
+        productImg: currentProduct ? currentProduct.imageUrl : "",
         storeName,
         price,
         addedAt: new Date().toLocaleDateString()

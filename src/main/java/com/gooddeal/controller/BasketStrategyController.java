@@ -20,8 +20,11 @@ public class BasketStrategyController {
 
     @GetMapping("/compare-basket")
     public BasketStrategyResult compareBasket(
-            @RequestParam List<Integer> ids
+            @RequestParam List<Integer> ids,
+            @RequestParam(required = false) Integer userId // 新增 userId 參數
     ) {
-        return service.compareBasket(ids);
+        // 在實務中，userId 應該從 Spring Security 的 Context 中取得，
+        // 這裡為了方便 demo 先用 RequestParam
+        return service.compareBasket(ids, userId);
     }
 }

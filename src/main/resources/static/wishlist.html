@@ -218,6 +218,16 @@
 	padding: 50px 20px;
 	color: #94a3b8;
 }
+.brand-label {
+    color: #64748b; /* 冷灰色 */
+    font-weight: 500;
+    margin-right: 4px;
+    font-size: 0.9em;
+}
+.wish-item.checked .brand-label {
+    color: #cbd5e1;
+    text-decoration: line-through;
+}
 </style>
 </head>
 <body>
@@ -373,7 +383,8 @@ function renderWishlist() {
         return;
     }
 
-    const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`)) || [];
+    const uid = user.userId || user.id;
+    const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
     const container = document.getElementById("wishlistContent");
         
     if (wishlist.length === 0) {
@@ -405,24 +416,27 @@ function renderWishlist() {
         grandTotal += subtotal;
 
         html += `
-        	<div class="store-group">
-            	<div class="store-header">
-                	<span class="store-name">📍 ${storeName}</span>
+            <div class="store-group">
+                <div class="store-header">
+                    <span class="store-name">📍 ${storeName}</span>
                     <span class="store-subtotal">共 ${items.length} 項, 小計 $${subtotal}</span>
                 </div>
-        ${items.map((item, idx) => `
-        	    <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.priceId}">
-                	<div class="check-btn" onclick="toggleCheck('${item.priceId}')">${item.checked ? '✓' : ''}</div>
-                    <img src="${item.productImg}" alt="">
-                    	<div class="wish-info">
-                        	<div class="wish-title">${item.productName}</div>
+                ${items.map((item, idx) => `
+                    <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.priceId}">
+                        <div class="check-btn" onclick="toggleCheck('${item.priceId}')">${item.checked ? '✓' : ''}</div>
+                        <img src="${item.productImg}" alt="">
+                        <div class="wish-info">
+                            <div class="wish-title">
+                                ${item.brand ? `<span class="brand-label">${item.brand}</span>` : ''} 
+                                ${item.productName}
+                            </div>
                             <div class="wish-price">$${item.price}</div>
                         </div>
                         <button onclick="removeItem('${item.priceId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px;">✕</button>
                     </div>
-                    `).join('')}
-                </div>
-            `;
+                `).join('')}
+            </div>
+        `;
     }
 
     container.innerHTML = html;
@@ -435,7 +449,8 @@ function renderWishlist() {
 // 勾選功能 (模擬放入購物車)
 function toggleCheck(priceId) {
 	const user = getCurrentUser();
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+	const uid = user.userId || user.id;
+	let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     const index = wishlist.findIndex(i => i.priceId === priceId);
     if (index !== -1) {
     	wishlist[index].checked = !wishlist[index].checked;
@@ -448,7 +463,8 @@ function toggleCheck(priceId) {
 function removeItem(priceId) {
 	if (!confirm("確定要從清單移除嗎？")) return;
     const user = getCurrentUser();
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+    const uid = user.userId || user.id;
+    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     wishlist = wishlist.filter(i => i.priceId !== priceId);
     localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
     renderWishlist();
@@ -457,7 +473,8 @@ function removeItem(priceId) {
 // 清除所有已勾選項目 (採買完畢)
 function clearChecked() {
 	const user = getCurrentUser();
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`));
+	const uid = user.userId || user.id;
+    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     wishlist = wishlist.filter(i => !i.checked);
     localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
     renderWishlist();
