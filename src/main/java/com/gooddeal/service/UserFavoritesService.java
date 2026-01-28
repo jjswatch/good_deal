@@ -46,4 +46,9 @@ public class UserFavoritesService {
             return Map.of("status", "added", "favorited", true);
         }
     }
+    
+    @Transactional
+    public void removeFavorite(Integer userId, Integer productId) {
+        repo.deleteByUserUserIdAndProductProductId(userId, productId);
+    }
 }

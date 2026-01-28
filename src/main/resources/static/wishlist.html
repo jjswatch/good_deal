@@ -416,7 +416,9 @@ function renderWishlist() {
 
     for (const storeName in groups) {
         const items = groups[storeName];
-        const subtotal = items.reduce((sum, i) => sum + i.price, 0);
+        const subtotal = items
+        .filter(i => !i.checked) 
+        .reduce((sum, i) => sum + i.price, 0);
         grandTotal += subtotal;
 
         html += `

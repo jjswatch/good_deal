@@ -43,6 +43,16 @@ public class UserFavoritesController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
-        repo.deleteById(id);
+    	if (repo.existsById(id)) {
+            repo.deleteById(id);
+        }
+    }
+    
+    @DeleteMapping
+    public void deleteByUserAndProduct(
+            @RequestParam Integer userId,
+            @RequestParam Integer productId
+    ) {
+    	service.removeFavorite(userId, productId);
     }
 }

@@ -71,3 +71,5 @@ const apiPost = (url, data) =>
   apiFetch(url, { method: "POST", body: JSON.stringify(data) });
 const apiPut = (url, data) =>
 	apiFetch(url, { method: "PUT", body: JSON.stringify(data) });
+const apiDelete = url =>
+  apiFetch(url, { method: "DELETE" });

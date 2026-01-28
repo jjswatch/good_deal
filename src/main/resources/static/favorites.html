@@ -197,7 +197,7 @@ async function loadFavorites() {
         }
 
         container.innerHTML = favorites.map(f => `
-            <div class="favorite-card" id="fav-item-${f.favoriteId}" onclick="goToProduct(${f.product.productId})">
+            <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
                 <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
                 <div class="favorite-info">
                     <div class="brand-label">${f.product.brand || '一般品牌'}</div>
@@ -212,7 +212,7 @@ async function loadFavorites() {
                     <button class="btn btn-add" onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
                         🛒 採買
                     </button>
-                    <button class="btn btn-remove" onclick="removeFavorite(${f.favoriteId})">
+                    <button class="btn btn-remove" onclick="removeFavorite(${f.product.productId})">
                         移除
                     </button>
                 </div>
@@ -261,21 +261,16 @@ function addToWishlist(product) {
     }
 }
 
-async function removeFavorite(favoriteId) {
+async function removeFavorite(productId) {
     if (!confirm("確定要從收藏中移除嗎？")) return;
-    const card = document.getElementById(`fav-item-${favoriteId}`);
 
-    try {
-        card.classList.add("removing");
-        await apiDelete(`/favorites/${favoriteId}`);
-        setTimeout(() => {
-            card.remove();
-            if (document.querySelectorAll('.favorite-card').length === 0) loadFavorites();
-        }, 400);
-    } catch (e) {
-        card.classList.remove("removing");
-        alert("移除失敗");
-    }
+    const user = getCurrentUser();
+
+    await apiDelete(
+        `/favorites?userId=${user.userId || user.id}&productId=${productId}`
+    );
+
+    document.getElementById(`fav-item-${productId}`)?.remove();
 }
 </script>
 </body>
