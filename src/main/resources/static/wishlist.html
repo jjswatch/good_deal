@@ -265,7 +265,10 @@
 <script>
 async function calculateBestStrategy(wishlist) {
     const productIds = wishlist.map(item => item.productId);
-    if (productIds.length === 0) return;
+    if (productIds.length === 0) {
+        document.getElementById("comparisonDashboard").style.display = "none";
+        return;
+    }
 
     document.getElementById("bestStoreDesc").innerText = "正在分析最佳採買策略...";
 
@@ -396,6 +399,7 @@ function renderWishlist() {
                 <a href="index.html" class="button" style="display:inline-block; margin-top:20px; background:var(--primary-color);">去逛逛</a>
             </div>`;
         document.getElementById("summaryBar").style.display = "none";
+        document.getElementById("comparisonDashboard").style.display = "none";
         return;
     }
 
@@ -449,12 +453,13 @@ function renderWishlist() {
 // 勾選功能 (模擬放入購物車)
 function toggleCheck(priceId) {
 	const user = getCurrentUser();
+	if (!user) return;
 	const uid = user.userId || user.id;
 	let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     const index = wishlist.findIndex(i => i.priceId === priceId);
     if (index !== -1) {
     	wishlist[index].checked = !wishlist[index].checked;
-        localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+    	localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
         renderWishlist();
     }
 }
@@ -463,20 +468,22 @@ function toggleCheck(priceId) {
 function removeItem(priceId) {
 	if (!confirm("確定要從清單移除嗎？")) return;
     const user = getCurrentUser();
+    if (!user) return;
     const uid = user.userId || user.id;
     let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     wishlist = wishlist.filter(i => i.priceId !== priceId);
-    localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
     renderWishlist();
 }
 
 // 清除所有已勾選項目 (採買完畢)
 function clearChecked() {
 	const user = getCurrentUser();
+	if (!user) return;
 	const uid = user.userId || user.id;
     let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
     wishlist = wishlist.filter(i => !i.checked);
-    localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
     renderWishlist();
 }
 </script>

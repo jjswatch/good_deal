@@ -315,8 +315,9 @@ async function changePassword() {
 
 function loadWishlistSummary() {
 	const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+	const uid = user.userId || user.id;
 	if (user) {
-		const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`)) || [];
+		const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
 	    const count = wishlist.length;
 	    const total = wishlist.reduce((sum, item) => sum + item.price, 0); 
 	    const summaryText = count > 0 ? `目前已存 <b>${count}</b> 筆優惠，預計花費 <b>$${total}</b>` : "目前還沒有想買的商品，快去搜尋比價吧！";

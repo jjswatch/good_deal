@@ -191,13 +191,14 @@ function addToWishlist(productId, priceId, storeName, price) {
         alert("請先登入後再加入購物清單喔！");
         return;
     }
+    const uid = user.userId || user.id;
 
     // 取得目前的商品基本資訊
     const productName = document.getElementById("productName").innerText;
     const productImg = document.getElementById("productImg").src;
 
     // 取得現有的清單 (如果沒有就建立空陣列)
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.userId}`)) || [];
+    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
 
     // 檢查是否重複加入
     if (wishlist.some(item => item.priceId === priceId)) {
@@ -218,7 +219,7 @@ function addToWishlist(productId, priceId, storeName, price) {
     };
 
     wishlist.push(newItem);
-    localStorage.setItem(`wishlist_${user.userId}`, JSON.stringify(wishlist));
+    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
 
     alert(`已將 ${storeName} 的價格加入清單！`);
     
