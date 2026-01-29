@@ -124,13 +124,61 @@ nav {
 	font-weight: 500;
 }
 
-footer {
-	text-align: center;
-	padding: 40px 20px;
-	margin-top: 60px;
-	color: var(--text-muted);
-	border-top: 1px solid var(--border-color);
-	font-size: 14px;
+.site-footer {
+    background: #2d3436;
+    color: #dfe6e9;
+    padding: 40px 20px 100px; /* 底部留白給 bottom-nav */
+    margin-top: 50px;
+    font-size: 14px;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.footer-info h3 {
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.footer-contact h4 {
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.footer-contact ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-contact li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.footer-contact a {
+    color: #00cec9;
+    text-decoration: none;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #636e72;
+    color: #b2bec3;
+}
+
+@media (max-width: 600px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* 手機選單 */

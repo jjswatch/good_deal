@@ -180,6 +180,60 @@
 	font-weight: 500;
 	font-size: 15px;
 }
+/* 熱門品牌卡片 */
+.brand-card-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+@media (max-width: 600px) {
+    .brand-card-container {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+    }
+}
+
+.brand-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.brand-card:hover {
+    transform: scale(1.08);
+}
+
+.brand-logo-circle {
+    width: 65px;
+    height: 65px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.brand-logo-circle img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+    text-align: center;
+}
 </style>
 </head>
 
@@ -203,6 +257,9 @@
 <main style="max-width: 1100px; margin: auto; padding: 0 20px;">
 	<h2 class="section-title">🏬 熱門商家</h2>
 	<div id="store-cards" class="store-card-container"></div>
+	
+	<h2 class="section-title">🏷️ 熱門品牌</h2>
+	<div id="brand-cards" class="brand-card-container"></div>
 
 	<h2 class="section-title">📂 分類瀏覽</h2>
 	<div id="category-tags" class="category-tags">
@@ -226,8 +283,6 @@
 	</section>
 </main>
 
-<footer> © 2025 GoodDeal 商品比價平台｜省錢小幫手 </footer>
-
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
@@ -238,6 +293,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
     loadStores();
+    loadBrands();
     registerSearchEvent();
     registerServiceWorker();
 });
@@ -297,6 +353,34 @@ function loadStores() {
         <div class="store-card" onclick="location.href='search.html?store=${store.id}'">
             <div class="store-card-top" style="background-image:url('${store.logo}')"></div>
             <div class="store-card-bottom">${store.name}</div>
+        </div>
+    `).join('');
+}
+
+function loadBrands() {
+    // 預設八個熱門品牌
+    const brands = [
+        { name: "義美", logo: "assets/brands/imei.png" },
+        { name: "光泉", logo: "assets/brands/kuangchuan.png" },
+        { name: "福樂", logo: "assets/brands/foremost.png" },
+        { name: "來一客", logo: "assets/brands/onemorecup.png" },
+        { name: "桂格", logo: "assets/brands/quaker.png" },
+        { name: "樂事", logo: "assets/brands/lays.png" },
+        { name: "桂冠", logo: "assets/brands/laurel.png" },
+        { name: "得意的一天", logo: "assets/brands/greatday.png" },
+        { name: "康寶", logo: "assets/brands/knorr.png" },
+        { name: "好侍", logo: "assets/brands/house.png" }
+    ];
+
+    const container = document.getElementById("brand-cards");
+    
+    // 渲染卡片，點擊後會直接跳轉到搜尋頁並帶入 q 參數
+    container.innerHTML = brands.map(b => `
+        <div class="brand-card" onclick="location.href='search.html?q=${encodeURIComponent(b.name)}'">
+            <div class="brand-logo-circle">
+                <img src="${b.logo}" alt="${b.name}" onerror="this.src='assets/placeholder.png';">
+            </div>
+            <div class="brand-name">${b.name}</div>
         </div>
     `).join('');
 }

@@ -7,10 +7,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 public interface ProductsRepository extends JpaRepository<Products, Integer> {
-	List<Products> findByProductNameContainingIgnoreCase(String keyword);
+	List<Products> findByProductNameContainingIgnoreCaseOrBrandContainingIgnoreCase(
+	        String productNameKeyword,
+	        String brandKeyword
+	);
 	List<Products> findByBarcode(String barcode);
 	List<Products> findByCategoryCategoryId(Integer categoryId);
 	List<Products> findByCategoryCategoryNameContainingIgnoreCase(String name);

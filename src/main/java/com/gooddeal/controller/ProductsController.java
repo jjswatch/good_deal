@@ -66,7 +66,10 @@ public class ProductsController {
     
     @GetMapping("/search")
     public List<Products> searchProducts(@RequestParam String keyword) {
-        return repo.findByProductNameContainingIgnoreCase(keyword);
+    	return repo.findByProductNameContainingIgnoreCaseOrBrandContainingIgnoreCase(
+    	        keyword,
+    	        keyword
+    	    );
     }
     
     @GetMapping("/barcode")
