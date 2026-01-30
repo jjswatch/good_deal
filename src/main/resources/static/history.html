@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="css/style.css" />
 <!-- PWA 註冊 -->
 <link rel="manifest" href="manifest.json">
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* 商品資訊 */
 .product-info {
@@ -62,14 +62,24 @@
 	color: #d32f2f;
 	font-weight: bold;
 }
-
+.chart-wrapper {
+    height: 300px;
+    position: relative;
+}
 </style>
 </head>
 
 <body>
-
-
 <section class="product-info" id="productInfo"></section>
+
+<section class="price-chart-container" style="max-width: 1100px; margin: 20px auto; padding: 0 20px;">
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <h3 style="margin-top: 0;">價格走勢分析</h3>
+        <div class="chart-wrapper">
+            <canvas id="mainHistoryChart"></canvas>
+        </div>
+    </div>
+</section>
 
 <section class="price-table">
 	<table>
@@ -94,11 +104,9 @@ if (!isLoggedIn()) {
 	const goLogin = confirm("此功能需要登入，是否前往登入？");
 
 	if (goLogin) {
-		// 把目前頁面記起來
 	    const redirect = encodeURIComponent(location.href);
 	    location.href = `login.html?redirect=${redirect}`;
 	} else {
-	    // 取消 → 回上一頁
 	    history.back();
 	}
 }
@@ -148,6 +156,45 @@ function renderPrices(list) {
 	`).join("");
 }
 
+let historyChartInstance = null;
+
+function renderTrendChart(list) {
+	const canvas = document.getElementById('mainHistoryChart');
+    const ctx = canvas.getContext('2d');
+
+    if (historyChartInstance) {
+        historyChartInstance.destroy();
+    }
+    
+    const labels = list.map(p => p.changedAt.split("T")[0]).reverse();
+    const data = list.map(p => p.newPrice).reverse();
+
+    historyChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: '價格 ($)',
+                data,
+                borderColor: '#FF4500',
+                backgroundColor: 'rgba(255, 69, 0, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: false }
+            }
+        }
+    });
+}
+
 /* ========================
    主流程
 ======================== */
@@ -155,25 +202,15 @@ function renderPrices(list) {
 	const productId = qs("productId");
 	if (!productId) return;
 
-	// GitHub Pages mock
-	if (location.hostname.includes("github.io")) {
-		const product = MOCK_PRODUCTS.find(p => p.productId == productId);
-		renderProduct(product);
-
-		renderPrices([
-			{ date: "2025-01-01", storeName: "全聯", branch: "台北A", price: 95 },
-			{ date: "2025-02-01", storeName: "全聯", branch: "台北A", price: 89 },
-			{ date: "2025-03-01", storeName: "全聯", branch: "台北B", price: 92 }
-		]);
-		return;
-	}
-
-	// 正式 API
 	const product = await apiGet(`/products/${productId}`);
 	renderProduct(product);
 
 	const prices = await apiGet(`/history/product/${productId}`);
 	renderPrices(prices);
+
+	if (prices && prices.length >= 2) {
+        renderTrendChart(prices);
+    }
 })();
 </script>
 

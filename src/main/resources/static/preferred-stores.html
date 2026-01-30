@@ -1,94 +1,99 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>設定常去賣場｜GoodDeal</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <style>
-        .container { max-width: 500px; margin: 0 auto; padding: 20px 16px; }
-        .header { margin-bottom: 24px; }
-        .header h1 { font-size: 20px; margin-bottom: 8px; }
-        .header p { color: #64748b; font-size: 14px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>設定常去賣場｜GoodDeal</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+.container { max-width: 500px; margin: 0 auto; padding: 20px 16px; }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 20px; margin-bottom: 8px; }
+.header p { color: #64748b; font-size: 14px; }
 
-        /* 賣場卡片網格 */
-        .store-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 30px;
-        }
+/* 賣場卡片網格 */
+.store-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+}
 
-        .store-item {
-            background: white;
-            border: 2px solid #f1f5f9;
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
+.store-item {
+	background: white;
+	border: 2px solid #f1f5f9;
+	border-radius: 16px;
+	padding: 16px;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.2s;
+	position: relative;
+}
 
-        .store-item:hover { border-color: #ddd6fe; }
+.store-item:hover { border-color: #ddd6fe; }
 
-        /* 選中狀態 */
-        .store-item.active {
-            border-color: #7c3aed;
-            background: #f5f3ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
-        }
+/* 選中狀態 */
+.store-item.active {
+	border-color: #7c3aed;
+    background: #f5f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
 
-        .store-item .badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #7c3aed;
-            color: white;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            font-size: 12px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
+.store-item .badge {
+	position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #7c3aed;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
 
-        .store-item.active .badge { display: flex; }
+.store-item.active .badge { display: flex; }
 
-        .store-name { font-weight: 700; display: block; margin-top: 8px; }
+.store-name { font-weight: 700; display: block; margin-top: 8px; }
         
-        .footer-action {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 16px;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: center;
-            padding-bottom: 120px;
-        }
+.footer-action {
+	bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 16px;
+	justify-content: center;
+}
         
-        .btn-save-stores {
-            max-width: 468px;
-            width: 100%;
-            background: #7c3aed;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .btn-save-stores:disabled { background: #cbd5e1; cursor: not-allowed; }
-    </style>
+.btn-save-stores {
+	max-width: 468px;
+    width: 100%;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-save-stores:disabled { background: #cbd5e1; cursor: not-allowed; }
+</style>
 </head>
 <body>
-
+<nav>
+	<div class="nav-container">
+		<div style="margin-left: auto; display: flex; align-items: center;">
+			<div class="nav-notification" onclick="location.href='setting.html'">
+				<svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+	            <div class="notification-dot" id="notiDot"></div>
+	        </div>
+	    </div>
+	</div>
+</nav>
 <div class="container">
     <div class="header">
         <h1>📍 我的常去賣場</h1>
@@ -108,98 +113,96 @@
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
 <script>
-    let allStores = [];
-    let selectedStoreIds = [];
+let allStores = [];
+let selectedStoreIds = [];
 
-    document.addEventListener("DOMContentLoaded", async () => {
-    	const user = await apiGet("/user/profile");
-        if (!user) { location.href = "login.html"; return; }
+document.addEventListener("DOMContentLoaded", async () => {
+	const user = await apiGet("/user/profile");
+    if (!user) { location.href = "login.html"; return; }
 
-        try {
-            // 1. 取得所有賣場
-            allStores = await apiGet("/stores"); // 需確認後端有此 API
-            // 2. 取得使用者目前的設定
-            const currentPrefs = await apiGet(`/user/preferred-stores/${user.userId}`);
-            selectedStoreIds = currentPrefs.map(p => p.store.storeId);
+    try {
+        // 1. 取得所有賣場
+        allStores = await apiGet("/stores"); // 需確認後端有此 API
+        // 2. 取得使用者目前的設定
+        const currentPrefs = await apiGet(`/user/preferred-stores/${user.userId}`);
+        selectedStoreIds = currentPrefs.map(p => p.store.storeId);
             
-            renderStores();
-            updateButton();
-        } catch (e) {
-            console.error(e);
-            alert("載入失敗，請稍後再試");
-        }
-    });
-
-    function renderStores() {
-        const grid = document.getElementById("storeGrid");
-        grid.innerHTML = allStores.map(store => {
-            const isActive = selectedStoreIds.includes(store.storeId);
-            const order = selectedStoreIds.indexOf(store.storeId) + 1;
-            return `
-                <div class="store-item ${isActive ? 'active' : ''}" onclick="toggleStore(${store.storeId})">
-                    <div class="badge">${order}</div>
-                    <div style="font-size: 24px;">${getStoreEmoji(store.storeName)}</div>
-                    <span class="store-name">${store.storeName}</span>
-                </div>
-            `;
-        }).join("");
-    }
-
-    function toggleStore(id) {
-        const index = selectedStoreIds.indexOf(id);
-        if (index > -1) {
-            // 已選取 -> 移除
-            selectedStoreIds.splice(index, 1);
-        } else {
-            // 未選取 -> 檢查上限
-            if (selectedStoreIds.length >= 3) {
-                alert("最多只能選擇 3 間賣場喔！");
-                return;
-            }
-            selectedStoreIds.push(id);
-        }
         renderStores();
         updateButton();
+    } catch (e) {
+        console.error(e);
+        alert("載入失敗，請稍後再試");
     }
+});
 
-    function updateButton() {
-        const btn = document.getElementById("saveBtn");
-        btn.disabled = selectedStoreIds.length === 0;
-        btn.innerText = `儲存設定 (${selectedStoreIds.length}/3)`;
-    }
+function renderStores() {
+	const grid = document.getElementById("storeGrid");
+    grid.innerHTML = allStores.map(store => {
+        const isActive = selectedStoreIds.includes(store.storeId);
+        const order = selectedStoreIds.indexOf(store.storeId) + 1;
+        return `
+        	<div class="store-item ${isActive ? 'active' : ''}" onclick="toggleStore(${store.storeId})">
+            	<div class="badge">${order}</div>
+                <div style="font-size: 24px;">${getStoreEmoji(store.storeName)}</div>
+                <span class="store-name">${store.storeName}</span>
+            </div>
+        `;
+    }).join("");
+}
 
-    async function savePreferredStores() {
-        const user = getCurrentUser();
-        const userId = user.userId || user.id;
-        if (!userId) {
-            alert("找不到使用者資訊，請重新登入");
-            location.href = "login.html";
+function toggleStore(id) {
+    const index = selectedStoreIds.indexOf(id);
+    if (index > -1) {
+        // 已選取 -> 移除
+        selectedStoreIds.splice(index, 1);
+    } else {
+        // 未選取 -> 檢查上限
+        if (selectedStoreIds.length >= 3) {
+            alert("最多只能選擇 3 間賣場喔！");
             return;
         }
-        const payload = {
-            userId: userId,
-            storeIds: selectedStoreIds // 確保這是 [1, 2, 3] 這樣的陣列
-        };
-
-        console.log("準備傳送的資料：", payload);
-
-        try {
-            await apiPost("/user/preferred-stores/sync", payload);
-            alert("賣場偏好已更新！");
-            location.href = "profile.html";
-        } catch (err) {
-        	console.error("同步失敗:", err);
-            alert("儲存失敗：" + err.message);
-        }
+        selectedStoreIds.push(id);
     }
+    renderStores();
+    updateButton();
+}
 
-    function getStoreEmoji(name) {
-        if (name.includes("全聯")) return "🧧";
-        if (name.includes("家樂福")) return "🔵";
-        if (name.includes("好市多")) return "📦";
-        if (name.includes("大潤發")) return "🔴";
-        return "🏪";
+function updateButton() {
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = selectedStoreIds.length === 0;
+    btn.innerText = `儲存設定 (${selectedStoreIds.length}/3)`;
+}
+
+async function savePreferredStores() {
+    const user = getCurrentUser();
+    const userId = user.userId || user.id;
+    if (!userId) {
+        alert("找不到使用者資訊，請重新登入");
+        location.href = "login.html";
+        return;
     }
+    const payload = {
+        userId: userId,
+        storeIds: selectedStoreIds // 確保這是 [1, 2, 3] 這樣的陣列
+    };
+
+    try {
+        await apiPost("/user/preferred-stores/sync", payload);
+        alert("賣場偏好已更新！");
+        location.href = "profile.html";
+    } catch (err) {
+    	console.error("同步失敗:", err);
+        alert("儲存失敗：" + err.message);
+    }
+}
+
+function getStoreEmoji(name) {
+    if (name.includes("全聯")) return "🧧";
+    if (name.includes("家樂福")) return "🔵";
+    if (name.includes("愛買")) return "📦";
+    if (name.includes("佳瑪")) return "🔴";
+    return "🏪";
+}
 </script>
 </body>
 </html>

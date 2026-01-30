@@ -183,16 +183,23 @@
 /* 熱門品牌卡片 */
 .brand-card-container {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    margin-top: 20px;
-    padding: 0 10px;
+    grid-template-columns: repeat(6, 1fr); 
+    gap: 25px 10px; /* 增加上下間距 (25px)，讓兩列之間有呼吸感 */
+    margin-top: 25px;
+    padding: 0 5px;
 }
 
 @media (max-width: 600px) {
     .brand-card-container {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 20px 15px;
+    }
+    .brand-logo-circle {
+        width: 75px;  /* 手機版圖示稍微放大，方便手指點擊 */
+        height: 75px;
+    }
+    .brand-name {
+        font-size: 14px; /* 手機版文字稍微放大 */
     }
 }
 
@@ -201,38 +208,39 @@
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s ease;
 }
 
 .brand-card:hover {
-    transform: scale(1.08);
+    transform: translateY(-5px);
 }
 
 .brand-logo-circle {
-    width: 65px;
-    height: 65px;
+    width: 70px; /* 桌機維持舒適大小 */
+    height: 70px;
     background: #ffffff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 加深陰影增加立體感 */
     border: 1px solid #f0f0f0;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     overflow: hidden;
 }
 
 .brand-logo-circle img {
-    width: 80%;
-    height: 80%;
+    width: 75%;
+    height: 75%;
     object-fit: contain;
 }
 
 .brand-name {
     font-size: 13px;
-    color: #444;
+    color: #333;
     font-weight: 500;
     text-align: center;
+    line-height: 1.2;
 }
 </style>
 </head>
@@ -345,7 +353,8 @@ function loadStores() {
     const stores = [
         { id: 1, name: "全聯福利中心", logo: "assets/stores/px.png" },
         { id: 2, name: "家樂福", logo: "assets/stores/carrefour.png" },
-        { id: 3, name: "愛買", logo: "assets/stores/amart.png" }
+        { id: 3, name: "愛買", logo: "assets/stores/amart.png" },
+        { id: 4, name: "佳瑪", logo: "assets/stores/jmart.png" }
     ];
 
     const container = document.getElementById("store-cards");
@@ -358,7 +367,6 @@ function loadStores() {
 }
 
 function loadBrands() {
-    // 預設八個熱門品牌
     const brands = [
         { name: "義美", logo: "assets/brands/imei.png" },
         { name: "光泉", logo: "assets/brands/kuangchuan.png" },
@@ -369,12 +377,15 @@ function loadBrands() {
         { name: "桂冠", logo: "assets/brands/laurel.png" },
         { name: "得意的一天", logo: "assets/brands/greatday.png" },
         { name: "康寶", logo: "assets/brands/knorr.png" },
-        { name: "好侍", logo: "assets/brands/house.png" }
+        { name: "好侍", logo: "assets/brands/house.png" },
+        { name: "牛頭牌", logo: "assets/brands/hawdii.png" },
+        { name: "統一麵", logo: "assets/brands/uni.png" }
     ];
+
+    brands.sort(() => Math.random() - 0.5);
 
     const container = document.getElementById("brand-cards");
     
-    // 渲染卡片，點擊後會直接跳轉到搜尋頁並帶入 q 參數
     container.innerHTML = brands.map(b => `
         <div class="brand-card" onclick="location.href='search.html?q=${encodeURIComponent(b.name)}'">
             <div class="brand-logo-circle">

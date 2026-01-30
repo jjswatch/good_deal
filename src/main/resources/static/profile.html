@@ -155,8 +155,16 @@
   </style>
 </head>
 <body>
-
-
+<nav>
+	<div class="nav-container">
+		<div style="margin-left: auto; display: flex; align-items: center;">
+			<div class="nav-notification" onclick="location.href='setting.html'">
+				<svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+	            <div class="notification-dot" id="notiDot"></div>
+	        </div>
+	    </div>
+	</div>
+</nav>
 
 <div class="container">
 	<div class="card store-entrance" onclick="location.href='preferred-stores.html'" style="cursor:pointer; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #ddd6fe !important;">
@@ -174,7 +182,7 @@
 			<span id="favoriteCountTag" class="wishlist-stats" style="display:none;">0</span> 
 		</div> 
 		<p id="favoriteSummary" style="color:#9a3412; font-size:14px; margin-top:8px;"> 尚未加入最愛 </p> 
-		<div class="view-all-label"> 查看我的最愛 <span style="margin-left:5px">→</span> </div> 
+		<div class="view-all-label">查看我的最愛 <span style="margin-left:5px">→</span> </div> 
 	</div>
 	
 	<div class="card wishlist-entrance" onclick="location.href='wishlist.html'" style="cursor:pointer;">
@@ -185,58 +193,20 @@
     	<p id="wishlistSummary" style="color: #9a3412; font-size: 14px; margin-top: 8px; position: relative; z-index: 1;">載入清單中...</p>
     	<div class="view-all-label">立即前往採買 <span style="margin-left:5px">→</span></div>
 	</div>
-
-	<div class="card">
-    	<h2>👤 基本資料</h2>
-    	<div class="form-group">
-      		<label>使用者名稱</label>
-      		<input type="text" id="username" placeholder="請輸入姓名">
-    	</div>
-    	<div class="form-group">
-      		<label>Email 地址</label>
-      		<input type="email" id="email" placeholder="example@mail.com">
-    	</div>
-    	<button class="btn-save" onclick="updateProfile()">💾 儲存修改</button>
-  	</div>
-
-  	<div class="card">
-    	<h2>🔐 安全設定</h2>
-    	<div class="form-group">
-      		<label>舊密碼</label>
-      		<input type="password" id="oldPassword" placeholder="••••••••">
-    	</div>
-    	<div class="form-group">
-      		<label>新密碼</label>
-      		<input type="password" id="newPassword" placeholder="••••••••">
-    	</div>
-    	<div class="form-group">
-      		<label>確認新密碼</label>
-      		<input type="password" id="confirmPassword" placeholder="••••••••">
-    	</div>
-    	<button class="btn-danger" onclick="changePassword()">修改密碼</button>
-  	</div>
-  
-  	<div style="margin-top: 30px; padding: 0 10px;">
-    	<button class="btn-logout" onclick="handleLogout()">🚪 登出帳號</button>
-  	</div>
 </div>
 
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
 <script>
-// JavaScript 邏輯保持不變...
 async function loadProfile() {
 	loadWishlistSummary();
 	try {
         const user = await apiGet("/user/profile");
         if (user) {
-            document.getElementById("username").value = user.username || "";
-            document.getElementById("email").value = user.email || "";
-            
             // 登入後才執行的遠端資料載入
             loadStoreSummary(user.userId);
-            loadFavoriteSummary(user.userId); // 🚀 補齊這行
+            loadFavoriteSummary(user.userId);
         }
     } catch (err) {
         console.warn("API 載入失敗或未登入");
@@ -286,33 +256,6 @@ async function loadStoreSummary(userId) {
     } catch (e) { console.error("無法載入賣場摘要"); }
 }
 
-async function updateProfile() {
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    if (!username || !email) { alert("資料不可空白"); return; }
-    try {
-    	await apiPut("/user/profile", { username, email });
-      	alert("會員資料已更新");
-    } catch (err) {
-      	alert("更新失敗：" + err.message);
-    }
-}
-
-async function changePassword() {
-    const oldPwd = document.getElementById("oldPassword").value;
-    const newPwd = document.getElementById("newPassword").value;
-    const confirmPwd = document.getElementById("confirmPassword").value;
-    if (!oldPwd || !newPwd) { alert("請填寫完整"); return; }
-    if (newPwd !== confirmPwd) { alert("新密碼不一致"); return; }
-    try {
-    	await apiPut("/user/password", { oldPassword: oldPwd, newPassword: newPwd });
-      	alert("密碼修改成功，請重新登入");
-      	logout();
-    } catch (err) {
-      	alert("修改失敗：" + err.message);
-    }
-}
-
 function loadWishlistSummary() {
 	const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
 	const uid = user.userId || user.id;
@@ -323,29 +266,13 @@ function loadWishlistSummary() {
 	    const summaryText = count > 0 ? `目前已存 <b>${count}</b> 筆優惠，預計花費 <b>$${total}</b>` : "目前還沒有想買的商品，快去搜尋比價吧！";
 	      
 	    document.getElementById("wishlistSummary").innerHTML = summaryText;
-
+	    
 	    // 如果有商品，顯示橘色小標籤
 	    if (count > 0) {
 	    	const tag = document.getElementById("wishlistCountTag");
 	        tag.innerText = count;
 	        tag.style.display = "block";
 	    }
-	}
-}
-
-function handleLogout() {
-	if (confirm("確定要登出 GoodDeal 嗎？")) {
-	    if (typeof logout === 'function') {
-	    	logout();
-	    } else {
-	        localStorage.removeItem("user");
-	        localStorage.removeItem("token");
-	        // 也可以選擇清除清單，但通常建議保留購物清單在本地
-	        // localStorage.removeItem("wishlist_..."); 
-	    }
-	      
-	    alert("已安全登出");
-	    window.location.href = "index.html"; // 導回首頁
 	}
 }
 

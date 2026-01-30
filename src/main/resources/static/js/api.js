@@ -27,7 +27,7 @@ async function apiGetPublic(url) {
     throw new Error(msg || "Request failed");
   }
 
-  return res.json();
+  return await res.json();
 }
 
 /* ========== 需要 JWT 的 API ========== */

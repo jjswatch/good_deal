@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderNavbar() {
+	// 檢查頁面是否已經有 nav，避免重複渲染
+	if (document.querySelector('nav')) return;
     // 取得當前檔名
     const path = window.location.pathname;
     const page = path.split("/").pop();
