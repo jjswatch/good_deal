@@ -1,235 +1,242 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>會員個人頁面</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
-    .container {
-      padding: 20px 16px;
-      max-width: 500px;
-      margin: 0 auto;
-      padding-bottom: 80px; /* 留出空間給底部導覽 */
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>會員個人頁面</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
 
-    .card {
-      background: #fff;
-      padding: 24px;
-      margin-bottom: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      border: 1px solid #f1f5f9;
-    }
-    
-    .wishlist-entrance {
-      background: linear-gradient(135deg, #fffcfb 0%, #fff5f2 100%);
-      border: 1px solid #ffedd5 !important;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+ 
+        .container {
+            padding: 24px 16px 80px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+.profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        .user-name { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+        .user-email { font-size: 14px; color: #64748b; }
 
-    .wishlist-entrance:active {
-      transform: scale(0.98);
-    }
+        /* 核心卡片樣式 */
+        .card {
+            background: #fff;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f1f5f9;
+            position: relative;
+            overflow: hidden; /* 必備，裁切裝飾圖示 */
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .card:active { transform: scale(0.98); }
 
-    /* 裝飾用背景圓圈 */
-    .wishlist-entrance::after {
-      content: '🛒';
-      position: absolute;
-      right: -10px;
-      bottom: -10px;
-      font-size: 80px;
-      opacity: 0.05;
-      transform: rotate(-15deg);
-    }
+        /* 裝飾用背景圖示 (通用偽元素) */
+        .card::after {
+            position: absolute;
+            right: -15px;
+            bottom: -15px;
+            font-size: 90px;
+            opacity: 0.06;
+            transform: rotate(-15deg);
+            pointer-events: none;
+        }
 
-    .wishlist-entrance h2 {
-      color: #ea580c; /* 橘紅色調 */
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        /* 1. 賣場卡片特定樣式 */
+        .store-entrance { 
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); 
+            border: 1px solid #ddd6fe !important;
+        }
+        .store-entrance::after { content: '🏪'; }
+        .store-entrance h2 { color: #7c3aed; }
+        .store-summary-text { color: #5b21b6; }
 
-    .wishlist-stats {
-      background: #ff7849;
-      color: white;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-left: auto;
-    }
+        /* 2. 最愛卡片特定樣式 */
+        .favorite-entrance { 
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); 
+            border: 1px solid #fed7aa !important;
+        }
+        .favorite-entrance::after { content: '❤️'; }
+        .favorite-entrance h2 { color: #ea580c; }
+        .favorite-summary-text { color: #9a3412; }
 
-    .view-all-label {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      color: #ea580c;
-      font-weight: 700;
-      font-size: 14px;
-      margin-top: 10px;
-    }
+        /* 3. 清單卡片特定樣式 */
+        .wishlist-entrance { 
+            background: linear-gradient(135deg, #fffcfb 0%, #fff5f2 100%); 
+            border: 1px solid #ffedd5 !important;
+        }
+        .wishlist-entrance::after { content: '🛒'; }
+        .wishlist-entrance h2 { color: #ea580c; }
+        .wishlist-summary-text { color: #9a3412; }
 
-    .card h2 {
-      margin: 0 0 20px 0;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .card h2 {
+            margin: 0 0 10px 0;
+            font-size: 19px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
+        .summary-desc {
+            font-size: 14px;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+        }
 
-    label {
-      display: block;
-      font-size: 14px;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
+        .wishlist-stats {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: auto;
+            color: white;
+        }
+        #storeCountTag { background: #8b5cf6; }
+        #favoriteCountTag, #wishlistCountTag { background: #ff7849; }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      box-sizing: border-box;
-      font-size: 16px; /* 防止 iOS 自動放大 */
-      transition: border-color 0.2s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      background: #f8fafc;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn-save {
-      background: var(--primary-color);
-      color: #fff;
-      margin-top: 10px;
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: #dc2626;
-      margin-top: 10px;
-    }
-
-    button:active {
-      opacity: 0.8;
-    }
-    
-    .btn-logout {
-      background: transparent;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .btn-logout:hover {
-      background: #f1f5f9;
-      color: #ef4444;
-      border-color: #fee2e2;
-    }
-  </style>
+        .view-all-label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+    </style>
 </head>
 <body>
+
 <nav>
-	<div class="nav-container">
-		<div style="margin-left: auto; display: flex; align-items: center;">
-			<div class="nav-notification" onclick="location.href='setting.html'">
-				<svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-	            <div class="notification-dot" id="notiDot"></div>
+	        <div class="nav-container">
+	        <span class="nav-title">我的個人檔案</span>
+	            <div style="margin-left: auto;">
+	                <div class="nav-notification" onclick="location.href='setting.html'">
+	                    <svg class="nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+	                    
+	                </div>
+	            </div>
 	        </div>
-	    </div>
-	</div>
-</nav>
+	    </nav>
 
 <div class="container">
-	<div class="card store-entrance" onclick="location.href='preferred-stores.html'" style="cursor:pointer; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #ddd6fe !important;">
-    	<div style="display: flex; align-items: center;">
-        	<h2 style="margin: 0; color: #7c3aed;">🏪 常去賣場設定</h2>
-        	<span id="storeCountTag" class="wishlist-stats" style="background: #8b5cf6; display:none;">0/3</span>
-    	</div>
-    	<p id="storeSummary" style="color: #5b21b6; font-size: 14px; margin-top: 8px;">設定您最常去的 3 間賣場，比價更精準</p>
-    	<div class="view-all-label" style="color: #7c3aed;">立即設定 <span style="margin-left:5px">→</span></div>
-	</div>
-	
-	<div class="card favorite-entrance" onclick="location.href='favorites.html'" style="cursor:pointer;"> 
-		<div style="display:flex; align-items:center;"> 
-			<h2 style="margin:0;">❤️ 我的最愛</h2> 
-			<span id="favoriteCountTag" class="wishlist-stats" style="display:none;">0</span> 
-		</div> 
-		<p id="favoriteSummary" style="color:#9a3412; font-size:14px; margin-top:8px;"> 尚未加入最愛 </p> 
-		<div class="view-all-label">查看我的最愛 <span style="margin-left:5px">→</span> </div> 
-	</div>
-	
-	<div class="card wishlist-entrance" onclick="location.href='wishlist.html'" style="cursor:pointer;">
-    	<div style="display: flex; align-items: center;">
-      		<h2 style="margin: 0;">🛒 我的購物清單</h2>
-      		<span id="wishlistCountTag" class="wishlist-stats" style="display:none;">0</span>
-    	</div>
-    	<p id="wishlistSummary" style="color: #9a3412; font-size: 14px; margin-top: 8px; position: relative; z-index: 1;">載入清單中...</p>
-    	<div class="view-all-label">立即前往採買 <span style="margin-left:5px">→</span></div>
-	</div>
+	<div class="profile-header">
+        <div class="avatar">👤</div>
+        <h1 class="user-name" id="displayUserName">載入中...</h1>
+        <p class="user-email" id="displayUserEmail">---</p>
+    </div>
+    
+    <div class="card store-entrance" onclick="location.href='preferred-stores.html'">
+        <div style="display: flex; align-items: center;">
+            <h2>🏪 常去賣場設定</h2>
+            <span id="storeCountTag" class="wishlist-stats" style="display:none;">0/3</span>
+        </div>
+        <p id="storeSummary" class="summary-desc store-summary-text">設定您最常去的 3 間賣場，比價更精準</p>
+        <div class="view-all-label" style="color: #7c3aed;">立即設定 →</div>
+    </div>
+    
+    <div class="card favorite-entrance" onclick="location.href='favorites.html'">
+        <div style="display:flex; align-items:center;">
+            <h2>❤️ 我的最愛</h2>
+            <span id="favoriteCountTag" class="wishlist-stats" style="display:none;">0</span>
+        </div>
+        <p id="favoriteSummary" class="summary-desc favorite-summary-text">尚未加入最愛</p>
+        <div class="view-all-label" style="color: #ea580c;">查看全部 →</div>
+    </div>
+    
+    <div class="card wishlist-entrance" onclick="location.href='wishlist.html'">
+        <div style="display: flex; align-items: center;">
+            <h2>🛒 我的購物清單</h2>
+            <span id="wishlistCountTag" class="wishlist-stats" style="display:none;">0</span>
+        </div>
+        <p id="wishlistSummary" class="summary-desc wishlist-summary-text">載入清單中...</p>
+        <div class="view-all-label" style="color: #ea580c;">前往採買 →</div>
+    </div>
 </div>
 
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
 <script>
-async function loadProfile() {
-	loadWishlistSummary();
-	try {
+// 初始化
+async function init() {
+    // 1. 先從本地獲取 User，減少等待感
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    
+    if (user) {
+        // 載入本地快取資料 (購物清單通常存在 localStorage)
+        loadWishlistSummary(user);
+        
+        // 載入伺服器即時資料
+        try {
+            const profile = await apiGet("/user/profile");
+            if (profile) {
+                loadStoreSummary(profile.userId);
+                loadFavoriteSummary(profile.userId);
+                loadProfile(profile);
+            }
+        } catch (err) {
+            console.warn("無法連接 API，顯示快取資料");
+        }
+    } else {
+        // 未登入處理
+        document.getElementById("wishlistSummary").innerText = "請先登入以同步清單";
+    }
+}
+
+async function loadProfile(currentUser) {
+    try {
         const user = await apiGet("/user/profile");
         if (user) {
-            // 登入後才執行的遠端資料載入
+            document.getElementById("displayUserName").innerText = user.username || "會員";
+            document.getElementById("displayUserEmail").innerText = user.email || "";
+            
+            // 抓取遠端摘要
             loadStoreSummary(user.userId);
             loadFavoriteSummary(user.userId);
         }
     } catch (err) {
-        console.warn("API 載入失敗或未登入");
+        console.warn("無法取得最新個人資訊");
     }
 }
 
 async function loadFavoriteSummary(userId) {
     try {
-        // 取得收藏清單 (對應你的後端 Controller: /api/favorites/user/{userId})
         const favorites = await apiGet(`/favorites/user/${userId}`);
-        const count = favorites.length;
-        
         const summaryElement = document.getElementById("favoriteSummary");
         const tagElement = document.getElementById("favoriteCountTag");
 
-        if (count > 0) {
-            // 顯示前兩個收藏的商品名稱作為摘要
+        if (favorites && favorites.length > 0) {
+            const count = favorites.length;
             const names = favorites.slice(0, 2).map(f => f.product.productName).join('、');
-            const moreText = count > 2 ? `...等 ${count} 件商品` : ` 共 ${count} 件商品`;
-            
+            const moreText = count > 2 ? `...等 ${count} 件` : ` 共 ${count} 件`;
             summaryElement.innerHTML = `目前已收藏：<b>${names}${moreText}</b>`;
-            
-            // 顯示紅色小標籤
             tagElement.innerText = count;
             tagElement.style.display = "block";
         } else {
@@ -237,48 +244,49 @@ async function loadFavoriteSummary(userId) {
             tagElement.style.display = "none";
         }
     } catch (e) {
-        console.error("無法載入我的最愛摘要", e);
-        document.getElementById("favoriteSummary").innerText = "無法載入收藏資訊";
+        summaryElement.innerText = "無法載入收藏資訊";
     }
 }
 
 async function loadStoreSummary(userId) {
     try {
         const stores = await apiGet(`/user/preferred-stores/${userId}`);
-        const count = stores.length;
-        if (count > 0) {
+        if (stores && stores.length > 0) {
             document.getElementById("storeSummary").innerHTML = 
-                `目前已設定：<b>${stores.map(s => s.store.storeName).join('、')}</b>`;
+                `目前設定：<b>${stores.map(s => s.store.storeName).join('、')}</b>`;
             const tag = document.getElementById("storeCountTag");
-            tag.innerText = `${count}/3`;
+            tag.innerText = `${stores.length}/3`;
             tag.style.display = "block";
         }
     } catch (e) { console.error("無法載入賣場摘要"); }
 }
 
-function loadWishlistSummary() {
-	const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-	const uid = user.userId || user.id;
-	if (user) {
-		const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
-	    const count = wishlist.length;
-	    const total = wishlist.reduce((sum, item) => sum + item.price, 0); 
-	    const summaryText = count > 0 ? `目前已存 <b>${count}</b> 筆優惠，預計花費 <b>$${total}</b>` : "目前還沒有想買的商品，快去搜尋比價吧！";
-	      
-	    document.getElementById("wishlistSummary").innerHTML = summaryText;
-	    
-	    // 如果有商品，顯示橘色小標籤
-	    if (count > 0) {
-	    	const tag = document.getElementById("wishlistCountTag");
-	        tag.innerText = count;
-	        tag.style.display = "block";
-	    }
-	}
+function loadWishlistSummary(user) {
+    const uid = user.userId || user.id;
+    const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
+    const count = wishlist.length;
+    const total = wishlist.reduce((sum, item) => sum + (item.price || 0), 0); 
+    
+    document.getElementById("wishlistSummary").innerHTML = count > 0 
+        ? `目前已存 <b>${count}</b> 筆優惠，預計花費 <b>$${total}</b>` 
+        : "目前還沒有想買的商品，快去搜尋比價吧！";
+    
+    if (count > 0) {
+        const tag = document.getElementById("wishlistCountTag");
+        tag.innerText = count;
+        tag.style.display = "block";
+    }
 }
 
-loadWishlistSummary(); // 在頁面載入時執行
-  
-loadProfile();
+function handleLogout() {
+    if (confirm("確定要登出嗎？")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        location.href = "login.html";
+    }
+}
+
+init();
 </script>
 </body>
 </html>

@@ -66,6 +66,52 @@
     height: 300px;
     position: relative;
 }
+.chart-filter-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.filter-btn {
+    padding: 6px 16px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.filter-btn.active {
+    background: #1e88e5;
+    color: white;
+    border-color: #1e88e5;
+}
+@media (max-width: 768px) {
+    .chart-wrapper {
+        height: 220px; 
+    }
+    
+    .product-info {
+        flex-direction: row; /* 保持橫向排列 */
+        align-items: center;
+        margin: 15px auto;
+    }
+
+    .product-info img {
+        width: 80px;  /* 手機版圖片縮小，節省空間 */
+        height: 80px;
+    }
+    
+    .price-table th, .price-table td {
+        font-size: 13px; /* 表格文字稍微縮小，避免擠壓 */
+        padding: 8px;
+    }
+    .filter-btn {
+        flex: 1; /* 按鈕平分寬度 */
+        text-align: center;
+    }
+}
 </style>
 </head>
 
@@ -75,6 +121,11 @@
 <section class="price-chart-container" style="max-width: 1100px; margin: 20px auto; padding: 0 20px;">
     <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
         <h3 style="margin-top: 0;">價格走勢分析</h3>
+        <div class="chart-filter-group">
+    		<button class="filter-btn active" onclick="updateChartRange(7, this)">7天</button>
+    		<button class="filter-btn" onclick="updateChartRange(30, this)">30天</button>
+    		<button class="filter-btn" onclick="updateChartRange(0, this)">全部</button>
+		</div>
         <div class="chart-wrapper">
             <canvas id="mainHistoryChart"></canvas>
         </div>
@@ -120,6 +171,17 @@ function toggleMenu() {
 const qs = key => new URLSearchParams(location.search).get(key);
 const $ = id => document.getElementById(id);
 
+let rawPriceData = [];
+
+const STORE_GROUPS = {
+	    1: { name: "全聯", color: "#1E88E5" },
+	    2: { name: "家樂福", color: "#E53935" },
+	    3: { name: "愛買", color: "#43A047" },
+	    4: { name: "佳瑪", color: "#FB8C00" },
+	    99:{ name: "其他", color: "#757575" }
+	};
+
+
 /* ========================
    Render：商品資訊
 ======================== */
@@ -158,41 +220,87 @@ function renderPrices(list) {
 
 let historyChartInstance = null;
 
-function renderTrendChart(list) {
-	const canvas = document.getElementById('mainHistoryChart');
-    const ctx = canvas.getContext('2d');
+function renderTrendChart(prices) {
+    const ctx = document.getElementById("mainHistoryChart").getContext("2d");
 
-    if (historyChartInstance) {
-        historyChartInstance.destroy();
-    }
-    
-    const labels = list.map(p => p.changedAt.split("T")[0]).reverse();
-    const data = list.map(p => p.newPrice).reverse();
+    if (historyChartInstance) historyChartInstance.destroy();
+
+    const labels = buildDateLabels(prices);
+    const groupedData = buildGroupDatasets(prices);
+
+    const datasets = Object.entries(groupedData).map(([groupId, priceMap]) => {
+        const cfg = STORE_GROUPS[groupId] || STORE_GROUPS[99];
+
+        return {
+            label: cfg.name,
+            data: labels.map(d => priceMap[d] ?? null), // 缺資料斷線
+            borderColor: cfg.color,
+            backgroundColor: cfg.color + "22",
+            tension: 0.35,
+            spanGaps: false,
+            pointRadius: 3,
+            fill: false
+        };
+    });
 
     historyChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: '價格 ($)',
-                data,
-                borderColor: '#FF4500',
-                backgroundColor: 'rgba(255, 69, 0, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 3
-            }]
-        },
+        type: "line",
+        data: { labels, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
+            plugins: {
+                legend: { position: "bottom" },
+                tooltip: { mode: "index", intersect: false }
+            },
             scales: {
                 x: { grid: { display: false } },
                 y: { beginAtZero: false }
             }
         }
     });
+}
+
+
+function buildGroupDatasets(prices) {
+    const grouped = {};
+
+    prices.forEach(p => {
+        const group = p.store.storeGroup ?? 99;
+        const date = p.changedAt.split("T")[0];
+
+        if (!grouped[group]) grouped[group] = {};
+        grouped[group][date] = p.newPrice;
+    });
+
+    return grouped;
+}
+
+function buildDateLabels(prices) {
+	const dates = prices.map(p => p.changedAt.split("T")[0]);
+    return [...new Set(dates)].sort((a, b) => new Date(a) - new Date(b));
+}
+
+function updateChartRange(days, btn) {
+    // 切換按鈕樣式
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    let filteredData = rawPriceData;
+    
+    if (days > 0) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        // 過濾出指定天數內的資料
+        filteredData = rawPriceData.filter(p => new Date(p.changedAt) >= cutoffDate);
+    }
+
+    // 重新繪圖
+    renderTrendChart(filteredData);
 }
 
 /* ========================
@@ -202,14 +310,21 @@ function renderTrendChart(list) {
 	const productId = qs("productId");
 	if (!productId) return;
 
-	const product = await apiGet(`/products/${productId}`);
-	renderProduct(product);
+	try {
+        const product = await apiGet(`/products/${productId}`);
+        renderProduct(product);
 
-	const prices = await apiGet(`/history/product/${productId}`);
-	renderPrices(prices);
+        const prices = await apiGet(`/history/product/${productId}`);
+        rawPriceData = prices; // 存入全域變數
+        renderPrices(prices);
 
-	if (prices && prices.length >= 2) {
-        renderTrendChart(prices);
+        if (prices && prices.length > 0) {
+            // 預設顯示最近 7 天
+            const defaultBtn = document.querySelector('.filter-btn');
+            updateChartRange(7, defaultBtn);
+        }
+    } catch (err) {
+        console.error("載入失敗:", err);
     }
 })();
 </script>
