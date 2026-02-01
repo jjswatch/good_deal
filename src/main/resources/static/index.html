@@ -242,6 +242,73 @@
     text-align: center;
     line-height: 1.2;
 }
+
+.pwa-toast {
+    position: fixed;
+    bottom: -100px; /* 預設隱藏在下方 */
+    left: 20px;
+    right: 20px;
+    background: #fff;
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    z-index: 9999;
+    transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid #eee;
+}
+
+.pwa-toast.show {
+    bottom: 20px; /* 顯示位置 */
+}
+
+.pwa-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pwa-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+}
+
+.pwa-text {
+    flex: 1;
+}
+
+.pwa-title {
+    margin: 0;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.pwa-desc {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #777;
+}
+
+.pwa-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.pwa-close {
+    background: transparent;
+    border: none;
+    color: #ccc;
+    font-size: 18px;
+    padding: 0 5px;
+    cursor: pointer;
+}
 </style>
 </head>
 
@@ -290,6 +357,18 @@
 		</div>
 	</section>
 </main>
+
+<div id="pwa-toast" class="pwa-toast">
+    <div class="pwa-content">
+        <img src="assets/icon-192.png" alt="App Icon" class="pwa-icon">
+        <div class="pwa-text">
+            <p class="pwa-title">安裝 GoodDeal App</p>
+            <p class="pwa-desc" id="pwa-desc">像 App 一樣快速比價，省錢更方便！</p>
+        </div>
+        <button id="pwa-install-btn" class="pwa-btn">安裝</button>
+        <button onclick="closePwaToast()" class="pwa-close">✕</button>
+    </div>
+</div>
 
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
@@ -403,6 +482,58 @@ function registerServiceWorker() {
             .then(() => console.log("SW Registered"))
             .catch(err => console.log("SW Failed", err));
     }
+}
+
+let deferredPrompt;
+const pwaToast = document.getElementById('pwa-toast');
+const installBtn = document.getElementById('pwa-install-btn');
+const descText = document.getElementById('pwa-desc');
+
+// 1. 偵測是否已經在「獨立模式」(已經安裝過)
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // 阻止 Chrome 自動彈出提示，改由我們控制
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // 如果還沒安裝，5秒後顯示我們的浮窗
+    if (!isStandalone) {
+        setTimeout(showPwaToast, 5000);
+    }
+});
+
+function showPwaToast() {
+    // 判斷是否為 iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        // iOS 特別提示語
+        descText.textContent = "點擊瀏覽器下方的「分享」按鈕，再點選「加入主畫面」";
+        installBtn.style.display = 'none'; // iOS 無法程式觸發，隱藏安裝鈕
+    }
+    
+    pwaToast.classList.add('show');
+}
+
+function closePwaToast() {
+    pwaToast.classList.remove('show');
+}
+
+// 點擊安裝按鈕 (Android 專用)
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`使用者選擇: ${outcome}`);
+        deferredPrompt = null;
+        closePwaToast();
+    }
+});
+
+// 如果是 iOS，使用者看完提示後一段時間自動關閉
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    setTimeout(closePwaToast, 12000); 
 }
 </script>
 </body>

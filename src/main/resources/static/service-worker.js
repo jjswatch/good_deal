@@ -1,36 +1,7 @@
-const CACHE_NAME = "gooddeal-v1";
-const CACHE_FILES = [
-  "/",
-  "/index.html",
-  "/search.html",
-  "/scan.html",
-  "/manifest.json",
-  "/assets/placeholder.png"
-];
-
-// 安裝：快取必要檔案
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(CACHE_FILES))
-  );
+self.addEventListener('install', (event) => {
+    console.log('SW Installed');
 });
 
-// 啟用：清除舊快取
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    )
-  );
-});
-
-// 攔截請求（離線可用）
-self.addEventListener("fetch", event => {
-	const url = new URL(event.request.url);
-	    // ❌ API 不快取
-	    if (url.pathname.startsWith("/api/")) {
-	        return;
-	    }
+self.addEventListener('fetch', (event) => {
+    // 這裡可以留空，但檔案必須存在並被註冊
 });
