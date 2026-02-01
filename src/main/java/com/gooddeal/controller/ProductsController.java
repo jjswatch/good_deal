@@ -1,11 +1,14 @@
 package com.gooddeal.controller;
 
+import com.gooddeal.dto.HotProductDTO;
 import com.gooddeal.model.Categories;
 import com.gooddeal.model.ProductPrices;
 import com.gooddeal.model.Products;
 import com.gooddeal.repository.CategoriesRepository;
 import com.gooddeal.repository.ProductPricesRepository;
 import com.gooddeal.repository.ProductsRepository;
+import com.gooddeal.service.ProductService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/products")
 public class ProductsController {
+	
+	private final ProductService productService;
+
+    public ProductsController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @Autowired
     private ProductsRepository repo;
@@ -30,6 +39,11 @@ public class ProductsController {
     @GetMapping
     public List<Products> getAll() {
         return repo.findAll();
+    }
+    
+    @GetMapping("/featured/hot")
+    public List<HotProductDTO> getHotProducts() {
+        return productService.getHotProducts();
     }
 
     @GetMapping("/{id}")
@@ -114,5 +128,5 @@ public class ProductsController {
         return response;
     }
 
-
+    
 }

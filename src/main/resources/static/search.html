@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>搜尋結果｜GoodDeal 商品比價</title>
 <link rel="stylesheet" href="css/style.css" />
-<link rel="manifest" href="manifest.json">
 <style>
 .hero {
 	background: #f7f7f7;
@@ -483,13 +482,6 @@ async function toggleFavorite(btn, productId) {
 
 // 執行
 initPage();
-
-// Service Worker 註冊 (保持原樣)
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js").catch(console.error);
-    });
-}
 </script>
 
 </body>
