@@ -1,5 +1,6 @@
 package com.gooddeal.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,22 +23,25 @@ public class ProductService {
      * 🔥 舊版：只取嚴格熱門（保留）
      */
     public List<HotProductDTO> getHotProducts() {
-        return mapToDTO(productRepo.findHotProductsRaw());
+    	LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        return mapToDTO(productRepo.findHotProductsRaw(sevenDaysAgo));
     }
 
     /**
      * ⭐ 首頁推薦（不會空白）
      */
     public List<HotProductDTO> getFeaturedProducts() {
+    	
+    	LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
 
         List<HotProductDTO> result = new ArrayList<>();
 
         // 1️⃣ 真熱門
-        addIfNotExists(result, mapToDTO(productRepo.findHotProductsRaw()), 6);
+        addIfNotExists(result, mapToDTO(productRepo.findHotProductsRaw(sevenDaysAgo)), 6);
 
         // 2️⃣ 次熱門（資料少時補齊）
         if (result.size() < 6) {
-            addIfNotExists(result, mapToDTO(productRepo.findWarmProductsRaw()), 6);
+            addIfNotExists(result, mapToDTO(productRepo.findWarmProductsRaw(sevenDaysAgo)), 6);
         }
 
         // 3️⃣ 最新商品（最後保底）
