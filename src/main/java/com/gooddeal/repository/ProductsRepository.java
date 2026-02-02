@@ -47,5 +47,27 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	    """, nativeQuery = true)
 	    List<Object[]> findHotProductsRaw();
 	    
+	    @Query(value = """
+	    	    SELECT 
+	    	        p.product_id,
+	    	        p.product_name,
+	    	        p.image_url,
+	    	        COUNT(DISTINCT pp.store_id) AS storeCount,
+	    	        COUNT(DISTINCT pr.report_id) AS reportCount,
+	    	        MIN(pp.price) AS minPrice
+	    	    FROM products p
+	    	    LEFT JOIN product_prices pp 
+	    	        ON p.product_id = pp.product_id
+	    	        AND pp.updated_at >= NOW() - INTERVAL 7 DAY
+	    	    LEFT JOIN price_reports pr 
+	    	        ON p.product_id = pr.product_id
+	    	        AND pr.reported_at >= NOW() - INTERVAL 7 DAY
+	    	    GROUP BY p.product_id
+	    	    HAVING storeCount >= 1 OR reportCount >= 1
+	    	    ORDER BY reportCount DESC, storeCount DESC
+	    	    LIMIT 6
+	    	""", nativeQuery = true)
+	    	List<Object[]> findWarmProductsRaw();
+	    
 	 
 }

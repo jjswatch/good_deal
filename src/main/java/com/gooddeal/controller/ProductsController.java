@@ -42,8 +42,8 @@ public class ProductsController {
     }
     
     @GetMapping("/featured/hot")
-    public List<HotProductDTO> getHotProducts() {
-        return productService.getHotProducts();
+    public List<HotProductDTO> getFeaturedProducts() {
+        return productService.getFeaturedProducts();
     }
 
     @GetMapping("/{id}")

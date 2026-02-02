@@ -113,15 +113,6 @@ if (!isLoggedIn()) {
 	}
 }
 
-if ("serviceWorker" in navigator) {
-	window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ Service Worker 已註冊"))
-      .catch(err => console.error("❌ SW 註冊失敗", err));
-  	});
-}
-
 window.addEventListener("pageshow", () => {
     loadPrices();
 });

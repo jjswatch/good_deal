@@ -412,7 +412,7 @@ async function loadHotProducts() {
     const container = document.getElementById("hot-items");
 
     try {
-        const products = await apiGet("/products/featured/hot");
+        const products = await apiGetPublic("/products/featured/hot");
 
         if (!products || products.length === 0) {
             container.innerHTML = "<p>暫無熱門商品</p>";

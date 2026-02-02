@@ -18,11 +18,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                 		"/api/auth/**",
                         "/api/admin/login",
+                        
+                        // ⭐ 商品公開瀏覽
                         "/api/products/**",
-                        "/api/price-reports/product/**",
                         "/api/categories/**",
+                        "/api/stores/**",
+
+                        // ⭐ 商品頁會用到
                         "/api/prices/**",
-                        "/api/stores/**"
+                        "/api/price-reports/product/**",
+                        "/api/history/**" 
                 );
     }
 }
