@@ -42,7 +42,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 		        ON p.product_id = pr.product_id
 		        AND pr.reported_at >= :since
 		    GROUP BY p.product_id
-		    HAVING storeCount >= 2
+		    HAVING COUNT(DISTINCT pp.store_id) >= 2
 		    ORDER BY reportCount DESC, storeCount DESC
 		    LIMIT 6
 		""", nativeQuery = true)
@@ -62,7 +62,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 			        ON p.product_id = pr.product_id
 			        AND pr.reported_at >= :since
 			    GROUP BY p.product_id
-			    HAVING storeCount >= 1 OR reportCount >= 1
+			    HAVING COUNT(DISTINCT pp.store_id) >= 1 OR COUNT(DISTINCT pr.report_id) >= 1
 			    ORDER BY reportCount DESC, storeCount DESC
 			    LIMIT 6
 			""", nativeQuery = true)
