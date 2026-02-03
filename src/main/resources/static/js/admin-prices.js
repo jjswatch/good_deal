@@ -39,16 +39,16 @@ async function loadDropdowns() {
 function renderTable(prices) {
     const tbody = document.getElementById("priceTableBody");
     if (!prices || prices.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">目前無價格紀錄</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">目前無價格紀錄</td></tr>`;
         return;
     }
 
     tbody.innerHTML = prices.map(p => `
         <tr>
-            <td><strong>${p.product.productName}</strong></td>
-            <td>${p.store.storeName}</td>
-            <td class="price-tag">$${p.price}</td>
-            <td class="price-tag">$${Math.round(p.price)}</td> <td>${new Date(p.priceDate).toLocaleDateString()}</td>
+			
+            <td><strong>${p.product.brand}${p.product.productName}</strong></td>
+			<td>${p.store.storeName}</td>
+            <td class="price-tag">$${Math.round(p.price)}</td>
             <td>
                 <button onclick="editPrice(${p.id || p.priceId})">編輯</button>
                 <button onclick="deletePrice(${p.id || p.priceId})" style="color:var(--danger); margin-left:8px;">刪除</button>
@@ -147,7 +147,7 @@ async function openModal() {
 
         // 3. 渲染商品選單
         pSelect.innerHTML = availableProducts.map(p => 
-            `<option value="${p.productId}">${p.productName}</option>`
+            `<option value="${p.productId}">${p.brand}${p.productName}</option>`
         ).join('');
 
         // 4. 根據「第一個商品」自動觸發店家過濾
@@ -170,7 +170,7 @@ async function editPrice(id) {
         document.getElementById("recordId").value = p.id || p.priceId;
         
         const pSelect = document.getElementById("productId");
-        pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.productName}</option>`;
+        pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.brand}${p.product.productName}</option>`;
 		pSelect.value = p.product.productId;
         
 		const sSelect = document.getElementById("storeId");

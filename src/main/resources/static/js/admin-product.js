@@ -23,11 +23,11 @@ function renderByCategory(products) {
 
     // 分類標題列
 	htmlBuffer.push(`
-	      <tr class="category-row" onclick="toggleCategory(${categoryId}, this)">
+	      <tr class="category-row collapsed" onclick="toggleCategory(${categoryId}, this)">
 	        <td colspan="5">
 	          <div style="display:flex; justify-content:space-between; align-items:center;">
 	            <div>
-	              <span class="toggle-icon">▼</span>
+	              <span class="toggle-icon">▶</span>
 	              📂 <strong>${cat.name}</strong> 
 	              <span style="color:#64748b; font-size:13px; font-weight:400;">(${cat.items.length})</span>
 	            </div>
@@ -43,7 +43,7 @@ function renderByCategory(products) {
     // 商品列
 	cat.items.forEach(p => {
 	      htmlBuffer.push(`
-			<tr class="product-row" data-cat-id="${categoryId}">
+			<tr class="product-row is-hidden" data-cat-id="${categoryId}">
 			    <td><code style="color:#64748b;">#${p.productId}</code></td>
 			    <td>${p.brand || '-'}</td>
 			    <td>

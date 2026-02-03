@@ -340,7 +340,11 @@ button:hover { opacity: 0.8; transform: translateY(-1px); }
 
 /* 當分類收合時，旋轉箭頭並隱藏商品 */
 .category-row.collapsed .toggle-icon {
-  transform: rotate(-90deg);
+	transform: rotate(0deg);
+}
+
+.category-row .toggle-icon { 
+	transform: rotate(90deg); /* ▼ */ 
 }
 
 /* 隱藏行的樣式 */

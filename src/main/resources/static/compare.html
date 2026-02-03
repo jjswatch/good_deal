@@ -100,18 +100,7 @@
 <script src="js/auth.js"></script>
 <script src="js/components.js"></script>
 <script>
-if (!isLoggedIn()) {
-	const goLogin = confirm("此功能需要登入，是否前往登入？");
 
-	if (goLogin) {
-		// 把目前頁面記起來
-	    const redirect = encodeURIComponent(location.href);
-	    location.href = `login.html?redirect=${redirect}`;
-	} else {
-	    // 取消 → 回上一頁
-	    history.back();
-	}
-}
 
 window.addEventListener("pageshow", () => {
     loadPrices();
