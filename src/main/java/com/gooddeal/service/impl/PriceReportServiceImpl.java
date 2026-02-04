@@ -40,7 +40,7 @@ public class PriceReportServiceImpl implements PriceReportService {
 
     @Override
     public List<PriceReport> getPendingReports() {
-        return reportRepo.findByStatusOrderByReportedAtAsc(ReportStatus.PENDING);
+        return reportRepo.findAllPendingWithDetails(ReportStatus.PENDING);
     }
 
     @Override

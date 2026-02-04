@@ -30,7 +30,13 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
              @Param("productId") Integer productId, 
              @Param("status") ReportStatus status);
     
-    
+    @Query("SELECT r FROM PriceReport r " +
+    	       "JOIN FETCH r.product " +
+    	       "JOIN FETCH r.store " +
+    	       "JOIN FETCH r.user " +
+    	       "WHERE r.status = :status " +
+    	       "ORDER BY r.reportedAt ASC")
+    	List<PriceReport> findAllPendingWithDetails(@Param("status") ReportStatus status);
     
     
 }
