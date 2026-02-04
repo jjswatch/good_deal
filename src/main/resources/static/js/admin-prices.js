@@ -46,7 +46,7 @@ function renderTable(prices) {
     tbody.innerHTML = prices.map(p => `
         <tr>
 			
-            <td><strong>${p.product.brand}${p.product.productName}</strong></td>
+            <td><strong>${p.product.brand}${p.product.productName}${p.product.spec}</strong></td>
 			<td>${p.store.storeName}</td>
             <td class="price-tag">$${Math.round(p.price)}</td>
             <td>
@@ -147,7 +147,7 @@ async function openModal() {
 
         // 3. 渲染商品選單
         pSelect.innerHTML = availableProducts.map(p => 
-            `<option value="${p.productId}">${p.brand}${p.productName}</option>`
+            `<option value="${p.productId}">${p.brand}${p.productName}${p.spec}</option>`
         ).join('');
 
         // 4. 根據「第一個商品」自動觸發店家過濾
@@ -170,7 +170,7 @@ async function editPrice(id) {
         document.getElementById("recordId").value = p.id || p.priceId;
         
         const pSelect = document.getElementById("productId");
-        pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.brand}${p.product.productName}</option>`;
+        pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.brand}${p.product.productName}${p.product.spec}</option>`;
 		pSelect.value = p.product.productId;
         
 		const sSelect = document.getElementById("storeId");
