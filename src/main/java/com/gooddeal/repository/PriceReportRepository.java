@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -38,5 +39,19 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
     	       "ORDER BY r.reportedAt ASC")
     	List<PriceReport> findAllPendingWithDetails(@Param("status") ReportStatus status);
     
-    
+    @Query("""
+    	    SELECT COUNT(pr) > 0
+    	    FROM PriceReport pr
+    	    WHERE pr.user.userId = :userId
+    	      AND pr.product.productId = :productId
+    	      AND pr.isApproved = true
+    	      AND pr.reportedAt >= :start
+    	      AND pr.reportedAt < :end
+    	""")
+    	boolean existsApprovedTodayByUserAndProduct(
+    	    Integer userId,
+    	    Integer productId,
+    	    LocalDateTime start,
+    	    LocalDateTime end
+    	);
 }

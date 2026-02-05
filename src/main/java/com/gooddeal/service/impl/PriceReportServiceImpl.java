@@ -16,90 +16,102 @@ import com.gooddeal.repository.PriceReportRepository;
 import com.gooddeal.repository.ProductPricesRepository;
 import com.gooddeal.repository.UsersRepository;
 import com.gooddeal.security.AuthUtil;
+import com.gooddeal.service.DailyRewardService;
 import com.gooddeal.service.PriceReportService;
 
 @Service
 public class PriceReportServiceImpl implements PriceReportService {
 
-    private final PriceReportRepository reportRepo;
-    private final ProductPricesRepository priceRepo;
-    private final PriceHistoryRepository historyRepo;
-    private final UsersRepository userRepo;
+	private final PriceReportRepository reportRepo;
+	private final ProductPricesRepository priceRepo;
+	private final PriceHistoryRepository historyRepo;
+	private final UsersRepository userRepo;
+	private final DailyRewardService dailyRewardService;
 
-    public PriceReportServiceImpl(
-            PriceReportRepository reportRepo,
-            ProductPricesRepository priceRepo,
-            PriceHistoryRepository historyRepo,
-            UsersRepository userRepo
-    ) {
-        this.reportRepo = reportRepo;
-        this.priceRepo = priceRepo;
-        this.historyRepo = historyRepo;
-        this.userRepo = userRepo;
-    }
+	public PriceReportServiceImpl(PriceReportRepository reportRepo, ProductPricesRepository priceRepo,
+			PriceHistoryRepository historyRepo, UsersRepository userRepo, DailyRewardService dailyRewardService) {
+		this.reportRepo = reportRepo;
+		this.priceRepo = priceRepo;
+		this.historyRepo = historyRepo;
+		this.userRepo = userRepo;
+		this.dailyRewardService = dailyRewardService;
+	}
 
-    @Override
-    public List<PriceReport> getPendingReports() {
-        return reportRepo.findAllPendingWithDetails(ReportStatus.PENDING);
-    }
+	@Override
+	public List<PriceReport> getPendingReports() {
+		return reportRepo.findAllPendingWithDetails(ReportStatus.PENDING);
+	}
 
-    @Override
-    public void approveReport(Integer reportId) {
-        PriceReport report = reportRepo.findById(reportId)
-                .orElseThrow(() -> new RuntimeException("Report not found"));
+	@Override
+	public void approveReport(Integer reportId) {
+		PriceReport report = reportRepo.findById(reportId).orElseThrow(() -> new RuntimeException("Report not found"));
 
-        if (!"ADMIN".equals(AuthUtil.getRole())) {
-            throw new RuntimeException("No permission");
-        }
+		if (!"ADMIN".equals(AuthUtil.getRole())) {
+			throw new RuntimeException("No permission");
+		}
 
-        Users admin = userRepo.findById(AuthUtil.getUserId())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-        
-        // 1️⃣ 找目前商品 + 店家的最新價格
-        ProductPrices latest = priceRepo
-            .findTopByProductAndStoreOrderByPriceDateDesc(
-                report.getProduct(),
-                report.getStore()
-            );
+		Users admin = userRepo.findById(AuthUtil.getUserId())
+				.orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        // 2️⃣ 若已有價格 → 寫入歷史
-        if (latest != null) {
-            PriceHistory history = new PriceHistory();
-            history.setProduct(report.getProduct());
-            history.setStore(report.getStore());
-            history.setOldPrice(latest.getPrice());
-            history.setNewPrice(report.getReportedPrice());
-            historyRepo.save(history);
+		// 1️⃣ 找目前商品 + 店家的最新價格
+		ProductPrices latest = priceRepo.findTopByProductAndStoreOrderByPriceDateDesc(report.getProduct(),
+				report.getStore());
 
-            // 更新價格
-            latest.setPrice(report.getReportedPrice());
-            latest.setPriceDate(LocalDate.now());
-            priceRepo.save(latest);
+		// 2️⃣ 若已有價格 → 寫入歷史
+		if (latest != null) {
+			PriceHistory history = new PriceHistory();
+			history.setProduct(report.getProduct());
+			history.setStore(report.getStore());
+			history.setOldPrice(latest.getPrice());
+			history.setNewPrice(report.getReportedPrice());
+			historyRepo.save(history);
 
-        } else {
-            // 3️⃣ 若沒有 → 新增一筆價格
-            ProductPrices newPrice = new ProductPrices();
-            newPrice.setProduct(report.getProduct());
-            newPrice.setStore(report.getStore());
-            newPrice.setPrice(report.getReportedPrice());
-            newPrice.setPriceDate(LocalDate.now());
-            priceRepo.save(newPrice);
-        }
+			// 更新價格
+			latest.setPrice(report.getReportedPrice());
+			latest.setPriceDate(LocalDate.now());
+			priceRepo.save(latest);
+		} else {
+			// 3️⃣ 若沒有 → 新增一筆價格 → 寫入歷史
+			ProductPrices newPrice = new ProductPrices();
+			newPrice.setProduct(report.getProduct());
+			newPrice.setStore(report.getStore());
+			newPrice.setPrice(report.getReportedPrice());
+			newPrice.setPriceDate(LocalDate.now());
+			priceRepo.save(newPrice);
 
-        // 4️⃣ 更新回報狀態
-        report.setStatus(ReportStatus.APPROVED);
-        report.setApprovedBy(admin);
-        report.setApprovedAt(LocalDateTime.now());
-        reportRepo.save(report);
-    }
+			PriceHistory history = new PriceHistory();
+			history.setProduct(report.getProduct());
+			history.setStore(report.getStore());
+			history.setNewPrice(report.getReportedPrice());
+			historyRepo.save(history);
+		}
 
-    @Override
-    public void rejectReport(Integer reportId) {
-        PriceReport report = reportRepo.findById(reportId)
-                .orElseThrow(() -> new RuntimeException("Report not found"));
+		Integer userId = report.getUser().getUserId();
+		Integer productId = report.getProduct().getProductId();
 
-        report.setStatus(ReportStatus.REJECTED);
-        reportRepo.save(report);
-    }
+		LocalDate today = LocalDate.now();
+		LocalDateTime start = today.atStartOfDay();
+		LocalDateTime end = start.plusDays(1);
+
+		boolean isFirstProductToday = !reportRepo.existsApprovedTodayByUserAndProduct(userId, productId, start, end);
+
+		// 每日回報商品獎勵
+		dailyRewardService.handleApprovedReport(report.getUser().getUserId(), report.getProduct().getProductId(), isFirstProductToday);
+
+		// 4️⃣ 更新回報狀態
+		report.setStatus(ReportStatus.APPROVED);
+		report.setApprovedBy(admin);
+		report.setApprovedAt(LocalDateTime.now());
+		report.setIsApproved(true);
+		report.setRewardGiven(true);
+		reportRepo.save(report);
+	}
+
+	@Override
+	public void rejectReport(Integer reportId) {
+		PriceReport report = reportRepo.findById(reportId).orElseThrow(() -> new RuntimeException("Report not found"));
+
+		report.setStatus(ReportStatus.REJECTED);
+		reportRepo.save(report);
+	}
 }
-
