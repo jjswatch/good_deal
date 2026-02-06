@@ -16,12 +16,12 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
 
     // 前台：顯示已通過回報
     List<PriceReport> findTop5ByProductProductIdAndStatusOrderByReportedAtDesc(
-            Integer productId,
-            ReportStatus status
+    		@Param("productId") Integer productId,
+    		@Param("status") ReportStatus status
     );
 
     // 後台：待審核清單
-    List<PriceReport> findByStatusOrderByReportedAtAsc(ReportStatus status);
+    List<PriceReport> findByStatusOrderByReportedAtAsc(@Param("status") ReportStatus status);
     
     @Query("SELECT r FROM PriceReport r " +
             "JOIN FETCH r.store " +
@@ -49,10 +49,10 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
     	      AND pr.reportedAt < :end
     	""")
     	boolean existsApprovedTodayByUserAndProduct(
-    	    Integer userId,
-    	    Integer productId,
-    	    LocalDateTime start,
-    	    LocalDateTime end
+    			@Param("userId") Integer userId,
+    			@Param("productId") Integer productId,
+    			@Param("start") LocalDateTime start,
+    			@Param("end") LocalDateTime end
     	);
     
     @Query("""
@@ -64,25 +64,25 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
     		AND pr.reportedAt >= :since
     		""")
     		boolean existsSamePriceReport(
-    		    Integer userId,
-    		    Integer productId,
-    		    Integer storeId,
-    		    BigDecimal price,
-    		    LocalDateTime since
+    		    @Param("userId") Integer userId,
+    		    @Param("productId") Integer productId,
+    		    @Param("storeId") Integer storeId,
+    		    @Param("price") BigDecimal price,
+    		    @Param("since") LocalDateTime since
     		);
     
     @Query("""
     		SELECT COUNT(pr) > 0 FROM PriceReport pr
     		WHERE pr.user.userId = :userId
     		AND pr.product.productId = :productId
-    		AND DATE(pr.reportedAt) = CURRENT_DATE
+    		AND CAST(pr.reportedAt AS date) = CURRENT_DATE
     		""")
-    		boolean hasReportedProductToday(Integer userId, Integer productId);
+    		boolean hasReportedProductToday(@Param("userId") Integer userId, @Param("productId") Integer productId);
     
     @Query("""
     		SELECT COUNT(pr) FROM PriceReport pr
     		WHERE pr.user.userId = :userId
     		AND pr.reportedAt >= :since
     		""")
-    		long countRecentReports(Integer userId, LocalDateTime since);
+    		long countRecentReports(@Param("userId") Integer userId, @Param("since") LocalDateTime since);
 }
