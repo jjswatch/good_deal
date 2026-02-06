@@ -102,8 +102,6 @@ public class PriceReportServiceImpl implements PriceReportService {
 		report.setStatus(ReportStatus.APPROVED);
 		report.setApprovedBy(admin);
 		report.setApprovedAt(LocalDateTime.now());
-		report.setIsApproved(true);
-		report.setRewardGiven(true);
 		reportRepo.save(report);
 	}
 

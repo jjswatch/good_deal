@@ -74,9 +74,4 @@ public class PriceReportController {
                 r.getReportedAt()
         )).limit(5).toList();
     }
-    
-    
-    
-    
-
 }

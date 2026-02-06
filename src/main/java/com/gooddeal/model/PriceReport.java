@@ -66,10 +66,4 @@ public class PriceReport {
     @CreationTimestamp
     @Column(name = "reported_at", updatable = false)
     private LocalDateTime reportedAt;
-    
-    @Column(name = "is_approved", nullable = false)
-    private Boolean isApproved = false;
-    
-    @Column(name = "reward_given", nullable = false)
-    private Boolean rewardGiven = false;
 }

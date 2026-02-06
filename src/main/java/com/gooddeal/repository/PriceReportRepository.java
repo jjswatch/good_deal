@@ -44,7 +44,6 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
     	    FROM PriceReport pr
     	    WHERE pr.user.userId = :userId
     	      AND pr.product.productId = :productId
-    	      AND pr.isApproved = true
     	      AND pr.reportedAt >= :start
     	      AND pr.reportedAt < :end
     	""")
