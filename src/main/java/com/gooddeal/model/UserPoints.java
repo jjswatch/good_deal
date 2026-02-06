@@ -2,6 +2,7 @@ package com.gooddeal.model;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -18,6 +19,7 @@ public class UserPoints {
     private int points;
 
     private int level;
-
+    
+    @Column(name = "trust_score")
     private BigDecimal trustScore;
 }

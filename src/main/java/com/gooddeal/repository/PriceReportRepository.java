@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,4 +54,35 @@ public interface PriceReportRepository extends JpaRepository<PriceReport, Intege
     	    LocalDateTime start,
     	    LocalDateTime end
     	);
+    
+    @Query("""
+    		SELECT COUNT(pr) > 0 FROM PriceReport pr
+    		WHERE pr.user.userId = :userId
+    		AND pr.product.productId = :productId
+    		AND pr.store.storeId = :storeId
+    		AND pr.reportedPrice = :price
+    		AND pr.reportedAt >= :since
+    		""")
+    		boolean existsSamePriceReport(
+    		    Integer userId,
+    		    Integer productId,
+    		    Integer storeId,
+    		    BigDecimal price,
+    		    LocalDateTime since
+    		);
+    
+    @Query("""
+    		SELECT COUNT(pr) > 0 FROM PriceReport pr
+    		WHERE pr.user.userId = :userId
+    		AND pr.product.productId = :productId
+    		AND DATE(pr.reportedAt) = CURRENT_DATE
+    		""")
+    		boolean hasReportedProductToday(Integer userId, Integer productId);
+    
+    @Query("""
+    		SELECT COUNT(pr) FROM PriceReport pr
+    		WHERE pr.user.userId = :userId
+    		AND pr.reportedAt >= :since
+    		""")
+    		long countRecentReports(Integer userId, LocalDateTime since);
 }

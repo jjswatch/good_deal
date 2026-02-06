@@ -110,7 +110,7 @@ function syncUserUI() {
     if (user && memberBtn && memberText) {
         memberBtn.href = "profile.html";
         const points = user.points || 0; 
-        memberText.innerHTML = `我的 <b style="color:#FF4500;">(${points}pt)</b>`;
+        memberText.innerHTML = `我的 <b style="color:#FF4500;"></b>`;
     }
 }
 
