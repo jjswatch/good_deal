@@ -3,50 +3,50 @@
  * 優化重點：路徑彈性、防止重複執行、健全的用戶狀態檢查
  */
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. 先渲染基礎 UI
-    renderNavbar();
-    renderBottomNav();
-    renderFooter();
-    
-    // 2. 執行狀態更新
-    updateActiveNavItem();
-    syncUserUI();
+	// 1. 先渲染基礎 UI
+	renderNavbar();
+	renderBottomNav();
+	renderFooter();
 
-    // 3. 給 body 增加底距，避免內容被 Bottom Nav 遮擋
-    document.body.style.paddingBottom = "70px";
+	// 2. 執行狀態更新
+	updateActiveNavItem();
+	syncUserUI();
+
+	// 3. 給 body 增加底距，避免內容被 Bottom Nav 遮擋
+	document.body.style.paddingBottom = "70px";
 });
 
 /**
  * 導覽列渲染：處理 Logo/返回鍵切換
  */
 function renderNavbar() {
-    if (document.querySelector('nav')) return;
+	if (document.querySelector('nav')) return;
 
-    const path = window.location.pathname;
-    const page = path.split("/").pop();
-    // 支援 index.html, 根路徑 / , 或沒有副檔名的情況
-    const isHomePage = (page === "index.html" || page === "" || path.endsWith("/"));
-    
-    // 安全取得用戶資訊
-    const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+	const path = window.location.pathname;
+	const page = path.split("/").pop();
+	const isHomePage = (page === "index.html" || page === "" || path.endsWith("/"));
+	const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
 
-    const leftContent = isHomePage 
-        ? `<div class="logo" onclick="location.href='index.html'" style="cursor:pointer">GoodDeal</div>`
-        : `<div class="nav-back" onclick="history.back()" style="cursor:pointer">
+	const leftContent = isHomePage
+		? `<div class="logo" onclick="location.href='index.html'" style="cursor:pointer">GoodDeal</div>`
+		: `<div class="nav-back" onclick="history.back()" style="cursor:pointer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
            </div>`;
 
-    const adminLink = (user && user.role === "ADMIN") 
-        ? `<div class="admin-quick-link" onclick="location.href='admin/admin-dashboard.html'" 
-            style="cursor:pointer; background:#2563eb; color:white; padding:4px 10px; border-radius:20px; font-size:12px; margin-right:12px; font-weight:bold; box-shadow: 0 2px 4px rgba(37,99,235,0.3);">
-            ⚙️ 後台管理
-           </div>`
-        : "";
+	const adminLink = (user && user.role === "ADMIN")
+		? `<div class="admin-quick-link" onclick="location.href='admin/admin-dashboard.html'">⚙️</div>`
+		: "";
 
-    const navbarHTML = `
+	const navbarHTML = `
     <nav class="main-nav">
         <div class="nav-container">
             ${leftContent}
+			<div class="nav-search-bar" id="stickySearch">
+				<input type="text" id="navKeyword" placeholder="搜尋商品...">
+				<button onclick="handleNavSearch()">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+				</button>
+			</div>
             <div class="nav-actions">
                 ${adminLink}
                 <div class="nav-notification" onclick="handleNotificationClick()" style="cursor:pointer; position:relative;">
@@ -56,17 +56,38 @@ function renderNavbar() {
             </div>
         </div>
     </nav>`;
-    
-    document.body.insertAdjacentHTML('afterbegin', navbarHTML);
+
+	document.body.insertAdjacentHTML('afterbegin', navbarHTML);
+	
+	initScrollSearch();
 }
+
+function initScrollSearch() {
+    const stickySearch = document.getElementById('stickySearch');
+    window.addEventListener('scroll', () => {
+        // 當捲動超過 200px 時顯示 (可根據 Hero 高度調整)
+        if (window.scrollY > 250) {
+            stickySearch.classList.add('visible');
+        } else {
+            stickySearch.classList.remove('visible');
+        }
+    });
+}
+
+window.handleNavSearch = function() {
+    const key = document.getElementById("navKeyword").value.trim();
+    if (key) {
+        window.location.href = `search.html?q=${encodeURIComponent(key)}`;
+    }
+};
 
 /**
  * 底部導覽列渲染
  */
 function renderBottomNav() {
-    if (document.querySelector('.bottom-nav')) return;
+	if (document.querySelector('.bottom-nav')) return;
 
-    const bottomNavHTML = `
+	const bottomNavHTML = `
     <div class="bottom-nav">
         <a href="index.html" class="bottom-nav-item" id="nav-home">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -96,48 +117,48 @@ function renderBottomNav() {
             <span id="memberText">會員</span>
         </a>
     </div>`;
-    document.body.insertAdjacentHTML('beforeend', bottomNavHTML);
+	document.body.insertAdjacentHTML('beforeend', bottomNavHTML);
 }
 
 /**
  * 更新會員狀態與積分
  */
 function syncUserUI() {
-    const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
-    const memberBtn = document.getElementById("bottomNavMember");
-    const memberText = document.getElementById("memberText");
-    
-    if (user && memberBtn && memberText) {
-        memberBtn.href = "profile.html";
-        const points = user.points || 0; 
-        memberText.innerHTML = `我的 <b style="color:#FF4500;"></b>`;
-    }
+	const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+	const memberBtn = document.getElementById("bottomNavMember");
+	const memberText = document.getElementById("memberText");
+
+	if (user && memberBtn && memberText) {
+		memberBtn.href = "profile.html";
+		const points = user.points || 0;
+		memberText.innerHTML = `我的 <b style="color:#FF4500;"></b>`;
+	}
 }
 
 /**
  * 根據 URL 自動高亮對應的按鈕
  */
 function updateActiveNavItem() {
-    const path = window.location.pathname;
-    // 移除所有 active
-    document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+	const path = window.location.pathname;
+	// 移除所有 active
+	document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
 
-    if (path.includes("index.html") || path.endsWith("/")) {
-        document.getElementById("nav-home")?.classList.add("active");
-    } else if (path.includes("scanner.html")) {
-        document.getElementById("nav-scan")?.classList.add("active");
-    } else if (path.includes("profile.html") || path.includes("login.html")) {
-        document.getElementById("bottomNavMember")?.classList.add("active");
-    }
+	if (path.includes("index.html") || path.endsWith("/")) {
+		document.getElementById("nav-home")?.classList.add("active");
+	} else if (path.includes("scanner.html")) {
+		document.getElementById("nav-scan")?.classList.add("active");
+	} else if (path.includes("profile.html") || path.includes("login.html")) {
+		document.getElementById("bottomNavMember")?.classList.add("active");
+	}
 }
 
 /**
  * 通用頁尾渲染
  */
 function renderFooter() {
-    if (document.querySelector('.site-footer')) return;
+	if (document.querySelector('.site-footer')) return;
 
-    const footerHTML = `
+	const footerHTML = `
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-info">
@@ -158,12 +179,12 @@ function renderFooter() {
         <div class="footer-bottom">© 2026 jjswatch</div>
     </footer>`;
 
-    document.body.insertAdjacentHTML('beforeend', footerHTML);
+	document.body.insertAdjacentHTML('beforeend', footerHTML);
 }
 
 // 通知點擊
 window.handleNotificationClick = function() {
-    alert("目前沒有新訊息");
-    const dot = document.getElementById("notiDot");
-    if(dot) dot.style.display = "none";
+	alert("目前沒有新訊息");
+	const dot = document.getElementById("notiDot");
+	if (dot) dot.style.display = "none";
 };

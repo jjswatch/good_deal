@@ -10,6 +10,7 @@ public class PriceHistoryResponse {
     private Integer historyId;
     private Integer productId;
     private String productName; // 方便前端顯示
+    private String productImage;
     private Integer storeId;
     private String storeName;   // 方便前端顯示
     private BigDecimal oldPrice;

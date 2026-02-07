@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.gooddeal.dto.PriceHistoryRequest;
@@ -92,13 +94,23 @@ public class PriceHistoryService {
         PriceHistoryResponse response = new PriceHistoryResponse();
         response.setHistoryId(history.getHistoryId());
         response.setProductId(history.getProduct().getProductId());
-        response.setProductName(history.getProduct().getProductName()); // 假設 Product 有 getName
+        response.setProductName(history.getProduct().getProductName());
+        response.setProductImage(history.getProduct().getImageUrl());
         response.setStoreId(history.getStore().getStoreId());
-        response.setStoreName(history.getStore().getStoreName());       // 假設 Store 有 getName
+        response.setStoreName(history.getStore().getStoreName());
         response.setOldPrice(history.getOldPrice());
         response.setNewPrice(history.getNewPrice());
         response.setChangedAt(history.getChangedAt());
         return response;
+    }
+    
+    public List<PriceHistoryResponse> getRecentDiscounts(int limit) {
+        // 使用 PageRequest 來限制數量
+    	Pageable pageable = PageRequest.of(0, limit);
+    	List<PriceHistory> entities = priceHistoryRepository.findRecentDiscounts(pageable);
+    	return entities.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 }
 

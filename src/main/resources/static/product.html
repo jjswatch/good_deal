@@ -320,12 +320,15 @@
 		flex-direction: column; /* 變回上下排列 */
 		align-items: center;
 		text-align: center;
-		padding: 20px;
+		padding: 10px;
 		gap: 15px;
 	}
 	#productInfo img {
-		width: 160px; /* 手機上縮小圖片 */
-		height: 160px;
+		width: 100%;         /* 寬度撐滿容器 */
+        max-width: none;    /* 設定一個理想的最大寬度，避免在平板上太大 */
+        height: auto;        /* 高度自動調整，維持比例 */
+
+
 	}
 	.product-name {
 		font-size: 1.3rem;

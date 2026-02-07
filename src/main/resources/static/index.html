@@ -130,8 +130,8 @@
 }
 
 .store-card-top {
-	height: 100px;
-	background-size: contain; /* 改為 contain 避免 logo 被切到 */
+	height: 150px;
+	background-size: 100%;
 	background-repeat: no-repeat;
 	background-position: center;
 	margin: 15px;
@@ -304,6 +304,70 @@
     text-align: center;
     line-height: 1.2;
 }
+.discount-wrapper {
+    margin: 20px 0;
+    padding: 0 5px;
+}
+
+.discount-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 15px;
+    scroll-snap-type: x mandatory; /* 滑動吸附感 */
+    scrollbar-width: none; /* 隱藏 Firefox 捲動條 */
+}
+
+.discount-container::-webkit-scrollbar {
+    display: none; /* 隱藏 Chrome/Safari 捲動條 */
+}
+
+/* 優惠卡片樣式 */
+.discount-card {
+    flex: 0 0 170px; /* 固定寬度，不被壓縮 */
+    scroll-snap-align: start;
+    background: #fff;
+    border-radius: 18px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid #ffe4e6; /* 淡粉色邊框增加優惠感 */
+    position: relative;
+    cursor: pointer;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.discount-card img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.old-price {
+    font-size: 12px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-right: 5px;
+}
+
+.new-price {
+    font-size: 1.1rem;
+    color: #ef4444;
+    font-weight: 800;
+}
 </style>
 </head>
 
@@ -325,6 +389,13 @@
 </header>
 
 <main style="max-width: 1100px; margin: auto; padding: 0 20px;">
+	<h2 class="section-title">⚡ 閃電限時降價</h2>
+	<div class="discount-wrapper">
+    	<div id="discount-items" class="discount-container">
+        	<p style="padding: 20px; color: #999; text-align: center; width: 100%;">正在掃描全台降價商品...</p>
+    	</div>
+	</div>
+	
 	<h2 class="section-title">🏬 熱門商家</h2>
 	<div id="store-cards" class="store-card-container"></div>
 	
@@ -350,6 +421,7 @@
  * 核心配置與初始化
  */
 document.addEventListener("DOMContentLoaded", () => {
+    loadDiscountProducts();
     loadCategories();
     loadStores();
     loadBrands();
@@ -477,6 +549,37 @@ async function loadHotProducts() {
     }
 }
 
+async function loadDiscountProducts() {
+    const container = document.getElementById("discount-items");
+    try {
+        const discounts = await apiGetPublic("/history/discounts");
+
+        if (!discounts || discounts.length === 0) {
+            container.innerHTML = "<p style='width:100%; text-align:center; color:#999;'>今日暫無大幅降價商品</p>";
+            return;
+        }
+
+        container.innerHTML = discounts.map(item => {
+            const saving = item.oldPrice - item.newPrice;
+
+            return `
+                <div class="discount-card" onclick="location.href='product.html?id=${item.productId}'">
+                    <span class="discount-badge">省 $${saving}</span>
+                    <img src="${item.productImage || 'assets/placeholder.png'}" alt="${item.productName}">
+                    <p style="font-size:14px; font-weight:500; height:40px; overflow:hidden; margin-bottom:4px;">${item.productName}</p>
+                    <div style="font-size:11px; color:#64748b;">${item.storeName}</div>
+                    <div class="price-group">
+                        <span class="old-price">$${item.oldPrice}</span>
+                        <span class="new-price">$${item.newPrice}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("載入降價商品失敗", err);
+        container.innerHTML = "<p style='width:100%; text-align:center;'>無法載入優惠資訊</p>";
+    }
+}
 </script>
 </body>
 </html>
