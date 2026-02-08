@@ -263,6 +263,14 @@
     .hero h1 {
         font-size: 1.5rem;
     }
+    .ad-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    .ad-content {
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
 }
 
 .brand-card {
@@ -368,6 +376,75 @@
     color: #ef4444;
     font-weight: 800;
 }
+.ad-section {
+    margin: 30px 0;
+}
+
+.ad-card {
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+    border: 2px dashed #fecaca; /* 虛線邊框增加特殊感 */
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-card:hover {
+    transform: scale(1.01);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.1);
+}
+
+.ad-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-bottom-left-radius: 10px;
+}
+
+.ad-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.ad-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background: white;
+    border-radius: 12px;
+    padding: 5px;
+}
+
+.ad-text h3 {
+    font-size: 18px;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.ad-text p {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.ad-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    white-space: nowrap;
+}
 </style>
 </head>
 
@@ -395,6 +472,20 @@
         	<p style="padding: 20px; color: #999; text-align: center; width: 100%;">正在掃描全台降價商品...</p>
     	</div>
 	</div>
+	
+	<section class="ad-section">
+    	<div class="ad-card" onclick="window.open('https://example.com', '_blank')">
+        	<span class="ad-badge">贊助</span>
+        	<div class="ad-content">
+            	<img src="assets/brands/ad-sample.png" alt="廣告商品" class="ad-image" onerror="this.src='assets/placeholder.png'">
+            	<div class="ad-text">
+                	<h3>申辦 GoodDeal 會員卡，首購現折 $100！</h3>
+                	<p>全台超市聯名通用，消費再享 3% 回饋無上限。</p>
+            	</div>
+        	</div>
+        	<button class="ad-btn">立即查看</button>
+    	</div>
+	</section>
 	
 	<h2 class="section-title">🏬 熱門商家</h2>
 	<div id="store-cards" class="store-card-container"></div>

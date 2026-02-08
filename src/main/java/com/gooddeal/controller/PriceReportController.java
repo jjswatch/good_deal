@@ -16,6 +16,7 @@ import com.gooddeal.repository.PriceReportRepository;
 import com.gooddeal.repository.ProductsRepository;
 import com.gooddeal.repository.StoresRepository;
 import com.gooddeal.repository.UsersRepository;
+import com.gooddeal.service.PriceReportService;
 
 @RestController
 @RequestMapping("/api/price-reports")
@@ -25,41 +26,49 @@ public class PriceReportController {
     private final ProductsRepository productRepo;
     private final StoresRepository storeRepo;
     private final UsersRepository userRepo;
+    private final PriceReportService service;
 
     public PriceReportController(
             PriceReportRepository reportRepo,
             ProductsRepository productRepo,
             StoresRepository storeRepo,
-            UsersRepository userRepo
+            UsersRepository userRepo,
+            PriceReportService service
     ) {
         this.reportRepo = reportRepo;
         this.productRepo = productRepo;
         this.storeRepo = storeRepo;
         this.userRepo = userRepo;
+        this.service = service;
     }
-
+    
     @PostMapping
-    public PriceReport reportPrice(
-            @RequestBody PriceReportRequest req
-    ) {
-        PriceReport report = new PriceReport();
-
-        report.setProduct(
-            productRepo.findById(req.getProductId()).orElseThrow()
-        );
-        report.setStore(
-            storeRepo.findById(req.getStoreId()).orElseThrow()
-        );
-
-        report.setUser(
-        	userRepo.findById(req.getUserId()).orElseThrow()
-        );
-
-        report.setReportedPrice(req.getReportedPrice());
-        report.setStatus(ReportStatus.PENDING);
-
-        return reportRepo.save(report);
+    public PriceReport report(@RequestBody PriceReportRequest req) {
+    	return service.report(req);
     }
+
+//    @PostMapping
+//    public PriceReport reportPrice(
+//            @RequestBody PriceReportRequest req
+//    ) {
+//        PriceReport report = new PriceReport();
+//
+//        report.setProduct(
+//            productRepo.findById(req.getProductId()).orElseThrow()
+//        );
+//        report.setStore(
+//            storeRepo.findById(req.getStoreId()).orElseThrow()
+//        );
+//
+//        report.setUser(
+//        	userRepo.findById(req.getUserId()).orElseThrow()
+//        );
+//
+//        report.setReportedPrice(req.getReportedPrice());
+//        report.setStatus(ReportStatus.PENDING);
+//
+//        return reportRepo.save(report);
+//    }
 
     // 商品頁：顯示最近通過的回報
     @GetMapping("/product/{productId}")

@@ -14,6 +14,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	        String productNameKeyword,
 	        String brandKeyword
 	);
+
 	List<Products> findByBarcode(String barcode);
 	List<Products> findByCategoryCategoryId(Integer categoryId);
 	List<Products> findByCategoryCategoryNameContainingIgnoreCase(String name);
