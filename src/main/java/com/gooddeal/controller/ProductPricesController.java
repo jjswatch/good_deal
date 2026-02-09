@@ -58,7 +58,4 @@ public class ProductPricesController {
     ) {
         return service.updatePrice(id, body.get("price"));
     }
-    
-    
-
 }

@@ -16,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // 1. 注入側邊欄與行動版標頭
-function renderAdminLayout() {
-    const currentPath = window.location.pathname;
-    
+function renderAdminLayout() {    
     // 行動版標頭 HTML
     const mobileHeaderHTML = `
         <div class="mobile-header">
@@ -39,6 +37,7 @@ function renderAdminLayout() {
             <a href="admin-prices.html" data-page="prices">🏷️ 商品價格管理</a>
 			<a href="admin-price-history.html" data-page="price-history">📈 商品歷史價格管理</a>
             <a href="admin-price-reports.html" data-page="price-reports">💰 價格回報審核</a>
+			<a href="admin-users.html" data-page="users">👤 使用者管理</a>
             <hr style="border-color: #1e293b; margin: 20px 0; opacity: 0.5;">
             <a href="../index.html" target="_blank" style="color: #10b981;">🏠 前往賣場首頁</a>
             <a href="#" onclick="logout()">🚪 登出</a>

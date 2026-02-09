@@ -56,9 +56,26 @@ function renderNavbar() {
             </div>
         </div>
     </nav>`;
-
-	document.body.insertAdjacentHTML('afterbegin', navbarHTML);
 	
+	const quickBarHTML = `
+	    <div class="quick-nav-bar">
+	        <div class="quick-nav-container">
+	            <select id="quickStore" onchange="quickJump('store', this.value)">
+	                <option value="">商家專區</option>
+	            </select>
+	            <select id="quickBrand" onchange="quickJump('q', this.value)">
+	                <option value="">所有品牌</option>
+	            </select>
+	            <select id="quickCat" onchange="quickJump('cat', this.value)">
+	                <option value="">所有分類</option>
+	            </select>
+	        </div>
+	    </div>`;
+
+	document.body.insertAdjacentHTML('afterbegin', navbarHTML); 
+	document.body.insertAdjacentHTML('afterbegin', quickBarHTML);
+	
+	fetchQuickOptions();
 	initScrollSearch();
 }
 
@@ -130,7 +147,6 @@ function syncUserUI() {
 
 	if (user && memberBtn && memberText) {
 		memberBtn.href = "profile.html";
-		const points = user.points || 0;
 		memberText.innerHTML = `我的 <b style="color:#FF4500;"></b>`;
 	}
 }
@@ -187,4 +203,48 @@ window.handleNotificationClick = function() {
 	alert("目前沒有新訊息");
 	const dot = document.getElementById("notiDot");
 	if (dot) dot.style.display = "none";
+};
+
+// 取得資料並填入下拉選單
+async function fetchQuickOptions() {
+    try {
+        const data = await apiGetPublic('/common/quick-search-options');
+		
+		if (!data || !data.stores) {
+			console.warn("API 回傳資料格式不正確", data);
+			return;
+		}
+
+        const sSelect = document.getElementById('quickStore');
+        const bSelect = document.getElementById('quickBrand');
+        const cSelect = document.getElementById('quickCat');
+		
+		sSelect.innerHTML = '<option value="">商家專區</option>';
+		bSelect.innerHTML = '<option value="">所有品牌</option>';
+		cSelect.innerHTML = '<option value="">所有分類</option>';
+		
+		// 填充商家
+		data.stores.forEach(s => {
+			if (s) sSelect.add(new Option(s.name, s.id));
+		});
+		// 填充品牌
+		data.brands.forEach(b => {
+		    if(b) bSelect.add(new Option(b, b));
+		});
+		// 填充分類
+		data.categories.forEach(c => {
+		    if(c) cSelect.add(new Option(c.categoryName, c.categoryId));
+		});
+    } catch (err) {
+        console.error("載入快捷選項失敗", err);
+    }
+}
+
+// 自動跳轉函式
+window.quickJump = function(paramName, value) {
+    if (!value) return; // 如果選到預設提示項，不跳轉
+    
+    // 跳轉至 search.html 並帶上對應參數
+    // 例如：search.html?store=家樂福 或 search.html?cid=5
+    window.location.href = `search.html?${paramName}=${encodeURIComponent(value)}`;
 };

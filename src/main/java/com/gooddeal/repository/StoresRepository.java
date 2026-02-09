@@ -14,4 +14,7 @@ public interface StoresRepository extends JpaRepository<Stores, Integer> {
 	@Query("SELECT s FROM Stores s WHERE s.storeId NOT IN " +
 	           "(SELECT pp.store.storeId FROM ProductPrices pp WHERE pp.product.productId = :productId)")
 	List<Stores> findStoresMissingPriceForProduct(@Param("productId") Integer productId);
+	
+	@Query("SELECT DISTINCT s.storeGroup FROM Stores s WHERE s.storeGroup IS NOT NULL")
+	List<Integer> findDistinctStoreGroups();
 }

@@ -23,9 +23,6 @@ import com.gooddeal.service.PriceReportService;
 public class PriceReportController {
 
     private final PriceReportRepository reportRepo;
-    private final ProductsRepository productRepo;
-    private final StoresRepository storeRepo;
-    private final UsersRepository userRepo;
     private final PriceReportService service;
 
     public PriceReportController(
@@ -36,9 +33,6 @@ public class PriceReportController {
             PriceReportService service
     ) {
         this.reportRepo = reportRepo;
-        this.productRepo = productRepo;
-        this.storeRepo = storeRepo;
-        this.userRepo = userRepo;
         this.service = service;
     }
     

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>使用者管理 - Admin</title>
+<link rel="stylesheet" href="../css/admin-style.css"> 
+<style>
+.data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+.data-table th { background: #f8fafc; color: var(--text-sub); font-weight: 600; }
+.btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; font-size: 14px; }
+.btn-edit { background: #e0f2fe; color: #0369a1; margin-right: 5px; }
+.btn-delete { background: #fee2e2; color: #b91c1c; }
+/* Modal 簡易樣式 */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4000; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 30px; border-radius: 16px; width: 400px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; color: var(--text-sub); }
+.form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.role-badge.ADMIN {
+    background: #fef3c7;
+    color: #92400e; /* 橘金色 */
+}
+.role-badge.USER {
+    background: #f1f5f9;
+    color: #475569; /* 灰色 */
+}
+</style>
+</head>
+<body>
+<div class="admin-layout">
+    <main class="admin-content">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div>
+                <h2 style="font-size: 24px; margin:0;">👤 使用者管理</h2>
+                <p style="color: #64748b; margin: 8px 0 0;">管理系統會員帳號與權限</p>
+            </div>
+        </header>
+
+        <table class="data-table">
+            <thead>
+    			<tr>
+        			<th>ID</th>
+        			<th>使用者名稱</th>
+        			<th>電子郵件</th>
+        			<th>權限</th> 
+        			<th>操作</th>
+    			</tr>
+			</thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+    </main>
+</div>
+
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <h3 id="modalTitle">編輯使用者</h3>
+        <input type="hidden" id="editUserId">
+        <div class="form-group">
+            <label>使用者名稱</label>
+            <input type="text" id="editUsername">
+        </div>
+        <div class="form-group">
+            <label>電子郵件</label>
+            <input type="email" id="editEmail">
+        </div>
+        <div class="form-group">
+            <label>新密碼 (不修改請留空)</label>
+            <input type="password" id="editPassword" placeholder="******">
+        </div>
+        <div class="form-group">
+    		<label>權限角色</label>
+    		<select id="editRole" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+        		<option value="USER">一般使用者 (USER)</option>
+        		<option value="ADMIN">管理員 (ADMIN)</option>
+    		</select>
+		</div>
+		<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+			<button class="btn" onclick="closeModal()">取消</button>
+			<button class="btn" style="background: var(--primary); color: white;" onclick="saveUser()">儲存變更</button>
+		</div>
+    </div>
+</div>
+
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin-common.js"></script>
+<script src="../js/admin-users.js"></script>
+</body>
+</html>

@@ -23,6 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/products/**",
                         "/api/categories/**",
                         "/api/stores/**",
+                        "/api/common/**",
 
                         // ⭐ 商品頁會用到
                         "/api/prices/**",

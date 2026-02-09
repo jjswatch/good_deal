@@ -29,7 +29,12 @@ public class AdminUsersController {
         return repo.findById(id).map(user -> {
             user.setUsername(data.getUsername());
             user.setEmail(data.getEmail());
-            user.setPasswordHash(data.getPasswordHash());
+            if (data.getRole() != null) {
+                user.setRole(data.getRole());
+            }
+            if (data.getPasswordHash() != null && !data.getPasswordHash().isEmpty()) {
+                user.setPasswordHash(data.getPasswordHash());
+            }
             return repo.save(user);
         }).orElse(null);
     }

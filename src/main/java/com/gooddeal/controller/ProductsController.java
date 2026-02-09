@@ -127,6 +127,4 @@ public class ProductsController {
 
         return response;
     }
-
-    
 }

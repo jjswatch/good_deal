@@ -68,4 +68,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 			    LIMIT 6
 			""", nativeQuery = true)
 			List<Object[]> findWarmProductsRaw(@Param("since") LocalDateTime since);
+			
+	@Query("SELECT DISTINCT p.brand FROM Products p WHERE p.brand IS NOT NULL AND p.brand <> ''")
+		List<String> findDistinctBrands();
 }
