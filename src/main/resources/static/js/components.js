@@ -33,29 +33,33 @@ function renderNavbar() {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
            </div>`;
 
-	const adminLink = (user && user.role === "ADMIN")
-		? `<div class="admin-quick-link" onclick="location.href='admin/admin-dashboard.html'">⚙️</div>`
-		: "";
+	const actionIcon = (user && user.role === "ADMIN") ? `
+		<div class="nav-admin" onclick="location.href='admin/admin-dashboard.html'" style="cursor:pointer;"> 
+			📊 
+		</div>` : `
+		<div class="nav-notification" onclick="handleNotificationClick()" style="cursor:pointer; position:relative;"> 
+			<svg class="nav-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> 
+				<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path> 
+				<path d="M13.73 21a2 2 0 0 1-3.46 0"></path> 
+			</svg> 
+			<div class="notification-dot" id="notiDot" style="position:absolute; top:2px; right:2px; width:8px; height:8px; background:red; border-radius:50%; display:none;"></div> 
+		</div>`;
 
-	const navbarHTML = `
-    <nav class="main-nav">
-        <div class="nav-container">
-            ${leftContent}
-			<div class="nav-search-bar" id="stickySearch">
-				<input type="text" id="navKeyword" placeholder="搜尋商品...">
-				<button onclick="handleNavSearch()">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-				</button>
-			</div>
-            <div class="nav-actions">
-                ${adminLink}
-                <div class="nav-notification" onclick="handleNotificationClick()" style="cursor:pointer; position:relative;">
-                    <svg class="nav-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <div class="notification-dot" id="notiDot" style="position:absolute; top:2px; right:2px; width:8px; height:8px; background:red; border-radius:50%; display:none;"></div>
-                </div>
-            </div>
-        </div>
-    </nav>`;
+	const navbarHTML = ` 
+		<nav class="main-nav"> 
+			<div class="nav-container"> ${leftContent} 
+				<div class="nav-search-bar" id="stickySearch"> 
+					<input type="text" id="navKeyword" placeholder="搜尋商品..."> 
+					<button onclick="handleNavSearch()"> 
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"> 
+							<circle cx="11" cy="11" r="8"></circle> 
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line> 
+						</svg> 
+					</button> 
+				</div> 
+				<div class="nav-actions"> ${actionIcon} </div> 
+			</div> 
+		</nav>`;
 	
 	const quickBarHTML = `
 	    <div class="quick-nav-bar">
