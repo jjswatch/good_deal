@@ -51,8 +51,18 @@ public class AdminPricesController {
         return adminPriceService.getMissingStoresByProductId(productId);
     }
     
+    @GetMapping("/missing-products")
+    public List<Products> getMissingProducts(@RequestParam Integer storeId) {
+        return adminPriceService.getMissingProductsByStoreId(storeId);
+    }
+    
     @GetMapping("/available-products")
     public List<Products> getAvailableProducts() { // 括號內必須為空
         return adminPriceService.getAvailableProducts();
+    }
+    
+    @PutMapping("/batch")
+    public List<ProductPrices> updateBatch(@RequestBody List<ProductPrices> records) {
+        return adminPriceService.updateBatchPriceRecords(records);
     }
 }

@@ -10,6 +10,7 @@ import com.gooddeal.repository.ProductsRepository;
 import com.gooddeal.repository.StoresRepository;
 import com.gooddeal.service.AdminPriceService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -96,5 +97,28 @@ public class AdminPriceServiceImpl implements AdminPriceService {
 	@Override
 	public List<Products> getAvailableProducts() {
 		return productsRepository.findProductsWithMissingPrices();
+	}
+
+	@Override
+	public List<Products> getMissingProductsByStoreId(Integer storeId) {
+		return productsRepository.findProductsMissingPriceForStore(storeId);
+	}
+
+	@Override
+	@Transactional // 確保批次操作要麼全部成功，要麼全部失敗
+	public List<ProductPrices> updateBatchPriceRecords(List<ProductPrices> records) {
+	    for (ProductPrices record : records) {
+	        // 1. 取得舊資料比對價格
+	        ProductPrices db = productPricesRepository.findById(record.getPriceId())
+	                .orElseThrow(() -> new RuntimeException("找不到紀錄 ID: " + record.getPriceId()));
+
+	        // 2. 價格有變動才寫入
+	        if (db.getPrice().compareTo(record.getPrice()) != 0) {
+	            // 3. 更新主表價格
+	            db.setPrice(record.getPrice());
+	            productPricesRepository.save(db);
+	        }
+	    }
+	    return records;
 	}
 }

@@ -14,4 +14,6 @@ public interface AdminPriceService {
     void deletePriceRecord(Integer id);
     List<Stores> getMissingStoresByProductId(Integer productId);
     List<Products> getAvailableProducts();
+    List<Products> getMissingProductsByStoreId(Integer storeId);
+    List<ProductPrices> updateBatchPriceRecords(List<ProductPrices> records);
 }

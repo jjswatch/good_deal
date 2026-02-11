@@ -94,6 +94,7 @@ public class PriceHistoryService {
         PriceHistoryResponse response = new PriceHistoryResponse();
         response.setHistoryId(history.getHistoryId());
         response.setProductId(history.getProduct().getProductId());
+        response.setBrand(history.getProduct().getBrand());
         response.setProductName(history.getProduct().getProductName());
         response.setProductImage(history.getProduct().getImageUrl());
         response.setStoreId(history.getStore().getStoreId());

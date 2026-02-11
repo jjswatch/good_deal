@@ -9,6 +9,7 @@ import lombok.Data;
 public class PriceHistoryResponse {
     private Integer historyId;
     private Integer productId;
+    private String brand;
     private String productName; // 方便前端顯示
     private String productImage;
     private Integer storeId;

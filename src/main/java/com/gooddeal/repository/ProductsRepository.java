@@ -29,8 +29,9 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	
 	@Query(value = """
 		    SELECT 
-		        p.product_id, 
-		        p.product_name, 
+		        p.product_id,
+		        p.product_name,
+		        p.brand,  
 		        p.image_url, 
 		        COUNT(DISTINCT pp.store_id) AS storeCount, 
 		        COUNT(DISTINCT pr.report_id) AS reportCount, 
@@ -51,7 +52,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	    
 		@Query(value = """
 			    SELECT 
-			        p.product_id, p.product_name, p.image_url, 
+			        p.product_id, p.product_name, p.brand, p.image_url, 
 			        COUNT(DISTINCT pp.store_id) AS storeCount, 
 			        COUNT(DISTINCT pr.report_id) AS reportCount, 
 			        MIN(pp.price) AS minPrice
@@ -71,4 +72,8 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 			
 	@Query("SELECT DISTINCT p.brand FROM Products p WHERE p.brand IS NOT NULL AND p.brand <> ''")
 		List<String> findDistinctBrands();
+	
+	@Query("SELECT p FROM Products p WHERE p.productId NOT IN " +
+		       "(SELECT pp.product.productId FROM ProductPrices pp WHERE pp.store.storeId = :storeId)")
+		List<Products> findProductsMissingPriceForStore(@Param("storeId") Integer storeId);
 }

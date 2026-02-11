@@ -65,7 +65,7 @@ function renderTable(data) {
         return `
             <tr>
                 <td>#${item.historyId}</td>
-                <td><strong>${item.productName || '未知商品'}</strong></td>
+                <td><strong>${item.brand}${item.productName || '未知商品'}</strong></td>
                 <td>${item.storeName || '未知店家'}</td>
                 <td>
                     <div style="display:flex; align-items:center; gap:8px;">
