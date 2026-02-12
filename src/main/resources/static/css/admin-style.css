@@ -229,13 +229,6 @@ button {
         font-size: 14px;
     }
     
-    /* 使用偽元素製作標籤 */
-    td:nth-child(1)::before { content: "ID"; color: var(--text-muted); }
-    td:nth-child(2)::before { content: "商店名稱"; color: var(--text-muted); font-weight: 600; }
-    td:nth-child(3)::before { content: "商店群組"; color: var(--text-muted); }
-    td:nth-child(4)::before { content: "地點"; color: var(--text-muted); }
-    td:nth-child(5)::before { content: "網站"; color: var(--text-muted); }
-    
     .modal-content {
         padding: 24px;
     }

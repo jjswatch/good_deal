@@ -178,7 +178,7 @@
 // 1. 載入資料
 async function loadSetting() {
     try {
-        const user = await apiGet("/user/profile");
+        const user = await apiGet("/users/profile");
         if (user) {
             document.getElementById("username").value = user.username || "";
             document.getElementById("email").value = user.email || "";
@@ -195,7 +195,7 @@ async function updateProfile() {
     if (!username || !email) { alert("資料不可空白"); return; }
 
     try {
-        await apiPut("/user/profile", { username, email });
+        await apiPut("/users/profile", { username, email });
         alert("會員資料已更新");
     } catch (err) {
         alert("更新失敗：" + (err.message || "請稍後再試"));
@@ -212,7 +212,7 @@ async function changePassword() {
     if (newPwd !== confirmPwd) { alert("新密碼不一致"); return; }
 
     try {
-        await apiPut("/user/password", { oldPassword: oldPwd, newPassword: newPwd });
+        await apiPut("/users/password", { oldPassword: oldPwd, newPassword: newPwd });
         alert("密碼修改成功，請重新登入");
         handleLogout(false); // 靜默登出
     } catch (err) {

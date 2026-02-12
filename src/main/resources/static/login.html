@@ -128,53 +128,41 @@ button:hover {
 <script src="js/api.js"></script>
 <script>
 async function login() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const errorBox = document.getElementById("loginError");
+	const username = document.getElementById("username").value.trim();
+	const password = document.getElementById("password").value.trim();
+	const errorBox = document.getElementById("loginError");
 
-  errorBox.style.display = "none";
-  errorBox.textContent = "";
+	errorBox.style.display = "none";
+	errorBox.textContent = "";
 
-  if (!username || !password) {
-    errorBox.textContent = "請輸入帳號與密碼";
-    errorBox.style.display = "block";
-    return;
-  }
+	if (!username || !password) {
+		errorBox.textContent = "請輸入帳號與密碼";
+		errorBox.style.display = "block";
+		return;
+	}
 
-  try {
-	// ① 先嘗試使用者登入
-	    let res;
-	    try {
-	      res = await apiPostPublic("/auth/login", { username, password });
-	    } catch {
-	      // ② 使用者失敗 → 嘗試管理員登入
-	      res = await apiPostPublic("/admin/login", { username, password });
-	    }
+	try {
+		let res;
+	    res = await apiPostPublic("/auth/login", { username, password });
 
-	    // ③ 存 JWT
 	    localStorage.setItem("token", res.token);
 
-	    // ④ 解 JWT 取得角色（或後端直接回 role）
 	    const payload = JSON.parse(atob(res.token.split(".")[1]));
 	    const role = payload.role;
 
 	    localStorage.setItem("role", role);
 	    localStorage.setItem("username", payload.sub);
 
-	    // ⑤ 依角色導向
 	    if (role === "ADMIN") {
-	      location.href = "admin/admin-dashboard.html";
+		    location.href = "admin/admin-dashboard.html";
 	    } else {
-	      location.href = "index.html";
+		    location.href = "index.html";
 	    }
-
-	  } catch (err) {
+	} catch (err) {
 	    errorBox.textContent = "帳號或密碼錯誤";
 	    errorBox.style.display = "block";
-	  }
+	}
 }
 </script>
-
-
 </body>
 </html>

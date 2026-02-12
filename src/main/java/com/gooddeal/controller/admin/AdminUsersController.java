@@ -2,7 +2,7 @@ package com.gooddeal.controller.admin;
 
 import com.gooddeal.model.Users;
 import com.gooddeal.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,8 +11,13 @@ import java.util.List;
 @RequestMapping("/api/admin/users")
 public class AdminUsersController {
 
-    @Autowired
-    private UsersRepository repo;
+	private final UsersRepository repo; 
+	private final PasswordEncoder passwordEncoder; 
+
+	public AdminUsersController(UsersRepository repo, PasswordEncoder passwordEncoder) { 
+		this.repo = repo; 
+		this.passwordEncoder = passwordEncoder; 
+	}
 
     @GetMapping
     public List<Users> getAll() {
@@ -32,8 +37,8 @@ public class AdminUsersController {
             if (data.getRole() != null) {
                 user.setRole(data.getRole());
             }
-            if (data.getPasswordHash() != null && !data.getPasswordHash().isEmpty()) {
-                user.setPasswordHash(data.getPasswordHash());
+            if (data.getPasswordHash() != null && !data.getPasswordHash().isBlank()) {
+            	user.setPasswordHash(passwordEncoder.encode(data.getPasswordHash()));
             }
             return repo.save(user);
         }).orElse(null);

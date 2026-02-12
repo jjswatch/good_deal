@@ -286,7 +286,7 @@ async function init() {
         loadWishlistSummary(user);
         
         try {
-            const profile = await apiGet("/user/profile");
+            const profile = await apiGet("/users/profile");
             if (profile) {
             	const uid = profile.userId;
             	loadProfile(profile);
@@ -305,7 +305,7 @@ async function init() {
 
 async function loadProfile(currentUser) {
     try {
-        const user = await apiGet("/user/profile");
+        const user = await apiGet("/users/profile");
         if (user) {
             document.getElementById("displayUserName").innerText = user.username || "會員";
             document.getElementById("displayUserEmail").innerText = user.email || "";
