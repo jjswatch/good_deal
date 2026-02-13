@@ -31,7 +31,8 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 		    SELECT 
 		        p.product_id,
 		        p.product_name,
-		        p.brand,  
+		        p.brand,
+		        p.spec,  
 		        p.image_url, 
 		        COUNT(DISTINCT pp.store_id) AS storeCount, 
 		        COUNT(DISTINCT pr.report_id) AS reportCount, 
@@ -52,7 +53,7 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	    
 		@Query(value = """
 			    SELECT 
-			        p.product_id, p.product_name, p.brand, p.image_url, 
+			        p.product_id, p.product_name, p.brand, p.spec, p.image_url, 
 			        COUNT(DISTINCT pp.store_id) AS storeCount, 
 			        COUNT(DISTINCT pr.report_id) AS reportCount, 
 			        MIN(pp.price) AS minPrice

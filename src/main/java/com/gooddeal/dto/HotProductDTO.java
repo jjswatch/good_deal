@@ -12,6 +12,7 @@ public class HotProductDTO {
     private Integer productId;
     private String productName;
     private String brand;
+    private String spec;
     private String imageUrl;
     private Long storeCount;
     private Long reportCount;

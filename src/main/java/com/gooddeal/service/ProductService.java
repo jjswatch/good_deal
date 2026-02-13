@@ -75,9 +75,10 @@ public class ProductService {
                     (String) r[1],
                     (String) r[2],
                     (String) r[3],
-                    r[4] != null ? ((Number) r[4]).longValue() : 0L,
+                    (String) r[4],
                     r[5] != null ? ((Number) r[5]).longValue() : 0L,
-                    r[6] != null ? ((Number) r[6]).intValue() : 0
+                    r[6] != null ? ((Number) r[6]).longValue() : 0L,
+                    r[7] != null ? ((Number) r[7]).intValue() : 0
                 ));
             } catch (Exception e) {
                 System.err.println("HotProductDTO 轉換失敗: " + e.getMessage());
@@ -94,6 +95,7 @@ public class ProductService {
             p.getProductId(),
             p.getProductName(),
             p.getBrand(),
+            p.getSpec(),
             p.getImageUrl(),
             0L,     // storeCount（未知）
             0L,     // reportCount（未知）

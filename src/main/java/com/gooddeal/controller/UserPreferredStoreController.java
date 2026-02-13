@@ -27,7 +27,6 @@ public class UserPreferredStoreController {
     
     @PostMapping("/sync")
     public void syncStores(@RequestBody Map<String, Object> body) {
-    	System.out.println("收到同步請求: " + body);
     	Object userIdObj = body.get("userId");
         Object storeIdsObj = body.get("storeIds");
 

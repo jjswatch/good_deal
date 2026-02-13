@@ -117,13 +117,12 @@ let allStores = [];
 let selectedStoreIds = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-	const user = await apiGet("/user/profile");
+	const user = await apiGet("/users/profile");
     if (!user) { location.href = "login.html"; return; }
 
     try {
-        // 1. 取得所有賣場
-        allStores = await apiGet("/stores"); // 需確認後端有此 API
-        // 2. 取得使用者目前的設定
+        allStores = await apiGet("/stores");
+
         const currentPrefs = await apiGet(`/user/preferred-stores/${user.userId}`);
         selectedStoreIds = currentPrefs.map(p => p.store.storeId);
             
@@ -153,10 +152,8 @@ function renderStores() {
 function toggleStore(id) {
     const index = selectedStoreIds.indexOf(id);
     if (index > -1) {
-        // 已選取 -> 移除
         selectedStoreIds.splice(index, 1);
     } else {
-        // 未選取 -> 檢查上限
         if (selectedStoreIds.length >= 3) {
             alert("最多只能選擇 3 間賣場喔！");
             return;
@@ -183,7 +180,7 @@ async function savePreferredStores() {
     }
     const payload = {
         userId: userId,
-        storeIds: selectedStoreIds // 確保這是 [1, 2, 3] 這樣的陣列
+        storeIds: selectedStoreIds
     };
 
     try {
