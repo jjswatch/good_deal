@@ -3,34 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GoodDeal｜全台最划算的商品比價平台</title>
+<title>EcoSave - 快速找到最便宜的商品價格</title>
+<meta name="description" content="整合全台超市量販店數據，聰明消費一塊省">
 <link rel="stylesheet" href="css/style.css" />
 <style>
-/* Hero 區 */
 .hero {
 	text-align: center;
 	padding: 60px 20px;
 	background: var(--bg-light);
 }
-
 .hero h1 {
 	margin-bottom: 10px;
 	letter-spacing: -1px;
 }
-
 .hero p {
 	font-size: 1.1rem;
 	color: var(--text-muted);
 	margin-bottom: 30px;
 }
-
 #search-sticky-wrapper {
     width: 90%; /* 手機版佔比 */
     max-width: 420px; /* 桌機版限制寬度，與之前的 form-group 保持一致 */
     margin: 0 auto;
     min-height: 50px;
 }
-
 .search-box {
 	display: flex;
     align-items: center;
@@ -41,7 +37,6 @@
     transition: all 0.3s ease;
     width: 100%;
 }
-
 .search-box input {
 	flex: 1;
     border: none; /* 移除邊框，由父容器控制 */
@@ -50,11 +45,9 @@
     outline: none;
     background: transparent;
 }
-
 .search-box input:focus {
 	border-color: var(--primary-color);
 }
-
 .search-box button {
 	background: var(--primary-color);
     color: white;
@@ -67,31 +60,23 @@
     cursor: pointer;
     transition: background 0.2s;
 }
-
 .search-box button:hover {
 	background: #333;
 }
-
-/* SVG 圖示大小控制 */
 .search-icon {
     width: 20px;
     height: 20px;
 }
-
-/* 當輸入框獲取焦點時，整個容器變色 */
 .search-box:focus-within {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
-
-/* 分類標籤 */
 .category-tags {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 10px;
 	justify-content: center;
 }
-
 .category-tag {
 	padding: 8px 18px;
 	background: #f2f2f2;
@@ -101,20 +86,16 @@
 	transition: 0.3s;
 	border: 1px solid transparent;
 }
-
 .category-tag:hover, .category-tag.active {
 	background: var(--primary-color);
 	color: white;
 }
-
-/* 店家卡片 */
 .store-card-container {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 	gap: 20px;
 	margin-top: 20px;
 }
-
 .store-card {
 	border-radius: 18px;
 	overflow: hidden;
@@ -124,12 +105,10 @@
 	border: 1px solid #f0f0f0;
 	cursor: pointer;
 }
-
 .store-card:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
-
 .store-card-top {
 	height: 150px;
 	background-size: 100%;
@@ -137,21 +116,17 @@
 	background-position: center;
 	margin: 15px;
 }
-
 .store-card-bottom {
 	padding: 10px;
 	font-weight: bold;
 	text-align: center;
 	border-top: 1px solid #fafafa;
 }
-
 .section-title {
 	text-align: center;
 	font-size: 1.5rem;
 	margin: 40px 0 20px;
 }
-
-/* 熱門商品 */
 .hot-items {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -160,7 +135,6 @@
 	max-width: 1100px;
 	margin: auto;
 }
-
 .item-card {
     background: white;
     padding: 15px;
@@ -170,12 +144,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .item-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
-
 .item-card .price-tag {
     display: inline-block;
     color: #ef4444; /* 醒目的紅色 */
@@ -183,14 +155,12 @@
     font-size: 1.1rem;
     margin-top: 5px;
 }
-
 .item-card .store-info {
     font-size: 12px;
     color: #94a3b8;
     display: block;
     margin-top: 2px;
 }
-
 .item-card img {
 	width: 100%;
 	max-width: 160px;
@@ -199,14 +169,11 @@
 	border-radius: 15px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
 .item-card p {
 	margin-top: 10px;
 	font-weight: 500;
 	font-size: 14px;
     color: #333;
-    
-    /* 限制兩行，超出顯示省略號 */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -214,7 +181,6 @@
     height: 40px; /* 固定高度防止卡片高低不一 */
     line-height: 20px;
 }
-/* 熱門品牌卡片 */
 .brand-card-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr); 
@@ -222,7 +188,6 @@
     margin-top: 25px;
     padding: 0 5px;
 }
-
 @media (max-width: 600px) {
     .brand-card-container {
         grid-template-columns: repeat(4, 1fr); 
@@ -240,17 +205,14 @@
         gap: 12px; /* 縮小間距，省下空間給內容 */
         padding: 10px;
     }
-
     .item-card {
         padding: 10px; /* 縮小卡片內距 */
         border-radius: 12px; /* 圓角稍微調小，更符合比例 */
     }
-
     .item-card img {
         height: 140px; /* 手機版圖片高度稍微降低 */
         max-width: 100%; /* 確保不超過容器 */
     }
-
     .item-card p {
         font-size: 14px; /* 調小商品標題文字 */
         margin-top: 8px;
@@ -262,12 +224,9 @@
         overflow: hidden;
         height: 42px; 
     }
-
     .item-card .price-tag {
         font-size: 1rem;
     }
-
-    /* 2. Hero 區塊縮小，節省首屏空間 */
     .hero {
         padding: 30px 15px;
     }
@@ -283,7 +242,6 @@
         margin-bottom: 15px;
     }
 }
-
 .brand-card {
     display: flex;
     flex-direction: column;
@@ -291,11 +249,9 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .brand-card:hover {
     transform: translateY(-5px);
 }
-
 .brand-logo-circle {
     width: 70px; /* 桌機維持舒適大小 */
     height: 70px;
@@ -309,13 +265,11 @@
     margin-bottom: 10px;
     overflow: hidden;
 }
-
 .brand-logo-circle img {
     width: 75%;
     height: 75%;
     object-fit: contain;
 }
-
 .brand-name {
     font-size: 13px;
     color: #333;
@@ -327,7 +281,6 @@
     margin: 20px 0;
     padding: 0 5px;
 }
-
 .discount-container {
     display: flex;
     overflow-x: auto;
@@ -336,12 +289,9 @@
     scroll-snap-type: x mandatory; /* 滑動吸附感 */
     scrollbar-width: none; /* 隱藏 Firefox 捲動條 */
 }
-
 .discount-container::-webkit-scrollbar {
     display: none; /* 隱藏 Chrome/Safari 捲動條 */
 }
-
-/* 優惠卡片樣式 */
 .discount-card {
     flex: 0 0 170px; /* 固定寬度，不被壓縮 */
     scroll-snap-align: start;
@@ -353,7 +303,6 @@
     position: relative;
     cursor: pointer;
 }
-
 .discount-badge {
     position: absolute;
     top: 8px;
@@ -366,7 +315,6 @@
     font-weight: bold;
     z-index: 10;
 }
-
 .discount-card img {
     width: 100%;
     height: 130px;
@@ -374,14 +322,12 @@
     border-radius: 12px;
     margin-bottom: 8px;
 }
-
 .old-price {
     font-size: 12px;
     color: #94a3b8;
     text-decoration: line-through;
     margin-right: 5px;
 }
-
 .new-price {
     font-size: 1.1rem;
     color: #ef4444;
@@ -390,7 +336,6 @@
 .ad-section {
     margin: 30px 0;
 }
-
 .ad-card {
     background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
     border: 2px dashed #fecaca; /* 虛線邊框增加特殊感 */
@@ -404,12 +349,10 @@
     position: relative;
     overflow: hidden;
 }
-
 .ad-card:hover {
     transform: scale(1.01);
     box-shadow: 0 10px 25px rgba(239, 68, 68, 0.1);
 }
-
 .ad-badge {
     position: absolute;
     top: 0;
@@ -420,13 +363,11 @@
     padding: 2px 8px;
     border-bottom-left-radius: 10px;
 }
-
 .ad-content {
     display: flex;
     align-items: center;
     gap: 20px;
 }
-
 .ad-image {
     width: 80px;
     height: 80px;
@@ -435,18 +376,15 @@
     border-radius: 12px;
     padding: 5px;
 }
-
 .ad-text h3 {
     font-size: 18px;
     color: #1e293b;
     margin-bottom: 5px;
 }
-
 .ad-text p {
     font-size: 14px;
     color: #64748b;
 }
-
 .ad-btn {
     background: #ef4444;
     color: white;
@@ -458,7 +396,6 @@
 }
 </style>
 </head>
-
 <body>
 <header class="hero">
 	<h1>快速找到最便宜的商品價格</h1>
@@ -491,7 +428,7 @@
         	<div class="ad-content">
             	<img src="assets/brands/ad-sample.png" alt="廣告商品" class="ad-image" onerror="this.src='assets/placeholder.png'">
             	<div class="ad-text">
-                	<h3>申辦 GoodDeal 會員卡，首購現折 $100！</h3>
+                	<h3>申辦 EcoSave 會員卡，首購現折 $100！</h3>
                 	<p>全台超市聯名通用，消費再享 3% 回饋無上限。</p>
             	</div>
         	</div>
@@ -515,14 +452,10 @@
 		<p style="color:#999">載入熱門推薦中...</p>
 	</section>
 </main>
-
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
 <script>
-/**
- * 核心配置與初始化
- */
 document.addEventListener("DOMContentLoaded", () => {
     loadDiscountProducts();
     loadCategories();
@@ -531,31 +464,24 @@ document.addEventListener("DOMContentLoaded", () => {
     loadHotProducts();
     registerSearchEvent();
 });
-
-// 2. 搜尋邏輯 (支援 Enter 鍵)
 function registerSearchEvent() {
     const input = document.getElementById("keyword");
     input.addEventListener("keyup", (e) => {
         if (e.key === "Enter") goSearch();
     });
 }
-
 function goSearch() {
     const key = document.getElementById("keyword").value.trim();
     if (!key) {
         alert("請輸入商品名稱或條碼");
         return;
     }
-
-    // 判斷是否為條碼 (純數字 8-20 位)
     if (/^\d{8,20}$/.test(key)) {
         window.location.href = `search.html?barcode=${encodeURIComponent(key)}`;
     } else {
         window.location.href = `search.html?q=${encodeURIComponent(key)}`;
     }
 }
-
-// 3. 載入分類標籤
 async function loadCategories() {
     const container = document.getElementById("category-tags");
     try {
@@ -573,8 +499,6 @@ async function loadCategories() {
         container.innerHTML = "<p>暫時無法載入分類</p>";
     }
 }
-
-// 4. 載入店家卡片
 function loadStores() {
     const stores = [
         { id: 1, name: "全聯福利中心", logo: "assets/stores/px.png" },
@@ -591,7 +515,6 @@ function loadStores() {
         </div>
     `).join('');
 }
-
 function loadBrands() {
     const brands = [
         { name: "義美", logo: "assets/brands/imei.png" },
@@ -651,7 +574,6 @@ async function loadHotProducts() {
         container.innerHTML = "<p>熱門商品載入失敗</p>";
     }
 }
-
 async function loadDiscountProducts() {
     const container = document.getElementById("discount-items");
     try {

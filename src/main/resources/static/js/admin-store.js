@@ -15,14 +15,17 @@ function renderStoreTable(stores) {
     const tbody = document.getElementById("storeTableBody");
     tbody.innerHTML = stores.map(s => `
         <tr>
-            <td>${s.storeId}</td>
-            <td><strong>${s.storeName}</strong></td>
-            <td><span class="group-badge">${s.storeGroup || '0'}</span></td> <td>${s.location || '-'}</td>
-            <td>${s.website ? `<a href="${s.website}" target="_blank">連結</a>` : '-'}</td>
-            <td>
-                <button class="btn-edit" onclick="openEditStore(${s.storeId})">編輯</button>
-                <button class="btn-delete" onclick="deleteStore(${s.storeId})">刪除</button>
-            </td>
+		<td data-label="ID">${s.storeId}</td>
+		            <td data-label="商店名稱"><strong>${s.storeName}</strong></td>
+		            <td data-label="群組"><span class="group-badge">${s.storeGroup || '0'}</span></td>
+		            <td data-label="地址/地點" class="text-break">${s.location || '-'}</td>
+		            <td data-label="網站">${s.website ? `<a href="${s.website}" target="_blank" class="site-link">點擊前往</a>` : '-'}</td>
+		            <td data-label="操作">
+		                <div class="mobile-actions">
+		                    <button class="btn-edit" onclick="openEditStore(${s.storeId})">編輯</button>
+		                    <button class="btn-delete" onclick="deleteStore(${s.storeId})">刪除</button>
+		                </div>
+		            </td>
         </tr>
     `).join('');
 }

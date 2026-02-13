@@ -6,6 +6,9 @@
 <title>使用者管理 - Admin</title>
 <link rel="stylesheet" href="../css/admin-style.css"> 
 <style>
+* {
+    box-sizing: border-box;
+}
 .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
 .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
 .data-table th { background: #f8fafc; color: var(--text-sub); font-weight: 600; }
@@ -32,6 +35,94 @@
 .role-badge.USER {
     background: #f1f5f9;
     color: #475569; /* 灰色 */
+}
+
+@media (max-width: 768px) {
+	.admin-content {
+        padding: 10px; /* 縮小手機版的外距 */
+        overflow-x: hidden; /* 防止整頁左右晃動 */
+    }
+    .btn-edit, .btn-delete {
+        margin: 5px 0; /* 按鈕間距 */
+        width: 100%;
+        justify-content: center;
+    }
+    /* 隱藏傳統表格結構 */
+    .data-table thead {
+        display: none;
+    }
+
+    .data-table, 
+    .data-table tbody, 
+    .data-table tr, 
+    .data-table td {
+        display: block;
+        width: 100%;
+        box-shadow: none;
+    }
+
+    .data-table tr {
+        display: block;
+        width: 100%;
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0 15px; /* 內距移到這裡控制 */
+        background: #fff;
+    }
+
+    .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* 改成靠上對齊，防止長字串時標籤跑掉 */
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: right;
+        width: 100%;
+        
+        /* ✨ 關鍵修正：強制長字串（電子郵件）換行，不撐開螢幕 */
+        word-break: break-all; 
+        white-space: normal;
+    }
+
+    .data-table td:last-child {
+        border-bottom: none;
+        flex-direction: column; /* 按鈕在手機版可以上下排列或撐滿 */
+        align-items: stretch;
+        text-align: center;
+    }
+
+    /* 利用 data-label 顯示標題 */
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 13px;
+        min-width: 80px; /* 給標籤一個固定寬度，確保整齊 */
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    /* 特別處理 ID：讓它看起來像卡片的編號標籤 */
+    .data-table td[data-label="ID"] {
+        background: #f8fafc;
+        margin: 0 -15px; /* 抵消 tr 的 padding 讓它滿版 */
+        padding: 10px 15px;
+        border-radius: 12px 12px 0 0;
+        font-family: monospace;
+    }
+
+    /* 按鈕容器在手機版更寬 */
+    .mobile-actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .mobile-actions .btn {
+        flex: 1; /* 讓編輯與刪除平分寬度，更好點擊 */
+        justify-content: center;
+    }
 }
 </style>
 </head>

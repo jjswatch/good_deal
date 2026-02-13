@@ -6,6 +6,111 @@
 <title>Admin｜商店管理</title>
 <link rel="stylesheet" href="../css/admin-style.css"> 
 </head>
+<style>
+/* 全域修正 */
+* {
+    box-sizing: border-box;
+}
+
+/* 讓連結在手機版更好點擊 */
+.site-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* 響應式表格優化 */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 15px;
+        border: none;
+        background: transparent; /* 背景交給卡片 tr */
+        box-shadow: none;
+    }
+
+    table, thead, tbody, tr, td {
+        display: block;
+        width: 100%;
+    }
+
+    thead {
+        display: none; /* 隱藏桌面版標頭 */
+    }
+
+    tr {
+        background: #fff;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        padding: 10px 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+        
+        /* ✨ 解決被切掉的關鍵：強制換行 */
+        word-break: break-all;
+        white-space: normal;
+        text-align: right;
+    }
+
+    td:last-child {
+        border-bottom: none;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* 標籤樣式 */
+    td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 13px;
+        min-width: 90px;
+        text-align: left;
+        margin-right: 10px;
+    }
+
+    /* 商店名稱特別樣式 */
+    td[data-label="商店名稱"] {
+        font-size: 16px;
+    }
+
+    /* ID 樣式優化 */
+    td[data-label="ID"] {
+        background: #f8fafc;
+        margin: -10px -15px 10px -15px;
+        padding: 10px 15px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    /* 手機版操作按鈕 */
+    .mobile-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    .mobile-actions button {
+        flex: 1;
+        padding: 10px;
+        justify-content: center;
+        margin: 0;
+    }
+
+    /* Modal 手機版適應 */
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}
+</style>
 <body>
 <div class="admin-layout">
   <main class="admin-content">

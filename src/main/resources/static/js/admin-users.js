@@ -23,14 +23,16 @@ function renderUserTable(users) {
     const tbody = document.getElementById('userTableBody');
     tbody.innerHTML = users.map(user => `
         <tr>
-            <td>${user.userId}</td>
-            <td>${user.username}</td>
-            <td>${user.email}</td>
-			<td><span class="role-badge ${user.role}">${user.role}</span></td>
-            <td>
-                <button class="btn btn-edit" onclick="openEditModal(${user.userId})">編輯</button>
-                <button class="btn btn-delete" onclick="deleteUser(${user.userId})">刪除</button>
-            </td>
+		<td data-label="ID">${user.userId}</td>
+		            <td data-label="使用者">${user.username}</td>
+		            <td data-label="電子郵件">${user.email}</td>
+		            <td data-label="權限"><span class="role-badge ${user.role}">${user.role}</span></td>
+		            <td data-label="操作">
+		                <div class="mobile-actions">
+		                    <button class="btn btn-edit" onclick="openEditModal(${user.userId})">編輯</button>
+		                    <button class="btn btn-delete" onclick="deleteUser(${user.userId})">刪除</button>
+		                </div>
+		            </td>
         </tr>
     `).join('');
 }

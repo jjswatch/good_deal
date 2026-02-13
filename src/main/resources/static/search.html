@@ -422,6 +422,10 @@ async function initPage() {
         if (barcode) {
             $("keyword").value = barcode;
             const list = await apiGetPublic(`/products/barcode?code=${barcode}`);
+            if (list && list.length === 1) {
+                location.replace(`product.html?id=${list[0].productId}`);
+                return;
+            }
             renderProducts(list, `條碼搜尋：${barcode}`, myFavIds); // 傳入 myFavIds
         } 
         else if (storeId) {
@@ -436,6 +440,10 @@ async function initPage() {
         else if (keyword) {
             $("keyword").value = keyword;
             const list = await apiGetPublic(`/products/search?keyword=${encodeURIComponent(keyword)}`);
+            if (list && list.length === 1) {
+                location.replace(`product.html?id=${list[0].productId}`);
+                return; 
+            }
             renderProducts(list, `關鍵字：${keyword}`, myFavIds); // 傳入 myFavIds
         } 
         else {
