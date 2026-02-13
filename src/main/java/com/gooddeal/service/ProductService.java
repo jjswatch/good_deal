@@ -75,9 +75,9 @@ public class ProductService {
                     (String) r[1],
                     (String) r[2],
                     (String) r[3],
-                    r[3] != null ? ((Number) r[4]).longValue() : 0L,
-                    r[4] != null ? ((Number) r[5]).longValue() : 0L,
-                    r[5] != null ? ((Number) r[6]).intValue() : 0
+                    r[4] != null ? ((Number) r[4]).longValue() : 0L,
+                    r[5] != null ? ((Number) r[5]).longValue() : 0L,
+                    r[6] != null ? ((Number) r[6]).intValue() : 0
                 ));
             } catch (Exception e) {
                 System.err.println("HotProductDTO 轉換失敗: " + e.getMessage());
