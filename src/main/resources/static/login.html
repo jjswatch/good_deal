@@ -91,9 +91,7 @@ button:hover {
 }
 </style>
 </head>
-
 <body>
-
 <nav>
 	<div class="nav-container">
 		<div class="logo" onclick="location.href='index.html'">GoodDeal</div>
@@ -106,23 +104,18 @@ button:hover {
 
 <main class="main">
 	<div class="form-group">
-		<label for="username">帳號</label>
-		<input type="text" id="username" placeholder="請輸入帳號">
+		<label for="username">帳號</label> <input type="text" id="username" placeholder="請輸入帳號">
 	</div>
 
 	<div class="form-group">
-		<label for="password">密碼</label>
-		<input type="password" id="password" placeholder="請輸入密碼">
+		<label for="password">密碼</label> <input type="password" id="password" placeholder="請輸入密碼">
 	</div>
-	
-	<div id="loginError" style="display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:#fdecea; color:#b71c1c; font-size:14px; text-align:center;"></div>
+
+	<div id="loginError" style="display: none; margin-bottom: 12px; padding: 10px; border-radius: 10px; background: #fdecea; color: #b71c1c; font-size: 14px; text-align: center;"></div>
 
 	<button onclick="login()">登入</button>
 
-	<div class="extra">
-		還沒有帳號？
-		<a href="register.html">立即註冊</a>
-	</div>
+	<div class="extra">還沒有帳號？ <a href="register.html">立即註冊</a></div>
 </main>
 
 <script src="js/api.js"></script>
@@ -138,29 +131,37 @@ async function login() {
 	if (!username || !password) {
 		errorBox.textContent = "請輸入帳號與密碼";
 		errorBox.style.display = "block";
-		return;
+	    return;
 	}
 
 	try {
-		let res;
-	    res = await apiPostPublic("/auth/login", { username, password });
+		const res = await fetch("/api/auth/login", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ username, password })
+		});
 
-	    localStorage.setItem("token", res.token);
+		if (!res.ok) {
+			const errData = await res.json();
+			errorBox.textContent = errData.error || "登入失敗";
+			errorBox.style.display = "block";
+			return;
+		}
 
-	    const payload = JSON.parse(atob(res.token.split(".")[1]));
-	    const role = payload.role;
+		const data = await res.json();
 
-	    localStorage.setItem("role", role);
-	    localStorage.setItem("username", payload.sub);
+		localStorage.setItem("token", data.token);
+		localStorage.setItem("role", data.user.role);
+		localStorage.setItem("username", data.user.username);
 
-	    if (role === "ADMIN") {
-		    location.href = "admin/admin-dashboard.html";
-	    } else {
-		    location.href = "index.html";
-	    }
+		if (data.user.role === "ADMIN") {
+			location.href = "admin/admin-dashboard.html";
+		} else {
+			location.href = "index.html";
+		}
 	} catch (err) {
-	    errorBox.textContent = "帳號或密碼錯誤";
-	    errorBox.style.display = "block";
+		errorBox.textContent = "系統錯誤，請稍後再試";
+		errorBox.style.display = "block";
 	}
 }
 </script>

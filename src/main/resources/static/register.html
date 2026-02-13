@@ -120,7 +120,7 @@ button:hover {
 		<input id="password" type="password" placeholder="至少 6 碼">
 	</div>
 	
-	<div id="loginError" style="display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:#fdecea; color:#b71c1c; font-size:14px; text-align:center;"></div>
+	<div id="registerError" style="display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:#fdecea; color:#b71c1c; font-size:14px; text-align:center;"></div>
 
 	<button onclick="register()">註冊</button>
 
@@ -134,25 +134,38 @@ button:hover {
 async function register() {
 	const username = document.getElementById("username").value.trim();
 	const email = document.getElementById("email").value.trim();
-	const password = document.getElementById("password").value;
+	const passwordHash = document.getElementById("password").value;
+	const errorBox = document.getElementById("registerError");
 
-	if (!username || !email || !password) {
-		alert("請填寫所有欄位");
-		return;
+	errorBox.style.display = "none";
+	errorBox.textContent = "";
+
+	if (!username || !email || !passwordHash) { 
+		errorBox.textContent = "請填寫所有欄位"; 
+		errorBox.style.display = "block"; 
+		return; 
 	}
 
 	try {
-		await apiPost("/auth/register", {
-			username,
-			email,
-			password
+		const res = await fetch("/api/auth/register", { 
+			method: "POST", 
+			headers: { "Content-Type": "application/json" }, 
+			body: JSON.stringify({ username, email, passwordHash }) 
 		});
 
-		alert("註冊成功，請登入");
-		location.href = "login.html";
+		if (!res.ok) {
+			const errData = await res.json(); 
+			errorBox.textContent = errData.error || "註冊失敗"; 
+			errorBox.style.display = "block"; 
+			return; 
+		}
 
+		const data = await res.json(); 
+		alert(data.message || "註冊成功，請登入"); 
+		location.href = "login.html";
 	} catch (e) {
-		alert("註冊失敗：" + e.message);
+		errorBox.textContent = "系統錯誤，請稍後再試"; 
+		errorBox.style.display = "block";
 	}
 }
 </script>

@@ -1,5 +1,7 @@
 package com.gooddeal.service;
 
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,30 +20,30 @@ public class UserService {
 		this.encoder = encoder; 
 	}
 
-	public Users register(String username, String email, String rawPassword) { 
+	public Optional<Users> register(String username, String email, String rawPassword) { 
 		if (usersRepo.existsByEmail(email)) { 
-			throw new RuntimeException("Email 已被註冊"); 
-		} 
+			return Optional.empty(); 
+		}
 		if (usersRepo.existsByUsername(username)) { 
-			throw new RuntimeException("帳號已被使用"); 
+			return Optional.empty();
 		} 
 		Users user = new Users(); 
 		user.setUsername(username); 
 		user.setEmail(email); 
 		user.setPasswordHash(encoder.encode(rawPassword)); 
-		user.setRole(UserRole.USER);
-		return usersRepo.save(user); 
+		user.setRole(UserRole.USER); 
+		return Optional.of(usersRepo.save(user));
 	}
 	
-	public Users login(String usernameOrEmail, String rawPassword) { 
+	public Optional<Users> login(String usernameOrEmail, String rawPassword) { 
 		Users user = usersRepo.findByUsername(usernameOrEmail); 
 		if (user == null) { 
 			user = usersRepo.findByEmail(usernameOrEmail); 
 		} 
 		if (user == null || !encoder.matches(rawPassword, user.getPasswordHash())) { 
-			throw new RuntimeException("帳號或密碼錯誤"); 
+			return Optional.empty();
 		} 
-		return user; 
+		return Optional.of(user);
 	}
 	
 	public void changePassword(Integer userId, String oldPwd, String newPwd) { 
