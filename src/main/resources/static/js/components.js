@@ -28,7 +28,7 @@ function renderNavbar() {
 	const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
 
 	const leftContent = isHomePage
-		? `<div class="logo" onclick="location.href='index.html'" style="cursor:pointer">EcoSave</div>`
+		? `<div class="logo" onclick="location.href='index.html'" style="cursor:pointer">一塊省</div>`
 		: `<div class="nav-back" onclick="history.back()" style="cursor:pointer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
            </div>`;
@@ -182,7 +182,7 @@ function renderFooter() {
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-info">
-                <h3>EcoSave 商品比價</h3>
+                <h3>一塊省 | EcoSave 商品比價</h3>
                 <p>一塊享優惠，一塊也能省</p>
             </div>
             <div class="footer-contact">
