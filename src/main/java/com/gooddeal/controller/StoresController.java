@@ -34,7 +34,7 @@ public class StoresController {
         return repo.findById(id).map(store -> {
             store.setStoreName(data.getStoreName());
             store.setLocation(data.getLocation());
-            store.setWebsite(data.getWebsite());
+            store.setCity(data.getCity());
             return repo.save(store);
         }).orElse(null);
     }

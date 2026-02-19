@@ -19,7 +19,7 @@ function renderStoreTable(stores) {
 		            <td data-label="商店名稱"><strong>${s.storeName}</strong></td>
 		            <td data-label="群組"><span class="group-badge">${s.storeGroup || '0'}</span></td>
 		            <td data-label="地址/地點" class="text-break">${s.location || '-'}</td>
-		            <td data-label="網站">${s.website ? `<a href="${s.website}" target="_blank" class="site-link">點擊前往</a>` : '-'}</td>
+		            <td data-label="城市" class="text-break">${s.city || '-'}</td>
 		            <td data-label="操作">
 		                <div class="mobile-actions">
 		                    <button class="btn-edit" onclick="openEditStore(${s.storeId})">編輯</button>
@@ -35,7 +35,7 @@ function openCreateStore() {
     document.getElementById("storeName").value = "";
     document.getElementById("storeGroup").value = ""; // 清空
     document.getElementById("location").value = "";
-    document.getElementById("website").value = "";
+    document.getElementById("city").value = "";
     document.getElementById("modalTitle").innerText = "➕ 新增商店";
     document.getElementById("storeModal").style.display = "flex";
 }
@@ -47,7 +47,7 @@ async function openEditStore(id) {
         document.getElementById("storeName").value = s.storeName;
         document.getElementById("storeGroup").value = s.storeGroup || ""; // 填入群組
         document.getElementById("location").value = s.location;
-        document.getElementById("website").value = s.website;
+        document.getElementById("city").value = s.city;
         document.getElementById("modalTitle").innerText = "✏️ 編輯商店";
         document.getElementById("storeModal").style.display = "flex";
     } catch (err) {
@@ -61,7 +61,7 @@ async function saveStore() {
         storeName: document.getElementById("storeName").value,
         storeGroup: parseInt(document.getElementById("storeGroup").value) || 0, // 轉為整數
         location: document.getElementById("location").value,
-        website: document.getElementById("website").value
+        city: document.getElementById("city").value
     };
 
     if (!payload.storeName) return alert("請輸入商店名稱");

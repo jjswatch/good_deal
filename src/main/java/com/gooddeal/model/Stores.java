@@ -20,7 +20,7 @@ public class Stores {
     private String storeName;
 
     private String location;
-    private String website;
+    private String city;
     
     @Column(name = "store_group")
     private Integer storeGroup;
