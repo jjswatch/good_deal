@@ -29,22 +29,15 @@ public interface ProductsRepository extends JpaRepository<Products, Integer> {
 	
 	@Query(value = """
 		    SELECT 
-		        p.product_id,
-		        p.product_name,
-		        p.brand,
-		        p.spec,  
-		        p.image_url, 
+		        p.product_id, p.product_name, p.brand, p.spec, p.image_url, 
 		        (SELECT COUNT(DISTINCT pp2.store_id) FROM product_prices pp2 WHERE pp2.product_id = p.product_id) AS storeCount, 
 		        COUNT(DISTINCT pr.report_id) AS reportCount, 
 		        MIN(pp.price) AS minPrice
 		    FROM products p
-		    LEFT JOIN product_prices pp 
-		        ON p.product_id = pp.product_id
-		    LEFT JOIN price_reports pr 
-		        ON p.product_id = pr.product_id
-		        AND pr.reported_at >= :since
-		    GROUP BY p.product_id
-		    HAVING storeCount >= 2
+		    LEFT JOIN product_prices pp ON p.product_id = pp.product_id
+		    LEFT JOIN price_reports pr ON p.product_id = pr.product_id AND pr.reported_at >= :since
+		    GROUP BY p.product_id, p.product_name, p.brand, p.spec, p.image_url
+		    HAVING (SELECT COUNT(DISTINCT pp3.store_id) FROM product_prices pp3 WHERE pp3.product_id = p.product_id) >= 2
 		    ORDER BY reportCount DESC, storeCount DESC
 		    LIMIT 6
 		""", nativeQuery = true)

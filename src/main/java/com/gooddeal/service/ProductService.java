@@ -70,18 +70,22 @@ public class ProductService {
 
         for (Object[] r : rows) {
             try {
+            	Integer productId = (r[0] != null) ? ((Number) r[0]).intValue() : 0;
+                String productName = (String) r[1];
+                String brand = (String) r[2];
+                String spec = (String) r[3];
+                String imageUrl = (String) r[4];
+                Long storeCount = (r[5] != null) ? ((Number) r[5]).longValue() : 0L;
+                Long reportCount = (r[6] != null) ? ((Number) r[6]).longValue() : 0L;
+                Integer minPrice = (r[7] != null) ? ((Number) r[7]).intValue() : 0;
+
                 list.add(new HotProductDTO(
-                    r[0] != null ? ((Number) r[0]).intValue() : 0,
-                    (String) r[1],
-                    (String) r[2],
-                    (String) r[3],
-                    (String) r[4],
-                    r[5] != null ? ((Number) r[5]).longValue() : 0L,
-                    r[6] != null ? ((Number) r[6]).longValue() : 0L,
-                    r[7] != null ? ((Number) r[7]).intValue() : 0
+                    productId, productName, brand, spec, imageUrl, 
+                    storeCount, reportCount, minPrice
                 ));
             } catch (Exception e) {
-                System.err.println("HotProductDTO 轉換失敗: " + e.getMessage());
+            	System.err.println("HotProductDTO 轉換出錯，原始資料內容: " + java.util.Arrays.toString(r));
+                e.printStackTrace();
             }
         }
         return list;
