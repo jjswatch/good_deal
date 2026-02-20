@@ -1,6 +1,6 @@
 const API_BASE = location.hostname.includes("localhost")
   ? "http://localhost:8080/api"
-  : "https://gooddeal-8hkw.onrender.com/api";
+  : "https://good-deal-ux3i.onrender.com/api";
 
 /* ========== 不需 JWT（login / register） ========== */
 async function apiPostPublic(url, data) {
