@@ -416,6 +416,7 @@ async function initPage() {
 
         const barcode = getParam("barcode");
         const storeId = getParam("store");
+        const name = getParam("name");
         const catId = getParam("cat");
         const keyword = getParam("q");
 
@@ -431,11 +432,11 @@ async function initPage() {
         else if (storeId) {
             const list = await apiGetPublic(`/prices/group/${storeId}`);
             const products = uniqueProductsFromPrices(list);
-            renderProducts(products, `商店專區`, myFavIds); // 傳入 myFavIds
+            renderProducts(products, `${name}專區`, myFavIds); // 傳入 myFavIds
         } 
         else if (catId) {
             const list = await apiGetPublic(`/products/category/${catId}`);
-            renderProducts(list, `分類搜尋`, myFavIds); // 傳入 myFavIds
+            renderProducts(list, `${name}類搜尋`, myFavIds); // 傳入 myFavIds
         } 
         else if (keyword) {
             $("keyword").value = keyword;

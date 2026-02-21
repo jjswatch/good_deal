@@ -491,7 +491,7 @@ async function loadCategories() {
 
         container.innerHTML = categories.map(cat => `
             <div class="category-tag" 
-                 onclick="location.href='search.html?cat=${cat.categoryId}'">
+                 onclick="location.href='search.html?cat=${cat.categoryId}&name=${cat.categoryName}'">
                 ${cat.categoryName}
             </div>
         `).join('');
@@ -510,7 +510,7 @@ function loadStores() {
 
     const container = document.getElementById("store-cards");
     container.innerHTML = stores.map(store => `
-        <div class="store-card" onclick="location.href='search.html?store=${store.id}'">
+        <div class="store-card" onclick="location.href='search.html?store=${store.id}&name=${store.name}'">
             <div class="store-card-top" style="background-image:url('${store.logo}')"></div>
             <div class="store-card-bottom">${store.name}</div>
         </div>

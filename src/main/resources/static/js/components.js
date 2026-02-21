@@ -229,26 +229,66 @@ async function fetchQuickOptions() {
 		
 		// 填充商家
 		data.stores.forEach(s => {
-			if (s) sSelect.add(new Option(s.name, s.id));
+			if (s) { 
+				const opt = new Option(s.name, s.id);
+				opt.dataset.name = s.name; 
+				sSelect.add(opt); 
+			}
 		});
+		
+		sSelect.onchange = function() { 
+			quickJumpWithSelect(this, 'store', 'name'); 
+		};
+		
 		// 填充品牌
 		data.brands.forEach(b => {
-		    if(b) bSelect.add(new Option(b, b));
+		    if (b) { 
+				const opt = new Option(b, b); 
+				opt.dataset.name = b; // 存品牌名稱 
+				bSelect.add(opt); 
+			}
 		});
+		
+		bSelect.onchange = function() { 
+			quickJumpWithSelect(this, 'q', 'name'); 
+		};
+		
 		// 填充分類
 		data.categories.forEach(c => {
-		    if(c) cSelect.add(new Option(c.categoryName, c.categoryId));
+		    if (c) { 
+				const opt = new Option(c.categoryName, c.categoryId); 
+				opt.dataset.name = c.categoryName; // 存分類名稱 
+				cSelect.add(opt); 
+			}
 		});
+		
+		cSelect.onchange = function() { 
+			quickJumpWithSelect(this, 'cat', 'name'); 
+		};
     } catch (err) {
         console.error("載入快捷選項失敗", err);
     }
 }
 
 // 自動跳轉函式
-window.quickJump = function(paramName, value) {
+window.quickJump = function(paramName, value, extraParams = {}) {
     if (!value) return; // 如果選到預設提示項，不跳轉
+	
+	let query = `${paramName}=${encodeURIComponent(value)}`;
+	
+	for (const [key, val] of Object.entries(extraParams)) { 
+		if (val) { 
+			query += `&${key}=${encodeURIComponent(val)}`; 
+		} 
+	}
     
-    // 跳轉至 search.html 並帶上對應參數
-    // 例如：search.html?store=家樂福 或 search.html?cid=5
-    window.location.href = `search.html?${paramName}=${encodeURIComponent(value)}`;
+    window.location.href = `search.html?${query}`;
+};
+
+// 統一的下拉選單跳轉函式 
+window.quickJumpWithSelect = function(selectElement, paramName, extraKey) { 
+	const selected = selectElement.options[selectElement.selectedIndex]; 
+	const value = selected.value; 
+	const extraValue = selected.dataset[extraKey]; // 從 dataset 取顯示名稱 
+	quickJump(paramName, value, { [extraKey]: extraValue }); 
 };
