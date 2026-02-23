@@ -30,7 +30,7 @@ public class CommonInfoController {
 			1, "全聯",
 			2, "家樂福",
 			3, "家樂福超市",
-			4, "愛買"
+			4, "大全聯"
 	);
 	
 	@GetMapping("/quick-search-options")
