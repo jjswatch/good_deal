@@ -29,8 +29,8 @@ public class CommonInfoController {
 	private static final Map<Integer, String> STORE_MAP = Map.of(
 			1, "全聯",
 			2, "家樂福",
-			3, "愛買",
-			4, "寶雅"
+			3, "家樂福超市",
+			4, "愛買"
 	);
 	
 	@GetMapping("/quick-search-options")
