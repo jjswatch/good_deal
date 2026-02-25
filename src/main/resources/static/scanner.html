@@ -2,123 +2,110 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>ZXing 條碼掃描器 (優化版)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>優化版條碼掃描器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    background: #f9f9f9;
-}
-header {
-    background: #4CAF50;
-    color: white;
-    padding: 15px;
-    font-size: 20px;
-}
-video {
-    width: 100%;
-    max-width: 480px;
-    height: auto;
-    border: 2px solid #4CAF50;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-#overlay {
-    position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    max-width: 480px;
-    height: 200px;
-    border: 2px dashed red;
-    border-radius: 8px;
-    pointer-events: none;
-}
-#result {
-    font-size: 18px;
-    margin: 20px;
-    color: #333;
-    word-wrap: break-word;
-}
+    body { font-family: sans-serif; margin: 0; background: #000; color: white; overflow: hidden; }
+    
+    /* 掃描容器：全螢幕 */
+    .scanner-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+    
+    video { width: 100%; height: 100%; object-fit: cover; }
+
+    /* 掃描框區域視覺導引 */
+    .overlay {
+        position: absolute; width: 280px; height: 180px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.5); /* 遮罩效果 */
+    }
+    .overlay::after {
+        content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 2px;
+        background: #4CAF50; transform: translateY(-50%);
+        animation: scan 2s infinite;
+    }
+    @keyframes scan { 0%, 100% { top: 10%; } 50% { top: 90%; } }
+
+    #result {
+        position: absolute; bottom: 50px; width: 100%; text-align: center;
+        background: rgba(0,0,0,0.7); padding: 10px 0; font-size: 1.2rem;
+    }
 </style>
 </head>
 <body>
-<header>📷 條碼掃描器</header>
-<div style="position:relative; display:inline-block;">
-    <video id="video" autoplay playsinline></video>
-    <div id="overlay"></div>
+
+<div class="scanner-container">
+    <video id="video"></video>
+    <div class="overlay"></div>
+    <p id="result">🔍 正在尋找條碼...</p>
 </div>
-<p id="result">請將條碼對準紅框</p>
 
 <script>
 let codeReader;
-let devices = [];
 
 async function initScanner() {
-    codeReader = new ZXing.BrowserMultiFormatReader();
-
-    // 限制掃描格式，提高效能與準確度
+    // 1. 指定格式優化：只掃描 1D 商品條碼 (EAN, UPC, Code128)
     const hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.EAN_13,
-        ZXing.BarcodeFormat.UPC_A,
-        ZXing.BarcodeFormat.CODE_128,
-        ZXing.BarcodeFormat.QR_CODE
-    ]);
-    codeReader.setHints(hints);
-
+    const formats = [
+        ZXing.BarcodeFormat.EAN_13, 
+        ZXing.BarcodeFormat.EAN_8, 
+        ZXing.BarcodeFormat.UPC_A, 
+        ZXing.BarcodeFormat.CODE_128
+    ];
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    
+    // 使用限制格式的 Reader，提升效能
+    codeReader = new ZXing.BrowserMultiFormatReader(hints);
+    
     const videoElement = document.getElementById('video');
     const resultElement = document.getElementById('result');
 
     try {
-        devices = await codeReader.listVideoInputDevices();
-        if (devices.length === 0) {
-            resultElement.textContent = '找不到攝影機裝置';
-            return;
-        }
+        const devices = await codeReader.listVideoInputDevices();
+        if (devices.length === 0) throw new Error("找不到攝影機");
 
-        // 優先選擇後置鏡頭
-        const backCam = devices.find(d => d.label.toLowerCase().includes("back"));
-        const selectedDeviceId = backCam ? backCam.deviceId : devices[0].deviceId;
+        // 2. 鏡頭選擇優化：自動挑選最適合的後置鏡頭 (通常是最後一個)
+        const backCamera = devices.find(d => d.label.toLowerCase().includes('back')) || devices[devices.length - 1];
 
-        // 使用高解析度，提升辨識率
+        // 3. 解析度與焦距優化
         const constraints = {
             video: {
-                deviceId: { exact: selectedDeviceId },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: "environment"
+                deviceId: backCamera.deviceId,
+                width: { min: 640, ideal: 1280, max: 1920 }, // 提高解析度確保條紋清晰
+                height: { min: 480, ideal: 720, max: 1080 },
+                facingMode: 'environment', // 強制後鏡頭
+                focusMode: 'continuous'    // 連續對焦 (部分瀏覽器支援)
             }
         };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoElement.srcObject = stream;
 
-        startScan(selectedDeviceId, videoElement, resultElement);
+        decode(constraints, videoElement, resultElement);
     } catch (error) {
         resultElement.textContent = '初始化失敗：' + error;
+        console.error(error);
     }
 }
 
-function startScan(deviceId, videoElement, resultElement) {
+function decode(constraints, videoElement, resultElement) {
     const params = new URLSearchParams(window.location.search);
     const fromPage = params.get("from");
 
-    codeReader.decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
+    codeReader.decodeFromConstraints(constraints, videoElement, (result, err) => {
         if (result) {
             const text = result.getText();
-            resultElement.textContent = `掃描結果：${text}`;
+            resultElement.textContent = `成功！${text}`;
+            
+            // 震動回饋 (手機專用)
+            if (navigator.vibrate) navigator.vibrate(200);
 
-            // 停止掃描，避免重複觸發
-            codeReader.reset();
-
-            if (fromPage !== "compare") {
-                window.location.href = `search.html?barcode=${encodeURIComponent(text)}`;
-            }
+            // 成功後延遲跳轉，讓使用者看清結果
+            setTimeout(() => {
+                if (fromPage === "compare") {
+                    // 執行比價邏輯
+                } else {
+                    window.location.href = `search.html?barcode=${encodeURIComponent(text)}`;
+                }
+            }, 500);
         }
     });
 }
