@@ -1,86 +1,129 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>ZXing 條碼掃描範例 (手機版)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 引入 ZXing JS CDN -->
-  <script src="https://unpkg.com/@zxing/library@latest"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      background: #f9f9f9;
-    }
-    header {
-      background: #4CAF50;
-      color: white;
-      padding: 15px;
-      font-size: 20px;
-    }
-    video {
-      width: 100%;
-      max-width: 480px;
-      height: auto;
-      border: 2px solid #4CAF50;
-      border-radius: 8px;
-      margin-top: 20px;
-    }
-    #result {
-      font-size: 18px;
-      margin: 20px;
-      color: #333;
-      word-wrap: break-word;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>ZXing 條碼掃描器 (優化版)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: #f9f9f9;
+}
+header {
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    font-size: 20px;
+}
+video {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+#overlay {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 480px;
+    height: 200px;
+    border: 2px dashed red;
+    border-radius: 8px;
+    pointer-events: none;
+}
+#result {
+    font-size: 18px;
+    margin: 20px;
+    color: #333;
+    word-wrap: break-word;
+}
+</style>
 </head>
 <body>
-  <header>📷 條碼掃描器</header>
-  <video id="video" autoplay playsinline></video>
-  <p id="result">請將條碼對準鏡頭</p>
+<header>📷 條碼掃描器</header>
+<div style="position:relative; display:inline-block;">
+    <video id="video" autoplay playsinline></video>
+    <div id="overlay"></div>
+</div>
+<p id="result">請將條碼對準紅框</p>
 
-  <script>
-    let codeReader;
-    let currentDeviceIndex = 0;
-    let devices = [];
+<script>
+let codeReader;
+let devices = [];
 
-    async function initScanner() {
-      codeReader = new ZXing.BrowserMultiFormatReader();
-      const videoElement = document.getElementById('video');
-      const resultElement = document.getElementById('result');
+async function initScanner() {
+    codeReader = new ZXing.BrowserMultiFormatReader();
 
-      try {
+    // 限制掃描格式，提高效能與準確度
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.QR_CODE
+    ]);
+    codeReader.setHints(hints);
+
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+
+    try {
         devices = await codeReader.listVideoInputDevices();
         if (devices.length === 0) {
-          resultElement.textContent = '找不到攝影機裝置';
-          return;
+            resultElement.textContent = '找不到攝影機裝置';
+            return;
         }
-        startScan(videoElement, resultElement);
-      } catch (error) {
-        resultElement.textContent = '初始化失敗：' + error;
-      }
-    }
 
-    function startScan(videoElement, resultElement) {
-      const selectedDeviceId = devices[currentDeviceIndex].deviceId;
-   	  // 獲取 URL 中的 from 參數
-      const params = new URLSearchParams(window.location.search);
-      const fromPage = params.get("from");
-      codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+        // 優先選擇後置鏡頭
+        const backCam = devices.find(d => d.label.toLowerCase().includes("back"));
+        const selectedDeviceId = backCam ? backCam.deviceId : devices[0].deviceId;
+
+        // 使用高解析度，提升辨識率
+        const constraints = {
+            video: {
+                deviceId: { exact: selectedDeviceId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "environment"
+            }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoElement.srcObject = stream;
+
+        startScan(selectedDeviceId, videoElement, resultElement);
+    } catch (error) {
+        resultElement.textContent = '初始化失敗：' + error;
+    }
+}
+
+function startScan(deviceId, videoElement, resultElement) {
+    const params = new URLSearchParams(window.location.search);
+    const fromPage = params.get("from");
+
+    codeReader.decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
         if (result) {
-        	const text = result.getText();
-        	resultElement.textContent = `掃描結果：${result.getText()}`;
-        	if (fromPage === "compare") {
-            } else {
-            	window.location.href = `search.html?barcode=${encodeURIComponent(text)}`;
+            const text = result.getText();
+            resultElement.textContent = `掃描結果：${text}`;
+
+            // 停止掃描，避免重複觸發
+            codeReader.reset();
+
+            if (fromPage !== "compare") {
+                window.location.href = `search.html?barcode=${encodeURIComponent(text)}`;
             }
         }
-      });
-    }
+    });
+}
 
-    window.addEventListener('load', initScanner);
-  </script>
+window.addEventListener('load', initScanner);
+</script>
 </body>
 </html>
