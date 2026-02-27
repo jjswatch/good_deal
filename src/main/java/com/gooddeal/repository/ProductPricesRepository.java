@@ -6,6 +6,7 @@ import com.gooddeal.model.Stores;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +19,7 @@ public interface ProductPricesRepository extends JpaRepository<ProductPrices, In
     
     List<ProductPrices> findByStoreStoreGroup(Integer storeGroup);
     
- // ⭐ 歷史最低（不限時間）
+    // ⭐ 歷史最低（不限時間）
     ProductPrices findFirstByProductProductIdOrderByPriceAscUpdatedAtDesc(Integer productId);
 
     // ⭐ 近 30 天最低
@@ -39,5 +40,8 @@ public interface ProductPricesRepository extends JpaRepository<ProductPrices, In
         """)
         List<ProductPrices> findPricesForBasket(List<Integer> productIds);
     
-    
+    @Query(value = "SELECT * FROM product_prices WHERE id IN (" +
+    	       "SELECT MAX(id) FROM product_prices WHERE product_id = :productId GROUP BY store_id" +
+    	       ")", nativeQuery = true)
+    	List<ProductPrices> findLatestPricesPerStore(@Param("productId") Integer productId);
 }

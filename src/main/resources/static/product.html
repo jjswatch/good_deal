@@ -419,7 +419,7 @@ async function initProductPage(id) {
         renderProductBasic(product);
         renderPriceSummary(priceSummary);
         renderReportList(id);
-        loadHistoryAndChart(id);
+        loadStorePriceDistribution(id);
     } catch (err) {
         console.error("資料初始化失敗:", err);
     }
@@ -475,6 +475,33 @@ function renderPriceSummary(data) {
     `;
 }
 
+async function loadStorePriceDistribution(id) {
+    // 抓取該商品所有的價格紀錄
+    let rawPrices = await apiGetPublic(`/prices/product/${id}`);
+
+    if (!rawPrices || rawPrices.length === 0) {
+        // 如果沒資料，給一組預設值模擬
+        renderMiniChart([159, 155, 160]);
+        return;
+    }
+
+    // --- 重要：過濾邏輯 (確保每個通路只有一個最新價格) ---
+    const latestStorePricesMap = new Map();
+
+    rawPrices.forEach(item => {
+        const storeId = item.store.storeId;
+        // 如果 Map 裡還沒有這個店，或者這筆資料比 Map 裡的更新 (比較 ID 或日期)
+        if (!latestStorePricesMap.has(storeId) || item.id > latestStorePricesMap.get(storeId).id) {
+            latestStorePricesMap.set(storeId, item);
+        }
+    });
+
+    // 轉換回純價格陣列供圖表使用
+    const filteredPrices = Array.from(latestStorePricesMap.values()).map(item => item.price);
+
+    renderMiniChart(filteredPrices);
+}
+
 async function loadHistoryAndChart(id) {
     let historyData = getCachedHistory(id);
     if (!historyData) {
@@ -495,25 +522,44 @@ function renderMiniChart(dataToUse) {
 
     if (miniChartInstance) miniChartInstance.destroy();
 
+    const priceCounts = {};
+    dataToUse.forEach(p => {
+        priceCounts[p] = (priceCounts[p] || 0) + 1;
+    });
+
+    const labels = Object.keys(priceCounts).sort((a, b) => a - b);
+    const counts = labels.map(label => priceCounts[label]);
+
     miniChartInstance = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
-            labels: dataToUse.map(() => ''),
+            labels: labels.map(l => `$${l}`),
             datasets: [{
-                data: dataToUse,
-                borderColor: '#FF4500',
-                borderWidth: 2,
-                pointRadius: 0,
-                fill: true,
-                backgroundColor: 'rgba(255, 69, 0, 0.05)',
-                tension: 0.4
+                data: counts,
+                backgroundColor: labels.map((l, i) => i === 0 ? '#FF4500' : '#E2E8F0'),
+                borderRadius: 4,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            scales: { x: { display: false }, y: { display: false } }
+            plugins: {
+                legend: { display: false },
+                // 增加提示框，顯示該價格有多少通路
+                tooltip: {
+                    callbacks: {
+                        title: (items) => `價格: ${items[0].label}`,
+                        label: (item) => `通路數量: ${item.raw}`
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    grid: { display: false },
+                    ticks: { font: { size: 10 } }
+                },
+                y: { display: false, beginAtZero: true }
+            }
         }
     });
 }
