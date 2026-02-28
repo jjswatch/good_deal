@@ -83,6 +83,15 @@
 	margin-top: 10px;
 }
 
+.product-header {
+    display: block; /* 回歸區塊佈局 */
+}
+
+.product-image-wrapper {
+    position: relative;
+    flex-shrink: 0; /* 確保圖片不被壓縮 */
+}
+
 .meta-tag {
 	font-size: 0.75rem;
 	padding: 4px 10px;
@@ -307,6 +316,36 @@
 	animation: bounce 2s infinite;
 }
 
+.fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.8); /* 加上半透明背景，確保在白色圖片上也看得到 */
+    backdrop-filter: blur(4px); /* 毛玻璃效果，更有質感 */
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.fav-btn.active {
+    background: white;
+    color: var(--primary-red);
+}
+
+.fav-btn:hover {
+    transform: scale(1.1);
+}
+
 @keyframes bounce { 0%, 100% {
 	transform: translateY(0); } 50% { transform:translateY(-5px); }
 }
@@ -328,8 +367,6 @@
 		width: 100%;         /* 寬度撐滿容器 */
         max-width: none;    /* 設定一個理想的最大寬度，避免在平板上太大 */
         height: auto;        /* 高度自動調整，維持比例 */
-
-
 	}
 	.product-name {
 		font-size: 1.3rem;
@@ -385,14 +422,14 @@
 
 <div class="bottom-nav">
 	<div class="action-item" onclick="goCompare()">
-		<span>🔍 比價去</span>
+		<span>🔍 查看比價</span>
 	</div>
 	<div class="action-item active" onclick="openReportModal()">
 		<div class="reward-badge">+10pt</div>
 		<span>📢 回報價格</span>
 	</div>
 	<div class="action-item" onclick="goHistory()">
-		<span>📈 歷史價</span>
+		<span>📈 歷史價格</span>
 	</div>
 </div>
 
@@ -417,9 +454,10 @@ async function initProductPage(id) {
         ]);
 
         renderProductBasic(product);
-        renderPriceSummary(priceSummary);
+        const currentPrice = renderPriceSummary(priceSummary);
         renderReportList(id);
-        loadStorePriceDistribution(id);
+        loadStorePriceDistribution(id, currentPrice);
+        checkInitialFavoriteStatus(id);
     } catch (err) {
         console.error("資料初始化失敗:", err);
     }
@@ -427,17 +465,22 @@ async function initProductPage(id) {
 
 function renderProductBasic(p) {
     document.getElementById("productInfo").innerHTML = `
+    	<div class="product-image-wrapper">
         <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
-        <div class="product-detail-content">
-            <div>
-                <h2 class="product-name">${p.brand} ${p.productName}</h2>
-            </div>
-            <div class="product-meta-tags">
-            	<span class="meta-tag">規格：${p.spec}</span>
-            	<span class="meta-tag">條碼：${p.barcode}</span>
-        	</div>
-            <div id="price-container"></div> 
+        <button id="favoriteBtn" class="fav-btn" onclick="handleFavoriteClick(this, '${p.productId}')">
+            ❤
+        </button>
+    </div>
+    <div class="product-detail-content">
+        <div class="product-header">
+            <h2 class="product-name">${p.brand} ${p.productName}</h2>
         </div>
+        <div class="product-meta-tags">
+            <span class="meta-tag">規格：${p.spec}</span>
+            <span class="meta-tag">條碼：${p.barcode}</span>
+        </div>
+        <div id="price-container"></div> 
+    </div>
     `;
 }
 
@@ -451,15 +494,21 @@ function renderPriceSummary(data) {
         return;
     }
 
+    // 決定要顯示的價格主體
     const displayData = recent || history;
-    const labelText = recent ? "⚡ 近 30 天最低" : "🏆 歷史最低價";
+    
+    // 修改標籤文字：配合柱狀圖，強調這是「目前」篩選出的最優價格
+    const labelText = recent ? "✨ 目前市場最低價" : "🏆 歷史最優價格";
     const labelClass = recent ? "label-recent" : "label-history";
     
-    // 建議入手邏輯
+    // 建議入手邏輯：
+    // 這裡可以保留歷史對比，因為「歷史低點」依然是很有價值的參考指標
     const isGoodPrice = history ? (displayData.price <= history.price * 1.05) : true;
+    
+    // 如果是市場最低且接近歷史低點
     const signalHTML = isGoodPrice 
-        ? `<span class="buy-signal signal-buy">🔥 建議入手</span>` 
-        : `<span class="buy-signal signal-wait">⏳ 建議觀望</span>`;
+        ? `<span class="buy-signal signal-buy">🔥 划算入手</span>` 
+        : `<span class="buy-signal signal-wait">⏳ 價格稍高</span>`;
 
     container.innerHTML = `
         <div class="best-price-card">
@@ -468,14 +517,17 @@ function renderPriceSummary(data) {
                 $${displayData.price}
                 ${signalHTML}
             </div>
+
             <div class="mini-chart-container">
                 <canvas id="miniTrendChart"></canvas>
             </div>
         </div>
     `;
+
+    return displayData.price; // 回傳這個價格
 }
 
-async function loadStorePriceDistribution(id) {
+async function loadStorePriceDistribution(id, highlightPrice) {
     // 抓取該商品所有的價格紀錄
     let rawPrices = await apiGetPublic(`/prices/product/${id}`);
 
@@ -499,7 +551,7 @@ async function loadStorePriceDistribution(id) {
     // 轉換回純價格陣列供圖表使用
     const filteredPrices = Array.from(latestStorePricesMap.values()).map(item => item.price);
 
-    renderMiniChart(filteredPrices);
+    renderMiniChart(filteredPrices, highlightPrice);
 }
 
 async function loadHistoryAndChart(id) {
@@ -516,7 +568,7 @@ async function loadHistoryAndChart(id) {
     renderMiniChart(chartPrices);
 }
 
-function renderMiniChart(dataToUse) {
+function renderMiniChart(dataToUse, highlightPrice) {
     const ctx = document.getElementById('miniTrendChart')?.getContext('2d');
     if (!ctx) return;
 
@@ -536,7 +588,7 @@ function renderMiniChart(dataToUse) {
             labels: labels.map(l => `$${l}`),
             datasets: [{
                 data: counts,
-                backgroundColor: labels.map((l, i) => i === 0 ? '#FF4500' : '#E2E8F0'),
+                backgroundColor: labels.map(l => Number(l) === Number(highlightPrice) ? '#FF4500' : '#E2E8F0'),
                 borderRadius: 4,
             }]
         },
@@ -652,6 +704,91 @@ function getCachedHistory(id) {
 }
 function setCachedHistory(id, data) {
     localStorage.setItem(`priceHistory_${id}`, JSON.stringify({ timestamp: Date.now(), data }));
+}
+
+async function checkInitialFavoriteStatus(productId) {
+    const user = getCurrentUser();
+    if (!user) return; // 未登入就不檢查
+
+    try {
+        const userId = user.userId || user.id;
+        // 假設後端有一個檢查狀態的 API，或從收藏清單比對
+        const status = await apiGet(`/favorites/status?userId=${userId}&productId=${productId}`);
+        if (status.isFavorited) {
+            document.getElementById("favoriteBtn").classList.add("active");
+        }
+    } catch (err) {
+        console.warn("無法取得收藏狀態", err);
+    }
+}
+
+async function handleFavoriteClick(btn, productId) {
+    const user = getCurrentUser();
+    if (!user) {
+        if (confirm("收藏功能需要登入，是否前往登入？")) {
+            location.href = "login.html?redirect=" + encodeURIComponent(location.href);
+        }
+        return;
+    }
+
+    // 加上簡單的防抖，避免重複點擊
+    if (btn.disabled) return;
+    btn.disabled = true;
+
+    const userId = user.userId || user.id;
+
+    try {
+        const result = await apiPost("/favorites/toggle", {
+            userId: userId,
+            productId: productId
+        });
+
+        if (result.favorited) {
+            btn.classList.add("active");
+            // 可以改用更美觀的 Toast 通知
+            console.log("已加入我的最愛");
+        } else {
+            btn.classList.remove("active");
+            console.log("已從我的最愛移除");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("操作失敗，請稍後再試");
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function toggleFavorite(btn, productId) {
+    const user = getCurrentUser();
+    if (!user) {
+        if (confirm("收藏功能需要登入，是否前往登入？")) {
+            location.href = "login.html?redirect=" + encodeURIComponent(location.href);
+        }
+        return;
+    }
+
+    const userId = user.userId || user.id;
+
+    try {
+        const result = await apiPost("/favorites/toggle", {
+            userId: userId,
+            productId: productId
+        });
+
+        if (result.favorited) {
+            console.log("已加入收藏！");
+            btn.classList.add("active");
+            alert("已成功加入我的最愛！");
+        } else {
+            console.log("已移除收藏！");
+            btn.classList.remove("active");
+            alert("已從我的最愛中刪除！");
+        }
+    } catch (err) {
+    	console.error(err);
+        alert("操作失敗，請稍後再試");
+    }
 }
 </script>
 </body>
