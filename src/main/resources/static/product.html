@@ -84,12 +84,12 @@
 }
 
 .product-header {
-	display: block; /* 回歸區塊佈局 */
+    display: block; /* 回歸區塊佈局 */
 }
 
 .product-image-wrapper {
-	position: relative;
-	flex-shrink: 0; /* 確保圖片不被壓縮 */
+    position: relative;
+    flex-shrink: 0; /* 確保圖片不被壓縮 */
 }
 
 .meta-tag {
@@ -316,31 +316,57 @@
 	animation: bounce 2s infinite;
 }
 
-@
-keyframes bounce { 0%, 100% {
-	transform: translateY(0);
+.fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.8); /* 加上半透明背景，確保在白色圖片上也看得到 */
+    backdrop-filter: blur(4px); /* 毛玻璃效果，更有質感 */
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-50
-%
-{
-transform
-:
-translateY(
--5px
-);
+.fav-btn.active {
+    background: white;
+    color: var(--primary-red);
 }
+
+.fav-btn:hover {
+    transform: scale(1.1);
 }
+
+.fav-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #cbd5e1; /* 預設灰色 */
+    transition: fill 0.3s ease;
+}
+
+.fav-btn.active svg {
+    fill: var(--primary-red); /* 激活時紅色 */
+}
+
+@keyframes bounce { 0%, 100% {
+	transform: translateY(0); } 50% { transform:translateY(-5px); }
+}
+
 @media ( min-width : 769px) {
-	.bottom-nav {
-		display: none;
-	}
+	.bottom-nav { display: none; }
 }
 
 @media ( max-width : 768px) {
-	.desktop-buttons {
-		display: none;
-	}
+	.desktop-buttons { display: none; }
 	#productInfo {
 		flex-direction: column; /* 變回上下排列 */
 		align-items: center;
@@ -349,9 +375,9 @@ translateY(
 		gap: 15px;
 	}
 	#productInfo img {
-		width: 100%; /* 寬度撐滿容器 */
-		max-width: none; /* 設定一個理想的最大寬度，避免在平板上太大 */
-		height: auto; /* 高度自動調整，維持比例 */
+		width: 100%;         /* 寬度撐滿容器 */
+        max-width: none;    /* 設定一個理想的最大寬度，避免在平板上太大 */
+        height: auto;        /* 高度自動調整，維持比例 */
 	}
 	.product-name {
 		font-size: 1.3rem;
@@ -362,98 +388,67 @@ translateY(
 	.best-price-value {
 		font-size: 28px;
 	}
-	.fav-btn {
-		position: absolute;
-		top: 12px;
-		right: 12px;
-		background: rgba(255, 255, 255, 0.8); /* 加上半透明背景，確保在白色圖片上也看得到 */
-		backdrop-filter: blur(4px); /* 毛玻璃效果，更有質感 */
-		border: none;
-		width: 38px;
-		height: 38px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		font-size: 18px;
-		color: #cbd5e1;
-		transition: all 0.3s ease;
-		z-index: 10;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-	.fav-btn.active {
-		background: white;
-		color: var(--primary-red);
-	}
-	.fav-btn:hover {
-		transform: scale(1.1);
-	}
 }
 </style>
 </head>
 
 <body>
 
-	<div class="container">
-		<div id="productInfo">
-			<p style="color: #94a3b8;">商品資料載入中...</p>
-		</div>
-
-		<div class="report-section">
-			<h3 class="section-title">最新會員回報價格</h3>
-			<ul id="reportList" style="list-style: none; padding: 0;">
-				<li style="color: #94a3b8; text-align: center; padding: 20px;">載入回報紀錄中...</li>
-			</ul>
-		</div>
-
-		<div class="desktop-buttons"
-			style="text-align: center; margin-top: 30px;">
-			<button class="button btn-dark" onclick="goCompare()">查看比價</button>
-			<button class="button btn-primary" onclick="openReportModal()">回報價格</button>
-			<button class="button btn-dark" onclick="goHistory()">歷史價格</button>
-		</div>
+<div class="container">
+	<div id="productInfo">
+		<p style="color: #94a3b8;">商品資料載入中...</p>
 	</div>
 
-	<div id="reportModal" class="modal">
-		<div class="modal-content">
-			<h3 style="margin-top: 0">回報商品價格</h3>
-			<p id="modalProductName"
-				style="color: #666; font-size: 14px; margin-bottom: 20px;"></p>
-			<div class="form-group">
-				<label>通路店家</label> <select id="reportStore">
-					<option value="">載入店家...</option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label>目前售價 ($)</label> <input type="number" id="reportPrice"
-					placeholder="請輸入看到的價格">
-			</div>
-			<button onclick="submitReport()" class="button btn-primary"
-				style="width: 100%; margin-bottom: 10px;">送出回報</button>
-			<button onclick="closeReportModal()" class="button btn-gray"
-				style="width: 100%;">取消</button>
-		</div>
+	<div class="report-section">
+		<h3 class="section-title">最新會員回報價格</h3>
+		<ul id="reportList" style="list-style: none; padding: 0;">
+			<li style="color: #94a3b8; text-align: center; padding: 20px;">載入回報紀錄中...</li>
+		</ul>
 	</div>
 
-	<div class="bottom-nav">
-		<div class="action-item" onclick="goCompare()">
-			<span>🔍 查看比價</span>
-		</div>
-		<div class="action-item active" onclick="openReportModal()">
-			<div class="reward-badge">+10pt</div>
-			<span>📢 回報價格</span>
-		</div>
-		<div class="action-item" onclick="goHistory()">
-			<span>📈 歷史價格</span>
-		</div>
+	<div class="desktop-buttons" style="text-align: center; margin-top: 30px;">
+		<button class="button btn-dark" onclick="goCompare()">查看比價</button>
+		<button class="button btn-primary" onclick="openReportModal()">回報價格</button>
+		<button class="button btn-dark" onclick="goHistory()">歷史價格</button>
 	</div>
+</div>
 
-	<script src="js/api.js"></script>
-	<script src="js/auth.js"></script>
-	<script src="js/components.js"></script>
+<div id="reportModal" class="modal">
+	<div class="modal-content">
+		<h3 style="margin-top: 0">回報商品價格</h3>
+		<p id="modalProductName" style="color: #666; font-size: 14px; margin-bottom: 20px;"></p>
+		<div class="form-group">
+			<label>通路店家</label> 
+			<select id="reportStore">
+				<option value="">載入店家...</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label>目前售價 ($)</label> <input type="number" id="reportPrice" 	placeholder="請輸入看到的價格">
+		</div>
+		<button onclick="submitReport()" class="button btn-primary" style="width: 100%; margin-bottom: 10px;">送出回報</button>
+		<button onclick="closeReportModal()" class="button btn-gray" style="width: 100%;">取消</button>
+	</div>
+</div>
 
-	<script>
+<div class="bottom-nav">
+	<div class="action-item" onclick="goCompare()">
+		<span>🔍 查看比價</span>
+	</div>
+	<div class="action-item active" onclick="openReportModal()">
+		<div class="reward-badge">+10pt</div>
+		<span>📢 回報價格</span>
+	</div>
+	<div class="action-item" onclick="goHistory()">
+		<span>📈 歷史價格</span>
+	</div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+
+<script>
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
 let miniChartInstance = null;
@@ -484,7 +479,9 @@ function renderProductBasic(p) {
     	<div class="product-image-wrapper">
         <img src="${p.imageUrl || 'assets/placeholder.png'}" alt="${p.productName}">
         <button id="favoriteBtn" class="fav-btn" onclick="handleFavoriteClick(this, '${p.productId}')">
-            ❤
+        	<svg viewBox="0 0 24 24">
+        		<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    		</svg>
         </button>
     </div>
     <div class="product-detail-content">
