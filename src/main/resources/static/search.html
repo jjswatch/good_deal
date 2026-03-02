@@ -184,6 +184,32 @@
     align-items: center;
 }
 
+/* Toast 通知樣式 */
+.toast {
+    position: fixed;
+    bottom: 100px; /* 避開底部導覽列 */
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30, 41, 59, 0.9); /* 使用你的 --text-dark 顏色帶透明度 */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    white-space: nowrap;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* === 直列模式 (List View) === */
 #resultList.list-view {
     display: flex;
@@ -475,18 +501,36 @@ async function toggleFavorite(btn, productId) {
         });
 
         if (result.favorited) {
-            console.log("已加入收藏！");
             btn.classList.add("active");
-            alert("已成功加入我的最愛！");
+            showToast("❤️ 已加入我的最愛");
         } else {
-            console.log("已移除收藏！");
             btn.classList.remove("active");
-            alert("已從我的最愛中刪除！");
+            showToast("已從我的最愛移除");
         }
     } catch (err) {
     	console.error(err);
-        alert("操作失敗，請稍後再試");
+    	showToast("❌ 操作失敗，請稍後再試");
     }
+}
+
+function showToast(message) {
+    let toast = document.getElementById("toastNotification");
+    
+    // 如果元素不存在，就動態建立一個
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toastNotification";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    // 2.5 秒後自動消失
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
 }
 
 // 執行

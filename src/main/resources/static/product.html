@@ -357,6 +357,31 @@
     fill: var(--primary-red); /* 激活時紅色 */
 }
 
+.toast {
+    position: fixed;
+    bottom: 100px; /* 避開底部導覽列 */
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30, 41, 59, 0.9); /* 使用你的 --text-dark 顏色帶透明度 */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    white-space: nowrap;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
 @keyframes bounce { 0%, 100% {
 	transform: translateY(0); } 50% { transform:translateY(-5px); }
 }
@@ -758,15 +783,14 @@ async function handleFavoriteClick(btn, productId) {
 
         if (result.favorited) {
             btn.classList.add("active");
-            // 可以改用更美觀的 Toast 通知
-            console.log("已加入我的最愛");
+            showToast("❤️ 已加入我的最愛");
         } else {
             btn.classList.remove("active");
-            console.log("已從我的最愛移除");
+            showToast("已從我的最愛移除");
         }
     } catch (err) {
         console.error(err);
-        alert("操作失敗，請稍後再試");
+        showToast("❌ 操作失敗，請稍後再試");
     } finally {
         btn.disabled = false;
     }
@@ -802,6 +826,26 @@ async function toggleFavorite(btn, productId) {
     	console.error(err);
         alert("操作失敗，請稍後再試");
     }
+}
+
+function showToast(message) {
+    let toast = document.getElementById("toastNotification");
+    
+    // 如果元素不存在，就動態建立一個
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toastNotification";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    // 2.5 秒後自動消失
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
 }
 </script>
 </body>
