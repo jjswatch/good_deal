@@ -203,6 +203,89 @@ nav {
     color: #2d3748;
 }
 
+.fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.8); /* 加上半透明背景，確保在白色圖片上也看得到 */
+    backdrop-filter: blur(4px); /* 毛玻璃效果，更有質感 */
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.fav-btn.active {
+    background: white;
+    color: var(--primary-red);
+}
+
+.fav-btn:hover {
+    transform: scale(1.1);
+}
+
+.fav-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #cbd5e1; /* 預設灰色 */
+    transition: fill 0.3s ease;
+}
+
+.fav-btn.active svg {
+    fill: var(--primary-red); /* 激活時紅色 */
+}
+
+.toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30, 41, 59, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px; /* 改為稍微方正一點點，適合放按鈕 */
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 15px; /* 文字與按鈕的間距 */
+}
+
+.toast-btn {
+    background: var(--primary-red);
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.toast-btn:hover {
+    background: #ff5e1a;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
 .site-footer {
     background: #2d3436;
     color: #dfe6e9;

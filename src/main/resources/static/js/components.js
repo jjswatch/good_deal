@@ -292,3 +292,77 @@ window.quickJumpWithSelect = function(selectElement, paramName, extraKey) {
 	const extraValue = selected.dataset[extraKey]; // 從 dataset 取顯示名稱 
 	quickJump(paramName, value, { [extraKey]: extraValue }); 
 };
+
+async function handleFavoriteClick(btn, productId) {
+    const user = getCurrentUser();
+    if (!user) {
+    	showToast("收藏功能需要登入喔！", "立即登入", () => {
+            location.href = "login.html?redirect=" + encodeURIComponent(location.href);
+        });
+        return;
+    }
+
+    // 加上簡單的防抖，避免重複點擊
+    if (btn.disabled) return;
+    btn.disabled = true;
+
+    const userId = user.userId || user.id;
+
+    try {
+        const result = await apiPost("/favorites/toggle", {
+            userId: userId,
+            productId: productId
+        });
+
+        if (result.favorited) {
+            btn.classList.add("active");
+            showToast("❤️ 已加入我的最愛");
+        } else {
+            btn.classList.remove("active");
+            showToast("已從我的最愛移除");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("❌ 操作失敗，請稍後再試");
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function showToast(message, actionText = null, actionCallback = null) {
+    let toast = document.getElementById("toastNotification");
+    
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toastNotification";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+    }
+
+    // 建立內容
+    let content = `<span>${message}</span>`;
+    if (actionText && actionCallback) {
+        content += `<button class="toast-btn" id="toastActionBtn">${actionText}</button>`;
+    }
+    
+    toast.innerHTML = content;
+    toast.classList.add("show");
+
+    // 如果有按鈕，綁定事件
+    if (actionText && actionCallback) {
+        document.getElementById("toastActionBtn").onclick = () => {
+            actionCallback();
+            toast.classList.remove("show");
+        };
+    }
+
+    // 如果有按鈕，我們讓它停留久一點 (5秒)，否則 2.5 秒消失
+    const duration = actionText ? 5000 : 2500;
+    
+    // 清除之前的計時器防止閃爍
+    if (window.toastTimer) clearTimeout(window.toastTimer);
+    
+    window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, duration);
+}
