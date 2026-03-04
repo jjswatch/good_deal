@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GoodDeal｜商品比價平台</title>
+<title>商品簡介｜CoSave　一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -625,7 +625,7 @@ function formatTimeAgo(time) {
 
 function openReportModal() {
     if (!getCurrentUser()) {
-    	showToast("登入後即可回報價格並領取積分！", "前往登入", () => {
+        showToast("想領取積分嗎？請先登入喔", "立即登入", () => {
             location.href = "login.html";
         });
         return;
@@ -651,17 +651,25 @@ async function loadStoreOptions() {
 async function submitReport() {
     const storeId = document.getElementById("reportStore").value;
     const price = document.getElementById("reportPrice").value;
-    if (!storeId || !price) return alert("請完整填寫內容");
+    
+    if (!storeId || !price) {
+        showToast("⚠️ 請完整填寫內容");
+        return;
+    }
 
     try {
         await apiPost("/price-reports", {
             productId, storeId, reportedPrice: parseFloat(price), userId: getCurrentUser().id
         });
-        alert("回報成功！審核通過後將發送積分");
+        
+        closeReportModal(); // 關閉彈窗
+        showToast("✅ 回報成功！審核通過將發送積分"); // 用 Toast 代替 Alert
+        
         localStorage.removeItem(`priceHistory_${productId}`);
-        closeReportModal();
         renderReportList(productId);
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+        showToast("❌ " + err.message); 
+    }
 }
 
 // 頁面跳轉

@@ -182,7 +182,7 @@ function renderFooter() {
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-info">
-                <h3>一塊省 | EcoSave 商品比價</h3>
+                <h3>最即時的商品比價｜CoSave　一塊省</h3>
                 <p>一塊享優惠，一塊也能省</p>
             </div>
             <div class="footer-contact">
@@ -296,21 +296,18 @@ window.quickJumpWithSelect = function(selectElement, paramName, extraKey) {
 async function handleFavoriteClick(btn, productId) {
     const user = getCurrentUser();
     if (!user) {
-    	showToast("收藏功能需要登入喔！", "立即登入", () => {
+        showToast("登入後即可收藏此商品", "前往登入", () => {
             location.href = "login.html?redirect=" + encodeURIComponent(location.href);
         });
         return;
     }
 
-    // 加上簡單的防抖，避免重複點擊
     if (btn.disabled) return;
     btn.disabled = true;
 
-    const userId = user.userId || user.id;
-
     try {
         const result = await apiPost("/favorites/toggle", {
-            userId: userId,
+            userId: user.userId || user.id,
             productId: productId
         });
 
@@ -322,7 +319,6 @@ async function handleFavoriteClick(btn, productId) {
             showToast("已從我的最愛移除");
         }
     } catch (err) {
-        console.error(err);
         showToast("❌ 操作失敗，請稍後再試");
     } finally {
         btn.disabled = false;
@@ -331,7 +327,6 @@ async function handleFavoriteClick(btn, productId) {
 
 function showToast(message, actionText = null, actionCallback = null) {
     let toast = document.getElementById("toastNotification");
-    
     if (!toast) {
         toast = document.createElement("div");
         toast.id = "toastNotification";
@@ -339,7 +334,9 @@ function showToast(message, actionText = null, actionCallback = null) {
         document.body.appendChild(toast);
     }
 
-    // 建立內容
+    // 清除舊內容與計時器
+    if (window.toastTimer) clearTimeout(window.toastTimer);
+    
     let content = `<span>${message}</span>`;
     if (actionText && actionCallback) {
         content += `<button class="toast-btn" id="toastActionBtn">${actionText}</button>`;
@@ -348,21 +345,15 @@ function showToast(message, actionText = null, actionCallback = null) {
     toast.innerHTML = content;
     toast.classList.add("show");
 
-    // 如果有按鈕，綁定事件
     if (actionText && actionCallback) {
         document.getElementById("toastActionBtn").onclick = () => {
             actionCallback();
             toast.classList.remove("show");
         };
+        // 互動式通知停留較久 (6秒)
+        window.toastTimer = setTimeout(() => toast.classList.remove("show"), 6000);
+    } else {
+        // 一般通知停留 2.5 秒
+        window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
     }
-
-    // 如果有按鈕，我們讓它停留久一點 (5秒)，否則 2.5 秒消失
-    const duration = actionText ? 5000 : 2500;
-    
-    // 清除之前的計時器防止閃爍
-    if (window.toastTimer) clearTimeout(window.toastTimer);
-    
-    window.toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-    }, duration);
 }

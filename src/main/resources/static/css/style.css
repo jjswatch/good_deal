@@ -252,32 +252,36 @@ nav {
     background: rgba(30, 41, 59, 0.95);
     color: white;
     padding: 12px 20px;
-    border-radius: 12px; /* 改為稍微方正一點點，適合放按鈕 */
+    border-radius: 50px;
     font-size: 14px;
-    z-index: 9999;
+    z-index: 9999; /* 確保在 Modal 之上 */
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
-    gap: 15px; /* 文字與按鈕的間距 */
+    gap: 15px;
+    min-width: 280px;
+    justify-content: space-between;
 }
 
 .toast-btn {
     background: var(--primary-red);
     color: white;
     border: none;
-    padding: 4px 12px;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 800;
     white-space: nowrap;
+    transition: 0.2s;
 }
 
 .toast-btn:hover {
-    background: #ff5e1a;
+    transform: scale(1.05);
+    filter: brightness(1.1);
 }
 
 .toast.show {

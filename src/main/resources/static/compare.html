@@ -3,9 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GoodDeal｜商品比價平台</title>
+<title>商店比價｜CoSave　一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
+:root {
+	--primary-red: #FF4500;
+	--secondary-red: #ef4444;
+	--text-dark: #1e293b;
+	--text-gray: #64748b;
+	--bg-light: #f8fafc;
+	--border-color: #e2e8f0;
+}
+/* 已加入清單的按鈕樣式 */
+.btn-added {
+    background: #e8f5e9 !important; /* 淺綠色背景 */
+    color: #2e7d32;
+    transform: scale(1.1);
+}
+
+.btn-added:hover {
+    background: #c8e6c9 !important;
+}
+
 /* 商品區塊 */
 .product-header {
     max-width: 1100px;
@@ -75,7 +94,28 @@
     background: #333;
 }
 
+/* 商店 Logo 樣式 */
+.store-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
+.store-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain; /* 保持 Logo 比例不變形 */
+    background: #f8fafc;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid #f1f5f9;
+}
+
+.price-store {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 </style>
 </head>
 
@@ -129,6 +169,14 @@ async function loadProduct() {
     document.getElementById("productSpec").innerText = product.spec ? "規格：" + product.spec : "";
 }
 
+function getWishlistIds() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    const uid = user.userId || user.id;
+    const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
+    return wishlist.map(item => item.priceId);
+}
+
 async function loadPrices() {
     const id = getQueryParam("id");
     if (!id) return;
@@ -141,26 +189,45 @@ async function loadPrices() {
         return;
     }
 
+    const logoMap = { 1: 'px.png', 2: 'carrefour.png', 3: 'market.png', 4: 'mega.png' };
+    const savedIds = getWishlistIds();
+
     prices.sort((a, b) => a.price - b.price);
 
-    list.innerHTML = prices.map(p => `
-    <div class="price-card">
-        <div class="price-store">
-            ${p.store.storeName}
-            <div style="font-size:12px; color:#999; font-weight:normal;">回報於：${p.updatedAt || '今日'}</div>
+    list.innerHTML = prices.map(p => {
+    	const displayDate = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('zh-TW') : '今日';
+        const logoPath = `assets/stores/${logoMap[p.store.storeGroup] || 'placeholder.png'}`;
+        
+        // 判斷是否已在清單中
+        const isAdded = savedIds.includes(p.priceId);
+
+        return `
+        <div class="price-card">
+            <div class="store-info-wrapper">
+                <img src="${logoPath}" alt="${p.store.storeName}" class="store-logo" onerror="this.src='assets/placeholder.png'">
+                <div class="price-store">
+                    <span class="store-name">${p.store.storeName}</span>
+                    <div style="font-size:11px; color:#94a3b8; font-weight:normal; margin-top:2px;">
+                        回報日期：${displayDate}
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div class="price-value">$${p.price}</div>
+                ${isAdded ? 
+                    `<button onclick="location.href='wishlist.html'" class="btn-added" style="background:#e8f5e9; border:none; cursor:pointer; padding:8px; border-radius:50%;">✅</button>` :
+                    `<button id="btn-${p.priceId}" onclick="addToWishlist(this, '${id}', '${p.priceId}', '${p.store.storeName}', ${p.price})" 
+                            style="background:#f1f5f9; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:0.2s;">🛒</button>`
+                }
+            </div>
         </div>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <div class="price-value">$${p.price}</div>
-            <button onclick="addToWishlist('${id}', '${p.priceId}', '${p.store.storeName}', ${p.price})" style="background:none; border:none; cursor:pointer; padding:5px;"> 🛒 </button>
-        </div>
-    </div>
-`).join("");
+    `}).join("");
 }
 
-function addToWishlist(productId, priceId, storeName, price) {
+function addToWishlist(btn, productId, priceId, storeName, price) {
     const user = getCurrentUser();
     if (!user) {
-        alert("請先登入後再加入購物清單喔！");
+        showToast("💡 請先登入後再加入清單喔！");
         return;
     }
     const uid = user.userId || user.id;
@@ -174,7 +241,7 @@ function addToWishlist(productId, priceId, storeName, price) {
 
     // 檢查是否重複加入
     if (wishlist.some(item => item.priceId === priceId)) {
-        alert("這項商品價格已經在清單中囉！");
+        showToast("⚠️ 這項價格已經在清單中囉！");
         return;
     }
 
@@ -193,9 +260,15 @@ function addToWishlist(productId, priceId, storeName, price) {
     wishlist.push(newItem);
     localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
 
-    alert(`已將 ${storeName} 的價格加入清單！`);
+	// 2. UI 狀態即時切換
+    btn.innerHTML = "✅";
+    btn.classList.add("btn-added");
+    btn.onclick = () => location.href = 'wishlist.html'; // 更改點擊行為
     
-    // 選項：加入後可以跳轉到清單頁，或更新 UI
+    // 3. 顯示自定義 Toast (帶有動作按鈕)
+    showToast(`✅ 已加入清單！`, "查看清單", () => {
+        location.href = "wishlist.html";
+    });
 }
 
 // 初始化

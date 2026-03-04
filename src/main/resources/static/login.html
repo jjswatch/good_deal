@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>一塊省｜登入</title>
+<title>會員登入｜CoSave　一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
 /* Hero */
@@ -111,58 +111,79 @@ button:hover {
 		<label for="password">密碼</label> <input type="password" id="password" placeholder="請輸入密碼">
 	</div>
 
-	<div id="loginError" style="display: none; margin-bottom: 12px; padding: 10px; border-radius: 10px; background: #fdecea; color: #b71c1c; font-size: 14px; text-align: center;"></div>
-
 	<button onclick="login()">登入</button>
 
 	<div class="extra">還沒有帳號？ <a href="register.html">立即註冊</a></div>
 </main>
 
 <script src="js/api.js"></script>
+<script src="js/components.js"></script>
 <script>
+//Toast 工具函數
+function showToast(message) {
+    let toast = document.getElementById("toastNotification");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toastNotification";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    if (window.toastTimer) clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+}
+
+// 修改後的登入函數
 async function login() {
-	const username = document.getElementById("username").value.trim();
-	const password = document.getElementById("password").value.trim();
-	const errorBox = document.getElementById("loginError");
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-	errorBox.style.display = "none";
-	errorBox.textContent = "";
+    // 1. 檢查欄位是否空白
+    if (!username || !password) {
+        showToast("⚠️ 請輸入帳號與密碼");
+        return;
+    }
 
-	if (!username || !password) {
-		errorBox.textContent = "請輸入帳號與密碼";
-		errorBox.style.display = "block";
-	    return;
-	}
+    try {
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
 
-	try {
-		const res = await fetch("/api/auth/login", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ username, password })
-		});
+        if (!res.ok) {
+            const errData = await res.json();
+            // 2. 顯示後端回傳的錯誤 (例如：密碼錯誤)
+            showToast("❌ " + (errData.error || "登入失敗"));
+            return;
+        }
 
-		if (!res.ok) {
-			const errData = await res.json();
-			errorBox.textContent = errData.error || "登入失敗";
-			errorBox.style.display = "block";
-			return;
-		}
+        const data = await res.json();
 
-		const data = await res.json();
+        // 儲存資訊
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role);
+        localStorage.setItem("username", data.user.username);
 
-		localStorage.setItem("token", data.token);
-		localStorage.setItem("role", data.user.role);
-		localStorage.setItem("username", data.user.username);
+        // 3. 登入成功提示 (可選，通常直接跳轉)
+        showToast("✅ 登入成功，正在跳轉...");
 
-		if (data.user.role === "ADMIN") {
-			location.href = "admin/admin-dashboard.html";
-		} else {
-			location.href = "index.html";
-		}
-	} catch (err) {
-		errorBox.textContent = "系統錯誤，請稍後再試";
-		errorBox.style.display = "block";
-	}
+        setTimeout(() => {
+            if (data.user.role === "ADMIN") {
+                location.href = "admin/admin-dashboard.html";
+            } else {
+                location.href = "index.html";
+            }
+        }, 800);
+
+    } catch (err) {
+        // 4. 系統錯誤提示
+        showToast("📡 網路連線異常，請稍後再試");
+    }
 }
 </script>
 </body>

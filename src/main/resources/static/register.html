@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>一塊省｜會員註冊</title>
+<title>會員註冊｜CoSave　一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
 /* Hero */
@@ -120,8 +120,6 @@ button:hover {
 		<input id="password" type="password" placeholder="至少 6 碼">
 	</div>
 	
-	<div id="registerError" style="display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:#fdecea; color:#b71c1c; font-size:14px; text-align:center;"></div>
-
 	<button onclick="register()">註冊</button>
 
 	<div class="extra">
@@ -130,43 +128,57 @@ button:hover {
 </main>
 
 <script src="js/api.js"></script>
+<script src="js/components.js"></script>
 <script>
 async function register() {
-	const username = document.getElementById("username").value.trim();
-	const email = document.getElementById("email").value.trim();
-	const passwordHash = document.getElementById("password").value;
-	const errorBox = document.getElementById("registerError");
+    const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const passwordHash = document.getElementById("password").value;
 
-	errorBox.style.display = "none";
-	errorBox.textContent = "";
+ // 1. 檢查欄位是否空白
+    if (!username || !email || !passwordHash) { 
+        showToast("⚠️ 請填寫所有欄位"); 
+        return; 
+    }
 
-	if (!username || !email || !passwordHash) { 
-		errorBox.textContent = "請填寫所有欄位"; 
-		errorBox.style.display = "block"; 
-		return; 
-	}
+    // 2. Email 格式檢查 (新增部分)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast("📧 Email 格式不太對喔，請檢查一下");
+        return;
+    }
 
-	try {
-		const res = await fetch("/api/auth/register", { 
-			method: "POST", 
-			headers: { "Content-Type": "application/json" }, 
-			body: JSON.stringify({ username, email, passwordHash }) 
-		});
+    // 3. 簡單的密碼長度前端檢查
+    if (passwordHash.length < 6) {
+        showToast("🔑 密碼至少需要 6 碼");
+        return;
+    }
 
-		if (!res.ok) {
-			const errData = await res.json(); 
-			errorBox.textContent = errData.error || "註冊失敗"; 
-			errorBox.style.display = "block"; 
-			return; 
-		}
+    try {
+        const res = await fetch("/api/auth/register", { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify({ username, email, passwordHash }) 
+        });
 
-		const data = await res.json(); 
-		alert(data.message || "註冊成功，請登入"); 
-		location.href = "login.html";
-	} catch (e) {
-		errorBox.textContent = "系統錯誤，請稍後再試"; 
-		errorBox.style.display = "block";
-	}
+        if (!res.ok) {
+            const errData = await res.json(); 
+            showToast("❌ " + (errData.error || "註冊失敗")); 
+            return; 
+        }
+
+        const data = await res.json(); 
+        
+        // 3. 註冊成功提示並延遲跳轉
+        showToast("✅ " + (data.message || "註冊成功！即將前往登入")); 
+        
+        setTimeout(() => {
+            location.href = "login.html";
+        }, 1500);
+
+    } catch (e) {
+        showToast("📡 系統錯誤，請稍後再試"); 
+    }
 }
 </script>
 
