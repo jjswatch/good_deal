@@ -111,6 +111,27 @@
     border: 1px solid #f1f5f9;
 }
 
+.sort-container {
+    max-width: 1100px;
+    margin: 10px auto;
+    display: flex;
+    justify-content: flex-end; /* 靠右對齊 */
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.sort-select {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: white;
+    outline: none;
+    cursor: pointer;
+}
+
 .price-store {
     display: flex;
     flex-direction: column;
@@ -133,7 +154,14 @@
     </div>
 </div>
 
-<!-- 價格列表 -->
+<div class="sort-container">
+    <span>排序依據：</span>
+    <select id="sortSelect" class="sort-select" onchange="renderPrices()">
+    	<option value="dateDesc">日期：新 → 舊</option>
+        <option value="priceAsc">價格：低 → 高</option>
+    </select>
+</div>
+
 <div id="priceList"></div>
 
 <script src="js/api.js"></script>
@@ -174,37 +202,60 @@ function getWishlistIds() {
     if (!user) return [];
     const uid = user.userId || user.id;
     const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
-    return wishlist.map(item => item.priceId);
+    return wishlist.map(item => String(item.priceId));
 }
+
+let allPrices = []; // 建立全域變數存放抓回來的價格
 
 async function loadPrices() {
     const id = getQueryParam("id");
     if (!id) return;
 
+    // 1. 從 API 抓取原始資料
     const prices = await apiGet(`/prices/product/${id}`);
-    const list = document.getElementById("priceList");
-
+    
     if (!prices || prices.length === 0) {
-        list.innerHTML = "<p style='text-align:center;color:#666;'>尚無比價資料</p>";
+        document.getElementById("priceList").innerHTML = "<p style='text-align:center;color:#666;margin-top:20px;'>尚無比價資料</p>";
         return;
     }
 
+    allPrices = prices; // 存入全域變數
+    renderPrices();      // 執行繪製
+}
+
+function renderPrices() {
+    const list = document.getElementById("priceList");
+    const sortType = document.getElementById("sortSelect").value;
+    const productId = getQueryParam("id");
+    
+    // 2. 複製一份陣列來進行排序 (避免污染原資料)
+    let sortedPrices = [...allPrices];
+
+    if (sortType === "dateDesc") {
+        // 日期由新到舊 (越新的日期，毫秒數越大，所以用 b - a)
+        sortedPrices.sort((a, b) => {
+            const dateA = new Date(a.updatedAt || a.priceDate || 0);
+            const dateB = new Date(b.updatedAt || b.priceDate || 0);
+            return dateB - dateA;
+        });
+    } else if (sortType === "priceAsc") {
+        // 價格由低到高
+        sortedPrices.sort((a, b) => a.price - b.price);
+    }
+
+    // 3. 準備繪製 UI
     const logoMap = { 1: 'px.png', 2: 'carrefour.png', 3: 'market.png', 4: 'mega.png' };
     const savedIds = getWishlistIds();
 
-    prices.sort((a, b) => a.price - b.price);
-
-    list.innerHTML = prices.map(p => {
-    	const displayDate = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('zh-TW') : '今日';
+    list.innerHTML = sortedPrices.map(p => {
+        const displayDate = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('zh-TW') : '今日';
         const logoPath = `assets/stores/${logoMap[p.store.storeGroup] || 'placeholder.png'}`;
-        
-        // 判斷是否已在清單中
-        const isAdded = savedIds.includes(p.priceId);
+        const isAdded = savedIds.includes(String(p.priceId));
 
         return `
         <div class="price-card">
             <div class="store-info-wrapper">
-                <img src="${logoPath}" alt="${p.store.storeName}" class="store-logo" onerror="this.src='assets/placeholder.png'">
+                <img src="${logoPath}" class="store-logo" onerror="this.src='assets/placeholder.png'">
                 <div class="price-store">
                     <span class="store-name">${p.store.storeName}</span>
                     <div style="font-size:11px; color:#94a3b8; font-weight:normal; margin-top:2px;">
@@ -214,66 +265,72 @@ async function loadPrices() {
             </div>
             <div style="display:flex; align-items:center; gap:15px;">
                 <div class="price-value">$${p.price}</div>
-                ${isAdded ? 
-                    `<button onclick="location.href='wishlist.html'" class="btn-added" style="background:#e8f5e9; border:none; cursor:pointer; padding:8px; border-radius:50%;">✅</button>` :
-                    `<button id="btn-${p.priceId}" onclick="addToWishlist(this, '${id}', '${p.priceId}', '${p.store.storeName}', ${p.price})" 
-                            style="background:#f1f5f9; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:0.2s;">🛒</button>`
-                }
+                <button id="btn-${p.priceId}" 
+                    onclick="toggleWishlist(this, '${productId}', '${p.priceId}', '${p.store.storeName}', ${p.price})" 
+                    class="${isAdded ? 'btn-added' : ''}"
+                    style="background:${isAdded ? '#e8f5e9' : '#f1f5f9'}; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:0.2s;">
+                    ${isAdded ? '✅' : '🛒'}
+                </button>
             </div>
         </div>
-    `}).join("");
+    `;}).join("");
 }
 
-function addToWishlist(btn, productId, priceId, storeName, price) {
+function toggleWishlist(btn, productId, priceId, storeName, price) {
     const user = getCurrentUser();
     if (!user) {
-        showToast("💡 請先登入後再加入清單喔！");
+        showToast("💡 請先登入後再管理清單喔！");
         return;
     }
     const uid = user.userId || user.id;
+    const storageKey = `wishlist_${uid}`;
+    let wishlist = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-    // 取得目前的商品基本資訊
-    const productName = document.getElementById("productName").innerText;
-    const productImg = document.getElementById("productImg").src;
+    // 1. 檢查是否已經在清單中（注意型別轉換）
+    const index = wishlist.findIndex(item => String(item.priceId) === String(priceId));
 
-    // 取得現有的清單 (如果沒有就建立空陣列)
-    let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
+    if (index > -1) {
+        // --- 執行「移除」邏輯 ---
+        wishlist.splice(index, 1);
+        localStorage.setItem(storageKey, JSON.stringify(wishlist));
 
-    // 檢查是否重複加入
-    if (wishlist.some(item => item.priceId === priceId)) {
-        showToast("⚠️ 這項價格已經在清單中囉！");
-        return;
+        // UI 變回未加入狀態
+        btn.innerHTML = "🛒";
+        btn.style.background = "#f1f5f9";
+        btn.classList.remove("btn-added");
+        showToast("🗑️ 已從清單中移除");
+    } else {
+        // --- 執行「加入」邏輯 ---
+        const newItem = {
+            productId: parseInt(productId),
+            priceId: String(priceId), // 存入時也確保是字串
+            brand: currentProduct ? currentProduct.brand : "",
+            productName: currentProduct ? currentProduct.productName : "未知名商品",
+            productImg: currentProduct ? currentProduct.imageUrl : "",
+            storeName,
+            price,
+            addedAt: new Date().toLocaleDateString()
+        };
+
+        wishlist.push(newItem);
+        localStorage.setItem(storageKey, JSON.stringify(wishlist));
+
+        // UI 變更為已加入狀態
+        btn.innerHTML = "✅";
+        btn.style.background = "#e8f5e9";
+        btn.classList.add("btn-added");
+        
+        showToast(`✅ 已加入清單！`, "查看清單", () => {
+            location.href = "wishlist.html";
+        });
     }
-
-    // 加入新項目
-    const newItem = {
-    	productId: parseInt(productId),
-        priceId,
-        brand: currentProduct ? currentProduct.brand : "",
-        productName: currentProduct ? currentProduct.productName : "未知名商品",
-        productImg: currentProduct ? currentProduct.imageUrl : "",
-        storeName,
-        price,
-        addedAt: new Date().toLocaleDateString()
-    };
-
-    wishlist.push(newItem);
-    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
-
-	// 2. UI 狀態即時切換
-    btn.innerHTML = "✅";
-    btn.classList.add("btn-added");
-    btn.onclick = () => location.href = 'wishlist.html'; // 更改點擊行為
-    
-    // 3. 顯示自定義 Toast (帶有動作按鈕)
-    showToast(`✅ 已加入清單！`, "查看清單", () => {
-        location.href = "wishlist.html";
-    });
 }
 
-// 初始化
-loadProduct();
-loadPrices();
+async function init() {
+    await loadProduct(); // 先載入商品基本資訊
+    await loadPrices();  // 再載入價格
+}
+init();
 </script>
 
 </body>

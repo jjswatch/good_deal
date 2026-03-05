@@ -120,6 +120,11 @@ button:hover {
 		<input id="password" type="password" placeholder="至少 6 碼">
 	</div>
 	
+	<div class="form-group">
+    	<label>確認密碼</label>
+    	<input id="confirmPassword" type="password" placeholder="請再次輸入密碼">
+	</div>
+	
 	<button onclick="register()">註冊</button>
 
 	<div class="extra">
@@ -133,32 +138,44 @@ button:hover {
 async function register() {
     const username = document.getElementById("username").value.trim();
     const email = document.getElementById("email").value.trim();
-    const passwordHash = document.getElementById("password").value;
+    const password = document.getElementById("password").value; // 取得密碼
+    const confirmPassword = document.getElementById("confirmPassword").value; // 取得確認密碼
 
- // 1. 檢查欄位是否空白
-    if (!username || !email || !passwordHash) { 
+    // 1. 檢查所有欄位（包含新的確認密碼）
+    if (!username || !email || !password || !confirmPassword) { 
         showToast("⚠️ 請填寫所有欄位"); 
         return; 
     }
 
-    // 2. Email 格式檢查 (新增部分)
+    // 2. Email 格式檢查
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         showToast("📧 Email 格式不太對喔，請檢查一下");
         return;
     }
 
-    // 3. 簡單的密碼長度前端檢查
-    if (passwordHash.length < 6) {
+    // 3. 密碼長度檢查
+    if (password.length < 6) {
         showToast("🔑 密碼至少需要 6 碼");
         return;
     }
 
+    // ✨ 關鍵新增：檢查兩次密碼是否相同
+    if (password !== confirmPassword) {
+        showToast("❌ 兩次輸入的密碼不一致喔！");
+        return;
+    }
+
     try {
+        // 注意：這裡 body 送出的欄位名稱需對應你的後端，維持你原有的 passwordHash
         const res = await fetch("/api/auth/register", { 
             method: "POST", 
             headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ username, email, passwordHash }) 
+            body: JSON.stringify({ 
+                username, 
+                email, 
+                passwordHash: password // 將確認過後的密碼送出
+            }) 
         });
 
         if (!res.ok) {
@@ -168,8 +185,6 @@ async function register() {
         }
 
         const data = await res.json(); 
-        
-        // 3. 註冊成功提示並延遲跳轉
         showToast("✅ " + (data.message || "註冊成功！即將前往登入")); 
         
         setTimeout(() => {

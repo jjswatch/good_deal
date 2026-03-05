@@ -110,6 +110,11 @@ button:hover {
 	<div class="form-group">
 		<label for="password">密碼</label> <input type="password" id="password" placeholder="請輸入密碼">
 	</div>
+	
+	<div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+    	<input type="checkbox" id="rememberMe" style="width: auto; cursor: pointer;">
+    	<label for="rememberMe" style="margin-bottom: 0; cursor: pointer; color: #666;">記住我的帳號</label>
+	</div>
 
 	<button onclick="login()">登入</button>
 
@@ -119,30 +124,19 @@ button:hover {
 <script src="js/api.js"></script>
 <script src="js/components.js"></script>
 <script>
-//Toast 工具函數
-function showToast(message) {
-    let toast = document.getElementById("toastNotification");
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "toastNotification";
-        toast.className = "toast";
-        document.body.appendChild(toast);
+document.addEventListener("DOMContentLoaded", () => {
+    const savedUsername = localStorage.getItem("rememberedUsername");
+    if (savedUsername) {
+        document.getElementById("username").value = savedUsername;
+        document.getElementById("rememberMe").checked = true;
     }
-    toast.textContent = message;
-    toast.classList.add("show");
+});
 
-    if (window.toastTimer) clearTimeout(window.toastTimer);
-    window.toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 3000);
-}
-
-// 修改後的登入函數
 async function login() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
+    const rememberMe = document.getElementById("rememberMe").checked; // 取得勾選狀態
 
-    // 1. 檢查欄位是否空白
     if (!username || !password) {
         showToast("⚠️ 請輸入帳號與密碼");
         return;
@@ -157,19 +151,24 @@ async function login() {
 
         if (!res.ok) {
             const errData = await res.json();
-            // 2. 顯示後端回傳的錯誤 (例如：密碼錯誤)
             showToast("❌ " + (errData.error || "登入失敗"));
             return;
         }
 
         const data = await res.json();
 
-        // 儲存資訊
+        // --- 核心改動：處理「記住我」 ---
+        if (rememberMe) {
+            localStorage.setItem("rememberedUsername", username);
+        } else {
+            localStorage.removeItem("rememberedUsername");
+        }
+
+        // 儲存登入憑證
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("username", data.user.username);
 
-        // 3. 登入成功提示 (可選，通常直接跳轉)
         showToast("✅ 登入成功，正在跳轉...");
 
         setTimeout(() => {
@@ -181,7 +180,6 @@ async function login() {
         }, 800);
 
     } catch (err) {
-        // 4. 系統錯誤提示
         showToast("📡 網路連線異常，請稍後再試");
     }
 }
