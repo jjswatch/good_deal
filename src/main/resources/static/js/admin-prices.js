@@ -1,181 +1,203 @@
 document.addEventListener("DOMContentLoaded", () => {
-    loadPrices();       // 載入表格資料
-    loadStoreList();    // 載入店家選單資料
-    
-    // 核心連動：僅保留選店家連動商品
-    document.getElementById("storeId").addEventListener("change", handleStoreChange);
+    initPage();
 });
 
-let allStores = []; // 僅保留店家資料，減少記憶體佔用
+let allStores = [];
 
-// 1. 載入店家列表（初始化用）
-async function loadStoreList() {
-    try {
-        allStores = await apiGet("/stores");
-    } catch (err) {
-        console.error("無法載入店家列表", err);
-    }
+async function initPage() {
+    allStores = await apiGet("/stores");
+    // 填充下拉選單
+    const options = '<option value="">--- 請選擇通路 ---</option>' + 
+                    allStores.map(s => `<option value="${s.storeId}">${s.storeName}</option>`).join('');
+    document.getElementById("batchStoreId").innerHTML = options;
+    document.getElementById("editStoreId").innerHTML = options;
+    
+    loadAllExistingPrices(); // 載入下方列表
 }
 
-// 2. 處理店家變更：單向流程「選店 -> 顯貨」
-async function handleStoreChange() {
-    const storeId = this.value;
-    const pSelect = document.getElementById("productId");
-    const isEditMode = !!document.getElementById("recordId").value;
+// ==============================
+// 1. 批次新增邏輯 (Batch Add)
+// ==============================
 
-    if (isEditMode) return; // 編輯模式不觸發連動
-
+async function loadMissingProducts(storeId) {
     if (!storeId) {
-        pSelect.innerHTML = '<option value="">--- 請先選擇店家 ---</option>';
-        pSelect.disabled = true;
+        document.getElementById("missingProductsBody").innerHTML = '<tr><td colspan="2" style="text-align: center;">請先選擇通路</td></tr>';
+        document.getElementById("batchSaveBtn").style.display = "none";
         return;
     }
 
-    pSelect.innerHTML = '<option>🔍 搜尋缺件商品中...</option>';
-    pSelect.disabled = true;
-
     try {
-        // 取得該店「尚未定價」的商品
-        const missingProducts = await apiGet(`/admin/prices/missing-products?storeId=${storeId}`);
+        const missing = await apiGet(`/admin/prices/missing-products?storeId=${storeId}`);
+        const tbody = document.getElementById("missingProductsBody");
         
-        if (missingProducts.length > 0) {
-            pSelect.innerHTML = '<option value="">--- 請選擇商品 ---</option>' + 
-                missingProducts.map(p => `<option value="${p.productId}">${p.brand} ${p.productName} ${p.spec}</option>`).join("");
-            pSelect.disabled = false;
-        } else {
-            pSelect.innerHTML = `<option disabled>🎉 此店所有商品皆已定價</option>`;
+        if (missing.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #16a34a;">🎉 此通路所有商品皆已設定價格！</td></tr>';
+            document.getElementById("batchSaveBtn").style.display = "none";
+            return;
         }
+
+        tbody.innerHTML = missing.map(p => `
+            <tr class="batch-row" data-product-id="${p.productId}">
+                <td><strong>${p.brand} ${p.productName}</strong> <small style="color:#666">(${p.spec})</small></td>
+                <td><input type="number" class="batch-new-price" placeholder="請輸入金額" style="width: 100%; padding: 6px;"></td>
+            </tr>
+        `).join('');
+        document.getElementById("batchSaveBtn").style.display = "block";
     } catch (err) {
-        pSelect.innerHTML = `<option disabled>❌ 載入失敗</option>`;
+        showToast("載入待定價清單失敗");
     }
 }
 
-// 3. 打開新增 Modal
-function openModal() {
-    const form = document.getElementById("priceForm");
-    form.reset();
-    document.getElementById("recordId").value = "";
-    document.getElementById("modalTitle").innerText = "➕ 新增價格紀錄";
+async function saveBatchNewPrices() {
+    const storeId = document.getElementById("batchStoreId").value;
+    const rows = document.querySelectorAll(".batch-row");
+    const newRecords = [];
 
-    const sSelect = document.getElementById("storeId");
-    const pSelect = document.getElementById("productId");
+    rows.forEach(row => {
+        const productId = row.getAttribute("data-product-id");
+        const price = row.querySelector(".batch-new-price").value;
+        
+        // 只收集有輸入價格的項目
+        if (price && parseFloat(price) > 0) {
+            newRecords.push({
+                product: { productId: parseInt(productId) },
+                store: { storeId: parseInt(storeId) },
+                price: parseFloat(price),
+                priceDate: new Date().toISOString().split('T')[0]
+            });
+        }
+    });
 
-    sSelect.disabled = false;
-    pSelect.disabled = true; // 預設禁用商品，直到選了店家
-    pSelect.innerHTML = '<option value="">--- 請先選擇店家 ---</option>';
+    if (newRecords.length === 0) {
+        showToast("⚠️ 請輸入至少一個商品的價格");
+        return;
+    }
 
-    // 填入所有店家
-    sSelect.innerHTML = '<option value="">--- 請選擇店家 ---</option>' + 
-        allStores.map(s => `<option value="${s.storeId}">${s.storeName}</option>`).join('');
-
-    document.getElementById("priceModal").style.display = "flex";
-}
-
-// 4. 儲存紀錄 (新增或更新)
-document.getElementById("priceForm").onsubmit = async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("recordId").value;
-    
-    const payload = {
-        product: { productId: parseInt(document.getElementById("productId").value) },
-        store: { storeId: parseInt(document.getElementById("storeId").value) },
-        price: parseFloat(document.getElementById("price").value),
-        priceDate: new Date().toISOString().split('T')[0] // 取得今天日期
-    };
+    if (!confirm(`確定要一次新增 ${newRecords.length} 筆價格嗎？`)) return;
 
     try {
-        if (id) {
-            await apiPut(`/admin/prices/${id}`, payload);
-        } else {
-            await apiPost("/admin/prices", payload);
-        }
-        alert("儲存成功");
-        closeModal();
-        loadPrices();
+        // 這裡改用批次 API 路徑
+        await apiPost("/admin/prices/batch", newRecords);
+        
+        alert(`✅ 成功批次新增 ${newRecords.length} 筆紀錄！`);
+        
+        // 重新整理 UI
+        loadMissingProducts(storeId);
+        loadAllExistingPrices();
     } catch (err) {
-        alert("儲存失敗: " + err.message);
+        alert("批次新增失敗：" + err.message);
+    }
+}
+
+// ==============================
+// 2. 編輯邏輯 (Modal Edit)
+// ==============================
+
+function openEditModal(existingRecord = null) {
+    document.getElementById("editPriceForm").reset();
+    document.getElementById("editPriceModal").style.display = "flex";
+    document.getElementById("currentPriceInfo").style.display = "none";
+    document.getElementById("editProductId").disabled = true;
+
+    // 如果是從下方表格點擊「編輯」進來的
+    if (existingRecord) {
+        fillEditFields(existingRecord);
+    }
+}
+
+function closeEditModal() {
+    document.getElementById("editPriceModal").style.display = "none";
+}
+
+// 當 Modal 選擇通路後，載入該通路「已有價格」的商品
+async function loadProductsForStore(storeId) {
+    const pSelect = document.getElementById("editProductId");
+    if (!storeId) {
+        pSelect.disabled = true;
+        return;
+    }
+    
+    try {
+        // 這邊需要一個 API 取得該店已有價格的商品
+        const prices = await apiGet("/admin/prices");
+        const storePrices = prices.filter(p => p.store.storeId == storeId);
+        
+        pSelect.innerHTML = '<option value="">--- 選擇要修改的商品 ---</option>' + 
+            storePrices.map(p => `<option value="${p.product.productId}" data-record-id="${p.priceId}" data-price="${p.price}">
+                ${p.product.brand}${p.product.productName}
+            </option>`).join('');
+        
+        pSelect.disabled = false;
+    } catch (err) {
+        showToast("載入商品失敗");
+    }
+}
+
+// 選擇商品後自動顯示當前價格
+function fetchCurrentPrice() {
+    const pSelect = document.getElementById("editProductId");
+    const selectedOption = pSelect.options[pSelect.selectedIndex];
+    
+    if (selectedOption.value) {
+        const recordId = selectedOption.getAttribute("data-record-id");
+        const currentPrice = selectedOption.getAttribute("data-price");
+        
+        document.getElementById("editRecordId").value = recordId;
+        document.getElementById("oldPriceValue").innerText = `$${Math.round(currentPrice)}`;
+        document.getElementById("newPriceInput").value = Math.round(currentPrice);
+        document.getElementById("currentPriceInfo").style.display = "block";
+    }
+}
+
+document.getElementById("editPriceForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editRecordId").value;
+	const storeId = document.getElementById("editStoreId").value;      // 取得目前的通路 ID
+	const productId = document.getElementById("editProductId").value;  // 取得目前的商品 ID
+    const newPrice = document.getElementById("newPriceInput").value;
+
+    try {
+        const payload = {
+			store: { storeId: parseInt(storeId) },
+			product: { productId: parseInt(productId) },
+            price: parseFloat(newPrice),
+            priceDate: new Date().toISOString().split('T')[0]
+        };
+        await apiPut(`/admin/prices/${id}`, payload);
+        alert("✅ 價格已更新");
+        closeEditModal();
+        loadAllExistingPrices();
+    } catch (err) {
+		console.error("更新失敗:", err);
+		alert("❌ 更新失敗，請檢查控制台資訊");
     }
 };
 
-// --- 以下為維護功能 (載入、編輯、刪除、批次) ---
+// ==============================
+// 3. 基礎載入
+// ==============================
 
-async function loadPrices() {
-    try {
-        const prices = await apiGet("/admin/prices");
-        renderTable(prices);
-    } catch (err) {
-        console.error("載入價格失敗", err);
-    }
-}
-
-function renderTable(prices) {
+async function loadAllExistingPrices() {
+    const prices = await apiGet("/admin/prices");
     const tbody = document.getElementById("priceTableBody");
-    if (!prices || prices.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">目前無價格紀錄</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = prices.map(p => {
-        const pid = p.id || p.priceId;
-        return `
-        <tr data-id="${pid}">
-            <td><strong>${p.product.brand}${p.product.productName}</strong></td>
+    
+    tbody.innerHTML = prices.map(p => `
+        <tr>
+            <td>${p.product.brand} ${p.product.productName}</td>
             <td>${p.store.storeName}</td>
+            <td><strong>$${Math.round(p.price)}</strong></td>
             <td>
-                <input type="number" class="batch-price-input" 
-                       value="${Math.round(p.price)}" data-old="${Math.round(p.price)}"
-                       style="width: 80px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <button class="btn-edit-small" onclick="quickEdit(${p.priceId}, ${p.store.storeId}, ${p.product.productId}, ${p.price})">✏️ 編輯</button>
             </td>
-            <td>
-                <button class="btn-edit-small" onclick="editPrice(${pid})">編輯</button>
-                <button onclick="deletePrice(${pid})" style="color:var(--danger); margin-left:8px;">刪除</button>
-            </td>
-        </tr>`;
-    }).join('');
+        </tr>
+    `).join('');
 }
 
-async function editPrice(id) {
-    try {
-        const p = await apiGet(`/admin/prices/${id}`);
-        document.getElementById("recordId").value = p.id || p.priceId;
-        document.getElementById("price").value = Math.round(p.price);
-
-        // 編輯模式鎖定連動，直接填入單一選項
-        const sSelect = document.getElementById("storeId");
-        const pSelect = document.getElementById("productId");
-        
-        sSelect.innerHTML = `<option value="${p.store.storeId}">${p.store.storeName}</option>`;
-        pSelect.innerHTML = `<option value="${p.product.productId}">${p.product.brand}${p.product.productName}</option>`;
-        
-        sSelect.disabled = true;
-        pSelect.disabled = true;
-
-        document.getElementById("modalTitle").innerText = "✏️ 編輯價格紀錄";
-        document.getElementById("priceModal").style.display = "flex";
-    } catch (err) {
-        alert("載入資料失敗");
-    }
-}
-
-async function deletePrice(id) {
-    if (!confirm("確定要刪除這筆價格紀錄嗎？")) return;
-    try { await apiDelete(`/admin/prices/${id}`); loadPrices(); } catch (err) { alert("刪除失敗"); }
-}
-
-function closeModal() { document.getElementById("priceModal").style.display = "none"; }
-
-async function saveAllPrices() {
-    const rows = document.querySelectorAll("#priceTableBody tr");
-    const updates = [];
-    rows.forEach(row => {
-        const input = row.querySelector(".batch-price-input");
-        if (!input) return;
-        const priceId = row.getAttribute("data-id");
-        const newPrice = parseFloat(input.value);
-        const oldPrice = parseFloat(input.getAttribute("data-old"));
-        if (newPrice !== oldPrice) updates.push({ priceId: parseInt(priceId), price: newPrice });
-    });
-    if (updates.length === 0) return alert("沒有價格變動");
-    if (!confirm(`確定更新 ${updates.length} 筆價格？`)) return;
-    try { await apiPut("/admin/prices/batch", updates); alert("批次儲存成功！"); loadPrices(); } catch (err) { alert("儲存失敗"); }
+// 從表格快速跳轉到 Modal 編輯
+async function quickEdit(id, storeId, productId, price) {
+    openEditModal();
+    document.getElementById("editStoreId").value = storeId;
+    await loadProductsForStore(storeId);
+    document.getElementById("editProductId").value = productId;
+    fetchCurrentPrice();
 }

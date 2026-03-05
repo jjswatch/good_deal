@@ -63,23 +63,29 @@ public class AdminPriceServiceImpl implements AdminPriceService {
     }
 
     @Override
+    @Transactional
     public ProductPrices updatePriceRecord(Integer id, ProductPrices record) {
-    	ProductPrices db = getPriceById(id);
-    	// 價格有變才寫歷史
-        if (db.getPrice().compareTo(record.getPrice()) != 0) {
+        ProductPrices db = getPriceById(id);
 
-            PriceHistory history = new PriceHistory();
-            history.setProduct(db.getProduct());
-            history.setStore(db.getStore());
-            history.setOldPrice(db.getPrice());
-            history.setNewPrice(record.getPrice());
-
-            priceHistoryRepository.save(history);
+        // 1. 價格有變動時才處理
+        if (record.getPrice() != null && db.getPrice().compareTo(record.getPrice()) != 0) {
+            db.setPrice(record.getPrice()); // 更新價格
         }
 
-        db.setStore(record.getStore());
-        db.setPrice(record.getPrice());
-        db.setPriceDate(record.getPriceDate());
+        // 2. 只有當傳入的 record 有資料時才更新，否則維持 db 原有的關聯
+        if (record.getPriceDate() != null) {
+            db.setPriceDate(record.getPriceDate());
+        }
+        
+        // 安全檢查：只有當傳入的 store 不為空時才設定
+        if (record.getStore() != null && record.getStore().getStoreId() != null) {
+            db.setStore(record.getStore());
+        }
+        
+        // product 同理 (通常價格編輯不會改商品，但寫著保險)
+        if (record.getProduct() != null && record.getProduct().getProductId() != null) {
+            db.setProduct(record.getProduct());
+        }
 
         return productPricesRepository.save(db);
     }
@@ -118,6 +124,25 @@ public class AdminPriceServiceImpl implements AdminPriceService {
 	            db.setPrice(record.getPrice());
 	            productPricesRepository.save(db);
 	        }
+	    }
+	    return records;
+	}
+	
+	@Override
+	@Transactional
+	public List<ProductPrices> createBatchPriceRecords(List<ProductPrices> records) {
+	    for (ProductPrices record : records) {
+	        // 1. 儲存主價格
+	        ProductPrices saved = productPricesRepository.save(record);
+
+	        // 2. 寫入價格歷史紀錄
+	        PriceHistory history = new PriceHistory();
+	        history.setProduct(saved.getProduct());
+	        history.setStore(saved.getStore());
+	        history.setOldPrice(null); // 新增紀錄，舊價格為空
+	        history.setNewPrice(saved.getPrice());
+	        
+	        priceHistoryRepository.save(history);
 	    }
 	    return records;
 	}

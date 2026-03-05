@@ -168,52 +168,84 @@ body {
 <body>
 <div class="admin-layout">
 	<main class="admin-content">
-		<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
 			<h2>🏷️ 商品價格維護</h2>
-			<button class="btn-primary" onclick="openModal()">+ 新增價格紀錄</button>
-			<button class="btn-save" onclick="saveAllPrices()" style="background: #10b981; color: white;">💾 批次儲存變更</button>
+			<button class="btn-primary" onclick="openEditModal()" style="background: #f59e0b;">✏️ 查找與編輯單筆價格</button>
+		</div>
+
+		<div class="card" style="margin-bottom: 30px; border: 2px solid var(--primary);">
+			<div style="padding: 15px; background: #eff6ff; display: flex; justify-content: space-between; align-items: center;">
+				<div style="display: flex; gap: 15px; align-items: center;">
+					<h3 style="margin: 0;">✨ 批次快速新增</h3>
+					<select id="batchStoreId" onchange="loadMissingProducts(this.value)" style="padding: 8px; border-radius: 6px;">
+						<option value="">--- 請選擇通路開始新增 ---</option>
+					</select>
+				</div>
+				<button id="batchSaveBtn" class="btn-save" onclick="saveBatchNewPrices()" style="background: #2563eb; color: white; display: none;">
+					💾 儲存所有新價格
+				</button>
+			</div>
+			<table>
+				<thead>
+					<tr>
+						<th>待定價商品</th>
+						<th width="200">輸入價格 ($)</th>
+					</tr>
+				</thead>
+				<tbody id="missingProductsBody">
+					<tr>
+						<td colspan="2" style="text-align: center; color: #94a3b8;">請先選擇通路</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 
 		<div class="card">
+			<div style="padding: 15px;">
+				<h3>📋 現有價格清單</h3>
+			</div>
 			<table>
 				<thead>
 					<tr>
 						<th>商品名稱</th>
 						<th>通路</th>
-						<th>價格</th>
+						<th>當前價格</th>
 						<th>操作</th>
 					</tr>
 				</thead>
-				<tbody id="priceTableBody">
-					<tr>
-						<td colspan="6" style="text-align: center;">載入中...</td>
-					</tr>
-				</tbody>
+				<tbody id="priceTableBody"></tbody>
 			</table>
 		</div>
 	</main>
-</div>
 
-<div id="priceModal" class="modal">
-	<div class="modal-content">
-		<h3 id="modalTitle">新增價格紀錄</h3>
-		<form id="priceForm">
-			<input type="hidden" id="recordId">
-			<div class="form-group">
-    <label>選擇通路 (店面)</label> 
-    <select id="storeId" required></select> </div>
-<div class="form-group">
-    <label>選擇商品</label> 
-    <select id="productId" required></select>
-</div>
-			<div class="form-group">
-				<label for="price">價格 ($)<input type="number" id="price" step="1" 	required></label> 
-			</div>
-			<div style="display: flex; gap: 10px; margin-top: 20px;">
-				<button type="submit" class="btn-save" style="flex: 1; background: var(--primary); color: white;">儲存</button>
-				<button type="button" onclick="closeModal()" style="flex: 1;">取消</button>
-			</div>
-		</form>
+	<div id="editPriceModal" class="modal">
+		<div class="modal-content">
+			<h3 id="modalTitle">✏️ 編輯價格</h3>
+			<form id="editPriceForm">
+				<input type="hidden" id="editRecordId">
+				<div class="form-group">
+					<label>通路</label> 
+					<select id="editStoreId" onchange="loadProductsForStore(this.value)" required></select>
+				</div>
+				<div class="form-group">
+					<label>商品</label> 
+					<select id="editProductId" onchange="fetchCurrentPrice()" required disabled>
+						<option value="">請先選擇通路</option>
+					</select>
+				</div>
+				<div class="form-group" id="currentPriceInfo" style="display: none; padding: 10px; background: #fef3c7; border-radius: 8px; margin-bottom: 15px;">
+					<span style="font-size: 13px; color: #92400e;">目前的價格為：</span> 
+					<strong id="oldPriceValue" style="font-size: 18px; color: #d97706;">$0</strong>
+				</div>
+				<div class="form-group">
+					<label>設定新價格 ($)</label> <input type="number" id="newPriceInput" required min="0">
+				</div>
+				<div style="display: flex; gap: 10px; margin-top: 20px;">
+					<button type="submit" class="btn-save" style="flex: 1; background: var(--primary); color: white;">確認修改</button>
+					<button type="button" onclick="closeEditModal()" style="flex: 1;">取消</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
 

@@ -204,8 +204,6 @@ function renderPrices(list) {
 		return;
 	}
 
-	console.log("price list:", list);
-
 	$("priceList").innerHTML = list.map(p => `
 		<tr>
 			<td>${p.changedAt.split("T")[0]}</td>

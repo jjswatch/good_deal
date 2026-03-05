@@ -6,9 +6,11 @@ import com.gooddeal.model.Stores;
 import com.gooddeal.repository.ProductsRepository;
 import com.gooddeal.service.AdminPriceService;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/prices")
@@ -64,5 +66,11 @@ public class AdminPricesController {
     @PutMapping("/batch")
     public List<ProductPrices> updateBatch(@RequestBody List<ProductPrices> records) {
         return adminPriceService.updateBatchPriceRecords(records);
+    }
+    
+    @PostMapping("/batch")
+    public ResponseEntity<?> createBatch(@RequestBody List<ProductPrices> records) {
+        adminPriceService.createBatchPriceRecords(records);
+        return ResponseEntity.ok().body(Map.of("message", "批次新增成功"));
     }
 }

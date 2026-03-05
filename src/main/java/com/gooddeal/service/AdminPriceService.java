@@ -16,4 +16,5 @@ public interface AdminPriceService {
     List<Products> getAvailableProducts();
     List<Products> getMissingProductsByStoreId(Integer storeId);
     List<ProductPrices> updateBatchPriceRecords(List<ProductPrices> records);
+    List<ProductPrices> createBatchPriceRecords(List<ProductPrices> records);
 }
