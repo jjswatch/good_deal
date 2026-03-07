@@ -6,6 +6,14 @@
 <title>帳號設定 - GoodDeal</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
+:root {
+	--primary-red: #FF4500;
+	--secondary-red: #ef4444;
+	--text-dark: #1e293b;
+	--text-gray: #64748b;
+	--bg-light: #f8fafc;
+	--border-color: #e2e8f0;
+}
 /* 頁面專屬佈局 */
 .container {
 	padding: 80px 16px 100px; /* 頂部預留給固定 nav */
@@ -196,13 +204,13 @@ async function loadSetting() {
 async function updateProfile() {
     const username = document.getElementById("username").value;
     const email = document.getElementById("email").value;
-    if (!username || !email) { alert("資料不可空白"); return; }
+    if (!username || !email) { showToast("⚠️ 資料不可空白"); return; }
 
     try {
         await apiPut("/users/profile", { username, email });
-        alert("會員資料已更新");
+        showToast("✅ 會員資料已更新");
     } catch (err) {
-        alert("更新失敗：" + (err.message || "請稍後再試"));
+    	showToast("❌ 更新失敗，請檢查網路狀態");
     }
 }
 
@@ -212,31 +220,35 @@ async function changePassword() {
     const newPwd = document.getElementById("newPassword").value;
     const confirmPwd = document.getElementById("confirmPassword").value;
 
-    if (!oldPwd || !newPwd) { alert("請填寫完整"); return; }
-    if (newPwd !== confirmPwd) { alert("新密碼不一致"); return; }
+    if (!oldPwd || !newPwd) { showToast("⚠️ 請填寫完整密碼欄位"); }
+    if (newPwd !== confirmPwd) { showToast("❌ 新密碼與確認密碼不一致"); return; }
 
     try {
         await apiPut("/users/password", { oldPassword: oldPwd, newPassword: newPwd });
-        alert("密碼修改成功，請重新登入");
-        handleLogout(false); // 靜默登出
+        showToast("✅ 密碼修改成功，請重新登入");
+        setTimeout(() => {
+            handleLogout(false); 
+        }, 1500);
     } catch (err) {
-        alert("修改失敗：" + err.message);
+    	showToast("❌ 修改失敗：" + (err.message || "舊密碼錯誤"));
     }
 }
 
 // 4. 登出處理
-function handleLogout(showConfirm = true) {
+function handleLogout(needConfirm = true) {
     const performLogout = () => {
         if (typeof logout === 'function') {
             logout();
         } else {
             localStorage.clear();
-            window.location.href = "index.html";
+            window.location.href = "login.html";
         }
     };
 
-    if (showConfirm) {
-        if (confirm("確定要登出 GoodDeal 嗎？")) performLogout();
+    if (needConfirm) {
+        showToast("確定要登出嗎？", "確定登出", () => {
+            performLogout();
+        });
     } else {
         performLogout();
     }

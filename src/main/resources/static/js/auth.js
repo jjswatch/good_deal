@@ -37,6 +37,5 @@ function isUser() {
 
 function logout() {
   localStorage.clear();
-  alert("已登出");
   location.href = "/login.html";
 }

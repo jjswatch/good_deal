@@ -674,7 +674,17 @@ async function submitReport() {
 
 // 頁面跳轉
 function goCompare() { location.href = `compare.html?id=${productId}`; }
-function goHistory() { location.href = `history.html?productId=${productId}`; }
+function goHistory() {
+	if (!isLoggedIn()) {
+	    showToast("💡 此功能需要登入才能查看價格走勢喔！", "前往登入", () => {
+	        const redirect = encodeURIComponent(location.href);
+	        location.href = `login.html?redirect=${redirect}`;
+	    });
+	    return;
+	}
+	
+	location.href = `history.html?productId=${productId}`; 
+}
 
 // 快取管理
 function getCachedHistory(id) {

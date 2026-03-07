@@ -6,6 +6,15 @@
 <title>購物清單｜CoSave　一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
+:root {
+	--primary-red: #FF4500;
+	--secondary-red: #ef4444;
+	--text-dark: #1e293b;
+	--text-gray: #64748b;
+	--bg-light: #f8fafc;
+	--border-color: #e2e8f0;
+}
+
 .analysis-dashboard {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: white;
@@ -301,17 +310,14 @@ async function calculateBestStrategy(wishlist) {
         return;
     }
 
-    document.getElementById("bestStoreDesc").innerText = "正在分析最佳採買策略...";
-
     try {
         const res = await apiGet(
             `/strategies/compare-basket?ids=${productIds.join(',')}`
         );
-
         renderStrategyDashboard(res);
-
     } catch (err) {
-    	console.error("策略分析失敗", err);
+        console.error("策略分析失敗", err);
+        // 分析失敗時，靜默處理或顯示微小的錯誤 Toast
         document.getElementById("comparisonDashboard").style.display = "none";
     }
 }
@@ -322,35 +328,30 @@ function renderStrategyDashboard(data) {
 
     /* ========= 拆單策略 ========= */
     const split = data?.splitStrategy;
+    if (split?.total != null) {
+        document.getElementById("mixPrice").innerText = `$${split.total}`;
+        const detailEl = document.getElementById("splitDetail");
+        const grouped = split.items.reduce((acc, item) => {
+            if (!acc[item.storeName]) acc[item.storeName] = [];
+            acc[item.storeName].push(item);
+            return acc;
+        }, {});
 
-if (split?.total != null) {
-    document.getElementById("mixPrice").innerText = `$${split.total}`;
-
-    const detailEl = document.getElementById("splitDetail");
-
-    const grouped = split.items.reduce((acc, item) => {
-        if (!acc[item.storeName]) acc[item.storeName] = [];
-        acc[item.storeName].push(item);
-        return acc;
-    }, {});
-
-    detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => `
-    <div style="margin-bottom:12px;">
-        <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">
-            📍 ${store}
-        </div>
-        ${items.map(i => `
-            <div style="padding-left:10px; font-size:12px;">
-                - ${i.brand} ${i.productName}
-                <span style="float:right;">$${i.price}</span>
+        detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => `
+            <div style="margin-bottom:12px;">
+                <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">📍 ${store}</div>
+                ${items.map(i => `
+                    <div style="padding-left:10px; font-size:12px;">
+                        - ${i.brand} ${i.productName}
+                        <span style="float:right;">$${i.price}</span>
+                    </div>
+                `).join("")}
             </div>
-        `).join("")}
-    </div>
-`).join("");
-} else {
-	document.getElementById("mixPrice").innerText = "--";
-    document.getElementById("splitDetail").innerText = "無拆單建議";
-}
+        `).join("");
+    } else {
+        document.getElementById("mixPrice").innerText = "--";
+        document.getElementById("splitDetail").innerText = "無拆單建議";
+    }
 
     /* ========= 一站購齊策略 ========= */
     const storePriceEl = document.getElementById("bestStorePrice");
@@ -359,59 +360,38 @@ if (split?.total != null) {
 
     if (data?.bestStore) {
         storePriceEl.innerText = `$${data.bestStore.total}`;
-        storeNameEl.innerHTML =
-            `<span class="best-store-highlight">📍 ${data.bestStore.storeName}</span>`;
-            
-            if (
-            	    data?.bestStore &&
-            	    data.bestStore.coveredCount < data.bestStore.totalCount &&
-            	    Array.isArray(data.bestStore.missingItems) &&
-            	    data.bestStore.missingItems.length > 0
-            	) {
-            	    // 👉 顯示缺少商品（優先）
-            	    descEl.innerHTML = `
-            	        ❌ 缺少 ${data.bestStore.totalCount - data.bestStore.coveredCount} 項商品<br>
-            	        <span style="font-size:11px;">
-            	            缺少：${data.bestStore.missingItems.join("、")}
-            	        </span>
-            	    `;
-            	} else {
-            	    // 👉 沒缺才顯示推薦理由
-            	    descEl.innerText = data?.recommendation || "一站式購足最方便";
-            	}
+        storeNameEl.innerHTML = `<span class="best-store-highlight">📍 ${data.bestStore.storeName}</span>`;
+        
+        if (data.bestStore.coveredCount < data.bestStore.totalCount && data.bestStore.missingItems?.length > 0) {
+            descEl.innerHTML = `❌ 缺少 ${data.bestStore.totalCount - data.bestStore.coveredCount} 項商品<br>
+                                <span style="font-size:11px;">缺少：${data.bestStore.missingItems.join("、")}</span>`;
+        } else {
+            descEl.innerText = data?.recommendation || "一站式購足最方便";
+        }
     }
-
     descEl.style.color = "#fbbf24";
 
-    /* ========= 高亮推薦 ========= */
-    highlightRecommend(
-        data?.bestStore ? "ONE_STORE" : "SPLIT"
-    );
+    highlightRecommend(data?.bestStore ? "ONE_STORE" : "SPLIT");
 }
-
-
 
 function highlightRecommend(type) {
     const mixCard = document.querySelector(".strategy-card.best-mix");
     const storeCard = document.querySelector(".strategy-card.best-store");
+    if (!mixCard || !storeCard) return;
 
     mixCard.classList.remove("best-mix");
     storeCard.classList.remove("best-mix");
 
-    if (type === "SPLIT") {
-        mixCard.classList.add("best-mix");
-    } else if (type === "ONE_STORE") {
-        storeCard.classList.add("best-mix");
-    }
-    // 其他情況不高亮（例如資料不足）
+    if (type === "SPLIT") mixCard.classList.add("best-mix");
+    else if (type === "ONE_STORE") storeCard.classList.add("best-mix");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	renderWishlist();
+    renderWishlist();
 });
 
 function renderWishlist() {
-	const user = getCurrentUser();
+    const user = getCurrentUser();
     if (!user) {
         location.href = "login.html";
         return;
@@ -420,36 +400,34 @@ function renderWishlist() {
     const uid = user.userId || user.id;
     const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
     const container = document.getElementById("wishlistContent");
+    const dashboard = document.getElementById("comparisonDashboard");
+    const summary = document.getElementById("summaryBar");
         
     if (wishlist.length === 0) {
         container.innerHTML = `
-        	<div class="empty-state">
-            	<div style="font-size: 50px;">🛒</div>
+            <div class="empty-state">
+                <div style="font-size: 50px;">🛒</div>
                 <h3>清單目前是空的</h3>
                 <p>在比價時點擊愛心，把划算的商品存下來吧！</p>
-                <a href="index.html" class="button" style="display:inline-block; margin-top:20px; background:var(--primary-color);">去逛逛</a>
+                <a href="index.html" class="button" style="display:inline-block; margin-top:20px; background:#1e293b; color:white; padding:10px 20px; border-radius:8px; text-decoration:none;">去逛逛</a>
             </div>`;
-        document.getElementById("summaryBar").style.display = "none";
-        document.getElementById("comparisonDashboard").style.display = "none";
+        if (summary) summary.style.display = "none";
+        if (dashboard) dashboard.style.display = "none";
         return;
     }
 
-    // 1. 按店家分組資料
     const groups = wishlist.reduce((acc, item) => {
         if (!acc[item.storeName]) acc[item.storeName] = [];
         acc[item.storeName].push(item);
         return acc;
     }, {});
 
-    // 2. 渲染 HTML
     let html = "";
     let grandTotal = 0;
 
     for (const storeName in groups) {
         const items = groups[storeName];
-        const subtotal = items
-        .filter(i => !i.checked) 
-        .reduce((sum, i) => sum + i.price, 0);
+        const subtotal = items.filter(i => !i.checked).reduce((sum, i) => sum + i.price, 0);
         grandTotal += subtotal;
 
         html += `
@@ -458,7 +436,7 @@ function renderWishlist() {
                     <span class="store-name">📍 ${storeName}</span>
                     <span class="store-subtotal">共 ${items.length} 項, 小計 $${subtotal}</span>
                 </div>
-                ${items.map((item, idx) => `
+                ${items.map((item) => `
                     <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.priceId}">
                         <div class="check-btn" onclick="toggleCheck('${item.priceId}')">${item.checked ? '✓' : ''}</div>
                         <img src="${item.productImg}" alt="">
@@ -469,7 +447,7 @@ function renderWishlist() {
                             </div>
                             <div class="wish-price">$${item.price}</div>
                         </div>
-                        <button onclick="removeItem('${item.priceId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px;">✕</button>
+                        <button onclick="confirmRemoveItem('${item.priceId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px; cursor:pointer;">✕</button>
                     </div>
                 `).join('')}
             </div>
@@ -478,46 +456,57 @@ function renderWishlist() {
 
     container.innerHTML = html;
     document.getElementById("grandTotal").innerText = `$${grandTotal}`;
-    document.getElementById("summaryBar").style.display = "flex";
+    if (summary) summary.style.display = "flex";
 
     calculateBestStrategy(wishlist);
 }
 
-// 勾選功能 (模擬放入購物車)
 function toggleCheck(priceId) {
-	const user = getCurrentUser();
-	if (!user) return;
-	const uid = user.userId || user.id;
-	let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
-    const index = wishlist.findIndex(i => i.priceId === priceId);
-    if (index !== -1) {
-    	wishlist[index].checked = !wishlist[index].checked;
-    	localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
-        renderWishlist();
-    }
-}
-
-// 移除單一項目
-function removeItem(priceId) {
-	if (!confirm("確定要從清單移除嗎？")) return;
     const user = getCurrentUser();
     if (!user) return;
     const uid = user.userId || user.id;
     let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
-    wishlist = wishlist.filter(i => i.priceId !== priceId);
-    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
-    renderWishlist();
+    const index = wishlist.findIndex(i => i.priceId === priceId);
+    if (index !== -1) {
+        wishlist[index].checked = !wishlist[index].checked;
+        localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
+        renderWishlist();
+    }
 }
 
-// 清除所有已勾選項目 (採買完畢)
+// ✨ 使用 Toast 取代原生 confirm 移除單一項目
+function confirmRemoveItem(priceId) {
+    showToast("要將此商品從清單移除嗎？", "確認移除", () => {
+        const user = getCurrentUser();
+        if (!user) return;
+        const uid = user.userId || user.id;
+        let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
+        wishlist = wishlist.filter(i => i.priceId !== priceId);
+        localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
+        renderWishlist();
+        showToast("已移除商品");
+    });
+}
+
+// ✨ 使用 Toast 取代原生 confirm 清除已購項目
 function clearChecked() {
-	const user = getCurrentUser();
-	if (!user) return;
-	const uid = user.userId || user.id;
+    const user = getCurrentUser();
+    if (!user) return;
+    const uid = user.userId || user.id;
     let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
-    wishlist = wishlist.filter(i => !i.checked);
-    localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
-    renderWishlist();
+    const checkedCount = wishlist.filter(i => i.checked).length;
+    
+    if (checkedCount === 0) {
+        showToast("目前沒有已勾選的項目");
+        return;
+    }
+
+    showToast(`確定要清除這 ${checkedCount} 項已購商品？`, "立即清除", () => {
+        wishlist = wishlist.filter(i => !i.checked);
+        localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
+        renderWishlist();
+        showToast("已清理購物清單");
+    });
 }
 </script>
 

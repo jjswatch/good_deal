@@ -204,7 +204,7 @@ function renderFooter() {
 
 // 通知點擊
 window.handleNotificationClick = function() {
-	alert("目前沒有新訊息");
+	showToast("目前沒有新訊息");
 	const dot = document.getElementById("notiDot");
 	if (dot) dot.style.display = "none";
 };

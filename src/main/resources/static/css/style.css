@@ -205,13 +205,13 @@ nav {
 
 .fav-btn {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(255, 255, 255, 0.8); /* 加上半透明背景，確保在白色圖片上也看得到 */
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.85); /* 加上半透明背景，確保在白色圖片上也看得到 */
     backdrop-filter: blur(4px); /* 毛玻璃效果，更有質感 */
     border: none;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -219,9 +219,9 @@ nav {
     cursor: pointer;
     font-size: 18px;
     color: #cbd5e1;
-    transition: all 0.3s ease;
+    transition: 0.2s;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .fav-btn.active {

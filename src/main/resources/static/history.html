@@ -150,14 +150,19 @@
 <script src="js/components.js"></script>
 <script>
 if (!isLoggedIn()) {
-	const goLogin = confirm("此功能需要登入，是否前往登入？");
+    // 使用 components.js 定義的 showToast
+    showToast("💡 此功能需要登入才能查看價格走勢喔！", "前往登入", () => {
+        const redirect = encodeURIComponent(location.href);
+        location.href = `login.html?redirect=${redirect}`;
+    });
 
-	if (goLogin) {
-	    const redirect = encodeURIComponent(location.href);
-	    location.href = `login.html?redirect=${redirect}`;
-	} else {
-	    history.back();
-	}
+    // 模擬原本 confirm 的「取消」邏輯：
+    // 如果使用者 5 秒內沒有點擊「前往登入」，我們就自動幫他回上一頁
+    setTimeout(() => {
+        if (!isLoggedIn()) {
+            history.back();
+        }
+    }, 5000);
 }
 
 const user = getCurrentUser();
@@ -302,27 +307,31 @@ function updateChartRange(days, btn) {
 /* ========================
    主流程
 ======================== */
-(async function init() {
-	const productId = qs("productId");
-	if (!productId) return;
+async function init() {
+    if (!isLoggedIn()) return; // 未登入就停止執行後續 API 請求
 
-	try {
+    const productId = qs("productId");
+    if (!productId) return;
+
+    try {
         const product = await apiGet(`/products/${productId}`);
         renderProduct(product);
 
         const prices = await apiGet(`/history/product/${productId}`);
-        rawPriceData = prices; // 存入全域變數
+        rawPriceData = prices; 
         renderPrices(prices);
 
         if (prices && prices.length > 0) {
-            // 預設顯示最近 7 天
             const defaultBtn = document.querySelector('.filter-btn');
             updateChartRange(7, defaultBtn);
         }
     } catch (err) {
         console.error("載入失敗:", err);
     }
-})();
+}
+
+// 執行初始化
+init();
 </script>
 
 </body>
