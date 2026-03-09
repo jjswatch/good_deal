@@ -24,7 +24,7 @@ import com.gooddeal.repository.UserPreferredStoreRepository;
 @Service
 public class BasketStrategyService {
 	
-	private static final BigDecimal PREFERRED_STORE_BONUS = new BigDecimal("15");
+	private static final BigDecimal PREFERRED_STORE_BONUS = new BigDecimal("100");
 	private static final BigDecimal TRAVEL_COST_PER_STORE = new BigDecimal("30");
 
     @Autowired
@@ -50,7 +50,7 @@ public class BasketStrategyService {
             return new BasketStrategyResult(StrategyType.NONE, "目前沒有足夠的價格資料", null, null);
         }
 
-        /* ========= 1️⃣ 拆單買 (Lambda 內使用 finalPreferredStoreIds) ========= */
+        /* ========= 1️⃣ 拆單買 (計算每件商品的最佳選擇) ========= */
         Map<Integer, ProductPrices> cheapestPerProduct = prices.stream()
                 .collect(Collectors.groupingBy(
                     pp -> pp.getProduct().getProductId(),
@@ -87,7 +87,7 @@ public class BasketStrategyService {
 
         SplitStrategy splitStrategy = new SplitStrategy(splitTotal, splitItems);
 
-        /* ========= 2️⃣ 一站購齊 (整合加權評分邏輯) ========= */
+        /* ========= 2️⃣ 一站購齊 (強力推薦喜愛店家) ========= */
         Map<Integer, String> productNameMap = prices.stream()
                       .map(ProductPrices::getProduct)
                       .distinct()
@@ -104,7 +104,6 @@ public class BasketStrategyService {
             List<ProductPrices> storePrices = entry.getValue();
             Integer currentStoreId = store.getStoreId();
             
-            // 喜愛優先度 (index 越小越優先)
             int candidatePriority = finalPreferredStoreIds.indexOf(currentStoreId);
             int bestPriority = (bestStoreId != null) ? finalPreferredStoreIds.indexOf(bestStoreId) : -1;
 
@@ -125,29 +124,28 @@ public class BasketStrategyService {
                     store.getStoreName(), total, productMap.size(), productIds.size(), missing
             );
 
-            // --- 加權邏輯計算 ---
             boolean candidateIsPreferred = finalPreferredStoreIds.contains(currentStoreId);
             boolean currentBestIsPreferred = (bestStoreId != null) && finalPreferredStoreIds.contains(bestStoreId);
 
-            // 計算當前候選店家的加權分數 (真實總價 - 獎金 * 涵蓋商品數)
             BigDecimal candidateWeightedScore = total;
             if (candidateIsPreferred) {
                 candidateWeightedScore = candidateWeightedScore.subtract(PREFERRED_STORE_BONUS.multiply(new BigDecimal(candidate.getCoveredCount())));
             }
 
-            // 計算目前最優店家的加權分數
             BigDecimal currentBestWeightedScore = (bestStore == null) ? BigDecimal.ZERO : bestStore.getTotal();
             if (bestStore != null && currentBestIsPreferred) {
                 currentBestWeightedScore = currentBestWeightedScore.subtract(PREFERRED_STORE_BONUS.multiply(new BigDecimal(bestStore.getCoveredCount())));
             }
 
-            // --- 判定最優店家 ---
+            // ⭐ 優化判定邏輯：強制提升喜愛店家的權限
             if (bestStore == null 
-                    // 1. 商品數較多者優先勝出
+                    // A. 覆蓋率更高 (這是不變的原則，買得到東西最重要)
                     || candidate.getCoveredCount() > bestStore.getCoveredCount()
-                    // 2. 商品數相同時，比較加權得分 (這會讓喜愛店家在價格接近時勝出)
-                    || (candidate.getCoveredCount() == bestStore.getCoveredCount() && candidateWeightedScore.compareTo(currentBestWeightedScore) < 0)
-                    // 3. 加權得分也一樣時，看喜愛順位 (優先度高的勝出)
+                    // B. 覆蓋率相同，但候選者是喜愛店家，而目前的不是
+                    || (candidate.getCoveredCount() == bestStore.getCoveredCount() && candidateIsPreferred && !currentBestIsPreferred)
+                    // C. 覆蓋率相同且同樣是喜愛/非喜愛店家，則比較加權後的分數
+                    || (candidate.getCoveredCount() == bestStore.getCoveredCount() && (candidateIsPreferred == currentBestIsPreferred) && candidateWeightedScore.compareTo(currentBestWeightedScore) < 0)
+                    // D. 分數也一樣，則看排序順位
                     || (candidate.getCoveredCount() == bestStore.getCoveredCount() && candidateWeightedScore.compareTo(currentBestWeightedScore) == 0 && candidatePriority < bestPriority)
             ) {
                     bestStore = candidate;
@@ -155,14 +153,14 @@ public class BasketStrategyService {
             }
         }
 
-        /* ========= 3️⃣ 推薦策略輸出 ========= */
+        /* ========= 3️⃣ 推薦策略輸出 (優化文案) ========= */
         StrategyType recommend;
         String recommendation;
         long storeCount = splitItems.stream().map(SplitItem::getStoreName).distinct().count();
 
         if (bestStore == null) {
             recommend = StrategyType.SPLIT;
-            recommendation = "無法在單一店家購齊，建議分開購買（共需跑 " + storeCount + " 家店）";
+            recommendation = "目前沒有任何一家店有這些商品，建議分開購買（共需跑 " + storeCount + " 家店）";
         } else {
             BigDecimal moneySavedBySplitting = bestStore.getTotal().subtract(splitTotal);
             BigDecimal totalTravelPenalty = TRAVEL_COST_PER_STORE.multiply(new BigDecimal(storeCount - 1));
@@ -170,19 +168,22 @@ public class BasketStrategyService {
             boolean isPreferred = finalPreferredStoreIds.contains(bestStoreId);
             String storeName = (isPreferred ? "★ " : "") + bestStore.getStoreName();
 
-            if (storeCount <= 1) {
+            // 判斷價格是否相同或拆單其實只有一家店
+            if (moneySavedBySplitting.compareTo(BigDecimal.ZERO) == 0 || storeCount <= 1) {
                 recommend = StrategyType.ONE_STORE;
-                recommendation = "所有商品在「" + storeName + "」買就是最划算的！";
-            } else if (moneySavedBySplitting.compareTo(totalTravelPenalty) < 0) {
+                recommendation = "所有商品在「" + storeName + "」買最划算！價格與拆單相同，且免去奔波之苦。";
+            } 
+            else if (moneySavedBySplitting.compareTo(totalTravelPenalty) < 0) {
                 recommend = StrategyType.ONE_STORE;
-                recommendation = "雖然拆單可省 $" + moneySavedBySplitting + "，但考量時間成本，在「" + storeName + "」一站購足更省力";
-            } else {
+                recommendation = "雖然拆單可省 $" + moneySavedBySplitting + "，但考量跨店跑 " + storeCount + " 家的時間，在您喜愛的「" + storeName + "」一站購齊更省心";
+            } 
+            else {
                 recommend = StrategyType.SPLIT;
-                recommendation = "分開買可省下 $" + moneySavedBySplitting + "（需跑 " + storeCount + " 家店），適合精打細算的你";
+                recommendation = "價格優先推薦！分開買可省下 $" + moneySavedBySplitting + "（共需跑 " + storeCount + " 家店），適合精打細算的您";
             }
             
             if (bestStore.getCoveredCount() < bestStore.getTotalCount()) {
-                recommendation += "（註：一站購齊缺 " + (bestStore.getTotalCount() - bestStore.getCoveredCount()) + " 項）";
+                recommendation += "（註：該店目前缺少 " + (bestStore.getTotalCount() - bestStore.getCoveredCount()) + " 項商品）";
             }
         }
         return new BasketStrategyResult(recommend, recommendation, splitStrategy, bestStore);
