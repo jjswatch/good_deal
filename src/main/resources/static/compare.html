@@ -286,24 +286,33 @@ function toggleWishlist(btn, productId, priceId, storeName, price) {
     const storageKey = `wishlist_${uid}`;
     let wishlist = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-    // 1. 檢查是否已經在清單中（注意型別轉換）
-    const index = wishlist.findIndex(item => String(item.priceId) === String(priceId));
+    // 1. 尋找清單中是否已有「同一個商品編號」
+    const existingIndex = wishlist.findIndex(item => String(item.productId) === String(productId));
 
-    if (index > -1) {
-        // --- 執行「移除」邏輯 ---
-        wishlist.splice(index, 1);
-        localStorage.setItem(storageKey, JSON.stringify(wishlist));
+    if (existingIndex > -1) {
+        // --- 情況 A：商品已在清單中 ---
+        const existingItem = wishlist[existingIndex];
 
-        // UI 變回未加入狀態
-        btn.innerHTML = "🛒";
-        btn.style.background = "#f1f5f9";
-        btn.classList.remove("btn-added");
-        showToast("🗑️ 已從清單中移除");
+        if (String(existingItem.priceId) === String(priceId)) {
+            // 如果連 priceId 都一樣 -> 使用者想「取消選購」這家店
+            wishlist.splice(existingIndex, 1);
+            showToast("🗑️ 已從清單中移除");
+        } else {
+            // 如果 productId 一樣但 priceId 不同 -> 使用者想「換一家店」買
+            wishlist[existingIndex] = {
+                ...existingItem, // 保留原本的圖片、名稱等資訊
+                priceId: String(priceId),
+                storeName: storeName,
+                price: price,
+                addedAt: new Date().toLocaleDateString() // 更新加入日期
+            };
+            showToast(`🔄 已更換為「${storeName}」的價格`);
+        }
     } else {
-        // --- 執行「加入」邏輯 ---
+        // --- 情況 B：商品完全沒在清單中 ---
         const newItem = {
             productId: parseInt(productId),
-            priceId: String(priceId), // 存入時也確保是字串
+            priceId: String(priceId),
             brand: currentProduct ? currentProduct.brand : "",
             productName: currentProduct ? currentProduct.productName : "未知名商品",
             productImg: currentProduct ? currentProduct.imageUrl : "",
@@ -311,19 +320,17 @@ function toggleWishlist(btn, productId, priceId, storeName, price) {
             price,
             addedAt: new Date().toLocaleDateString()
         };
-
         wishlist.push(newItem);
-        localStorage.setItem(storageKey, JSON.stringify(wishlist));
-
-        // UI 變更為已加入狀態
-        btn.innerHTML = "✅";
-        btn.style.background = "#e8f5e9";
-        btn.classList.add("btn-added");
-        
         showToast(`✅ 已加入清單！`, "查看清單", () => {
             location.href = "wishlist.html";
         });
     }
+
+    // 2. 儲存回 localStorage
+    localStorage.setItem(storageKey, JSON.stringify(wishlist));
+
+    // 3. 重要：重新渲染畫面，這樣「別家店」的打勾才會消失
+    renderPrices();
 }
 
 async function init() {

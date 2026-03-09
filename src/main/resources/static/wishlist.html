@@ -317,7 +317,7 @@ async function calculateBestStrategy(wishlist) {
         renderStrategyDashboard(res);
     } catch (err) {
         console.error("策略分析失敗", err);
-        // 分析失敗時，靜默處理或顯示微小的錯誤 Toast
+        showToast("❌ 策略分析失敗，請稍後再試");
         document.getElementById("comparisonDashboard").style.display = "none";
     }
 }
@@ -326,10 +326,15 @@ function renderStrategyDashboard(data) {
     const dashboard = document.getElementById("comparisonDashboard");
     dashboard.style.display = "block";
 
-    /* ========= 拆單策略 ========= */
     const split = data?.splitStrategy;
     if (split?.total != null) {
-        document.getElementById("mixPrice").innerText = `$${split.total}`;
+    	const storeNames = [...new Set(split.items.map(i => i.storeName))];
+    	document.getElementById("mixPrice").innerHTML = `
+    	    $${split.total} 
+    	    <small style="font-size:10px; display:block; color:#94a3b8;">
+    	        (需跑 ${storeNames.length} 家店)
+    	    </small>
+    	`;
         const detailEl = document.getElementById("splitDetail");
         const grouped = split.items.reduce((acc, item) => {
             if (!acc[item.storeName]) acc[item.storeName] = [];
@@ -337,23 +342,29 @@ function renderStrategyDashboard(data) {
             return acc;
         }, {});
 
-        detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => `
-            <div style="margin-bottom:12px;">
-                <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">📍 ${store}</div>
-                ${items.map(i => `
-                    <div style="padding-left:10px; font-size:12px;">
-                        - ${i.brand} ${i.productName}
-                        <span style="float:right;">$${i.price}</span>
+        detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => {
+            // 假設我們從後端傳回的資料能判斷是否為 Preferred
+            // 這裡簡單示範：如果店名在喜愛名單，加個星星
+            const isFavorite = true; // 實務上由後端 Boolean 判斷
+            return `
+                <div style="margin-bottom:12px;">
+                    <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">
+                        ${isFavorite ? '★ ' : '📍 '} ${store}
                     </div>
-                `).join("")}
-            </div>
-        `).join("");
+                    ${items.map(i => `
+                        <div style="padding-left:10px; font-size:12px; border-left: 2px solid rgba(251,191,36,0.3); margin-left:5px;">
+                            - ${i.productName}
+                            <span style="float:right;">$${i.price}</span>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+        }).join("");
     } else {
         document.getElementById("mixPrice").innerText = "--";
         document.getElementById("splitDetail").innerText = "無拆單建議";
     }
 
-    /* ========= 一站購齊策略 ========= */
     const storePriceEl = document.getElementById("bestStorePrice");
     const storeNameEl = document.getElementById("bestStoreName");
     const descEl = document.getElementById("bestStoreDesc");
@@ -474,7 +485,6 @@ function toggleCheck(priceId) {
     }
 }
 
-// ✨ 使用 Toast 取代原生 confirm 移除單一項目
 function confirmRemoveItem(priceId) {
     showToast("要將此商品從清單移除嗎？", "確認移除", () => {
         const user = getCurrentUser();
@@ -488,7 +498,6 @@ function confirmRemoveItem(priceId) {
     });
 }
 
-// ✨ 使用 Toast 取代原生 confirm 清除已購項目
 function clearChecked() {
     const user = getCurrentUser();
     if (!user) return;
