@@ -23,8 +23,6 @@ public class BasketStrategyController {
             @RequestParam List<Integer> ids,
             @RequestParam(required = false) Integer userId // 新增 userId 參數
     ) {
-        // 在實務中，userId 應該從 Spring Security 的 Context 中取得，
-        // 這裡為了方便 demo 先用 RequestParam
         return service.compareBasket(ids, userId);
     }
 }

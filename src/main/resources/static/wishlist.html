@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>購物清單｜CoSave　一塊省</title>
+<title>購物清單｜CoSave 一塊省</title>
 <link rel="stylesheet" href="css/style.css" />
 <style>
 :root {
@@ -16,26 +16,27 @@
 }
 
 .analysis-dashboard {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    padding: 24px;
-    border-radius: 20px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
+	background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+	color: white;
+	padding: 24px;
+	border-radius: 20px;
+	margin-bottom: 30px;
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	position: relative;
+	overflow: hidden;
 }
+
 .analysis-dashboard::after {
-    content: "";
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 150px;
-    height: 150px;
-    background: rgba(251, 191, 36, 0.1);
-    filter: blur(50px);
-    border-radius: 50%;
+	content: "";
+	position: absolute;
+	top: -50px;
+	right: -50px;
+	width: 150px;
+	height: 150px;
+	background: rgba(251, 191, 36, 0.1);
+	filter: blur(50px);
+	border-radius: 50%;
 }
 
 .nav-close {
@@ -49,78 +50,80 @@
 	transition: background 0.2s;
 }
 
-.nav-close:hover { background: #f1f5f9; }
-        
+.nav-close:hover {
+	background: #f1f5f9;
+}
+
 .nav-title {
 	font-size: 18px;
 	font-weight: 700;
 }
 
 .strategy-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 18px;
-}
-.strategy-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 16px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.2s, background 0.2s;
-    display: flex;
-    flex-direction: column;
-}
-.strategy-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-2px);
-}
-.strategy-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #94a3b8;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.strategy-price {
-    font-size: 24px;
-    font-weight: 800;
-    color: #fbbf24;
-    margin: 4px 0;
-}
-.strategy-desc {
-    font-size: 12px; /* 稍微放大一點 */
-    color: #94a3b8;
-    line-height: 1.5;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); /* 加一條分隔線 */
-}
-.strategy-desc div span {
-    color: #fbbf24;
-    font-weight: 600;
-}
-.best-mix {
-    border: 2px solid #fbbf24 !important;
-    background: rgba(251, 191, 36, 0.1) !important;
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin-top: 18px;
 }
 
-/* 最佳店家的小皇冠圖示 (用 CSS 繪製) */
-.best-store-highlight::before {
-    content: "👑";
-    font-size: 14px;
-    margin-right: 4px;
+.strategy-card {
+	background: rgba(255, 255, 255, 0.05);
+	padding: 16px;
+	border-radius: 16px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	transition: transform 0.2s, background 0.2s;
+	display: flex;
+	flex-direction: column;
+}
+
+.strategy-card:hover {
+	background: rgba(255, 255, 255, 0.08);
+	transform: translateY(-2px);
+}
+
+.strategy-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #94a3b8;
+	margin-bottom: 6px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.strategy-price {
+	font-size: 24px;
+	font-weight: 800;
+	color: #fbbf24;
+	margin: 4px 0;
+}
+
+.strategy-desc {
+	font-size: 12px; /* 稍微放大一點 */
+	color: #94a3b8;
+	line-height: 1.5;
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1); /* 加一條分隔線 */
+}
+
+.strategy-desc div span {
+	color: #fbbf24;
+	font-weight: 600;
+}
+
+.best-mix {
+	border: 2px solid #fbbf24 !important;
+    background: rgba(251, 191, 36, 0.15) !important; /* 稍微加深一點點背景色 */
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
 }
 
 /* 購物清單中的店家標題優化 */
 .store-header {
-    background: #f8fafc;
-    padding: 12px 16px;
-    border-radius: 12px 12px 0 0;
-    border-left: 4px solid #1e293b;
+	background: #f8fafc;
+	padding: 12px 16px;
+	border-radius: 12px 12px 0 0;
+	border-left: 4px solid #1e293b;
 }
 
 .container {
@@ -140,7 +143,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 10px 0;
-	border-bottom: 2px solid var(--primary-color);
+	border-bottom: 2px solid var(--primary-red);
 	margin-bottom: 12px;
 }
 
@@ -246,76 +249,96 @@
 	padding: 50px 20px;
 	color: #94a3b8;
 }
+
 .brand-label {
-    color: #64748b; /* 冷灰色 */
-    font-weight: 500;
-    margin-right: 4px;
-    font-size: 0.9em;
+	color: #64748b; /* 冷灰色 */
+	font-weight: 500;
+	margin-right: 4px;
+	font-size: 0.9em;
 }
+
 .wish-item.checked .brand-label {
-    color: #cbd5e1;
-    text-decoration: line-through;
+	color: #cbd5e1;
+	text-decoration: line-through;
 }
 </style>
 </head>
 <body>
-<nav>
-	<div class="nav-container">
-		<div style="margin-left: auto; display: flex; align-items: center;">
-			<div class="nav-close" onclick="location.href='profile.html'">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+	<nav>
+		<div class="nav-container">
+			<div style="margin-left: auto; display: flex; align-items: center;">
+				<div class="nav-close" onclick="location.href='profile.html'">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+						stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-            </div>
-	    </div>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<div class="analysis-dashboard" id="comparisonDashboard">
+		<h3 style="margin-top: 0; font-size: 16px;">💡 採買策略分析</h3>
+		<div id="strategyBadge"
+			style="font-size: 12px; background: #fbbf24; color: #1e293b; display: inline-block; padding: 4px 8px; border-radius: 8px; margin-top: 6px;"></div>
+		<div class="strategy-grid">
+			<div class="strategy-card best-mix">
+				<div class="strategy-label">最省組合 (分開買)</div>
+				<div class="strategy-price" id="mixPrice">$0</div>
+				<div class="strategy-desc" id="splitDetail"></div>
+			</div>
+			<div class="strategy-card best-store">
+				<div class="strategy-label" id="bestStoreName">最佳單一店家</div>
+				<div class="strategy-price" id="bestStorePrice">$0</div>
+				<div class="strategy-desc" id="bestStoreDesc"></div>
+				<div id="bestStoreItems" class="strategy-desc"></div>
+			</div>
+		</div>
 	</div>
-</nav>
-<div class="analysis-dashboard" id="comparisonDashboard">
-    <h3 style="margin-top:0; font-size:16px;">💡 採買策略分析</h3>
-    <div class="strategy-grid">
-        <div class="strategy-card best-mix">
-            <div class="strategy-label">最省組合 (分開買)</div>
-            <div class="strategy-price" id="mixPrice">$0</div>
-            <div class="strategy-desc" id="splitDetail"></div>
-        </div>
-        <div class="strategy-card best-store">
-            <div class="strategy-label" id="bestStoreName">最佳單一店家</div>
-            <div class="strategy-price" id="bestStorePrice">$0</div>
-            <div class="strategy-desc" id="bestStoreDesc">一站式購足最方便</div>
-        </div>
-    </div>
-</div>
 
-<div class="container">
-	<div id="wishlistContent"></div>
-</div>
-
-<div class="summary-bar" id="summaryBar" style="display: none;">
-	<div>
-		<span class="total-label">預計採買總額</span>
-		<div class="total-amount" id="grandTotal">$0</div>
+	<div class="container">
+		<div id="wishlistContent"></div>
 	</div>
-	<button onclick="clearChecked()" style="background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px;">清除已購項目</button>
-</div>
 
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/components.js"></script>
-<script>
+	<div class="summary-bar" id="summaryBar" style="display: none;">
+		<div>
+			<span class="total-label">預計採買總額</span>
+			<div class="total-amount" id="grandTotal">$0</div>
+		</div>
+		<button onclick="clearChecked()"
+			style="background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px;">清除已購項目</button>
+	</div>
+
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/components.js"></script>
+	<script>
 async function calculateBestStrategy(wishlist) {
+	const dashboard = document.getElementById("comparisonDashboard");
+    const badge = document.getElementById("strategyBadge");
+
+    badge.innerText = "🔍 策略計算中...";
+    dashboard.style.opacity = "0.7";
+    
     const productIds = wishlist.map(item => item.productId);
     if (productIds.length === 0) {
         document.getElementById("comparisonDashboard").style.display = "none";
         return;
     }
 
+    const user = getCurrentUser();
+    if (!user) return;
+    const uid = user.userId || user.id;
+
     try {
         const res = await apiGet(
-            `/strategies/compare-basket?ids=${productIds.join(',')}`
+            `/strategies/compare-basket?ids=${productIds.join(',')}&userId=${uid}`
         );
+        dashboard.style.opacity = "1";
         renderStrategyDashboard(res);
     } catch (err) {
+    	dashboard.style.opacity = "1";
         console.error("策略分析失敗", err);
         showToast("❌ 策略分析失敗，請稍後再試");
         document.getElementById("comparisonDashboard").style.display = "none";
@@ -323,18 +346,34 @@ async function calculateBestStrategy(wishlist) {
 }
 
 function renderStrategyDashboard(data) {
+    if (!data) {
+        document.getElementById("comparisonDashboard").style.display = "none";
+        return;
+    }
+
+    const badge = document.getElementById("strategyBadge");
     const dashboard = document.getElementById("comparisonDashboard");
     dashboard.style.display = "block";
 
+    // 1. 設定推薦標籤
+    if (data.strategyType === "PREFERRED_STORE") {
+        badge.innerText = "⭐ 推薦：偏好店家";
+    } else if (data.strategyType === "ONE_STORE") {
+        badge.innerText = "🚶 推薦：一站購齊";
+    } else {
+        badge.innerText = "💰 推薦：最省價格";
+    }
+
+    // 2. 渲染「最省組合 (分開買)」
     const split = data?.splitStrategy;
     if (split?.total != null) {
-    	const storeNames = [...new Set(split.items.map(i => i.storeName))];
-    	document.getElementById("mixPrice").innerHTML = `
-    	    $${split.total} 
-    	    <small style="font-size:10px; display:block; color:#94a3b8;">
-    	        (需跑 ${storeNames.length} 家店)
-    	    </small>
-    	`;
+        const storeNames = [...new Set(split.items.map(i => i.storeName))];
+        document.getElementById("mixPrice").innerHTML = `
+            $${split.total ?? 0}
+            <small style="font-size:10px; display:block; color:#94a3b8;">
+                (需跑 ${storeNames.length} 家店)
+            </small>
+        `;
         const detailEl = document.getElementById("splitDetail");
         const grouped = split.items.reduce((acc, item) => {
             if (!acc[item.storeName]) acc[item.storeName] = [];
@@ -343,9 +382,7 @@ function renderStrategyDashboard(data) {
         }, {});
 
         detailEl.innerHTML = Object.entries(grouped).map(([store, items]) => {
-            // 假設我們從後端傳回的資料能判斷是否為 Preferred
-            // 這裡簡單示範：如果店名在喜愛名單，加個星星
-            const isFavorite = true; // 實務上由後端 Boolean 判斷
+            const isFavorite = items.some(i => i.preferred);
             return `
                 <div style="margin-bottom:12px;">
                     <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">
@@ -365,36 +402,73 @@ function renderStrategyDashboard(data) {
         document.getElementById("splitDetail").innerText = "無拆單建議";
     }
 
+    // 3. 渲染「最佳單一店家」
     const storePriceEl = document.getElementById("bestStorePrice");
     const storeNameEl = document.getElementById("bestStoreName");
     const descEl = document.getElementById("bestStoreDesc");
+    const itemBox = document.getElementById("bestStoreItems");
 
     if (data?.bestStore) {
-        storePriceEl.innerText = `$${data.bestStore.total}`;
-        storeNameEl.innerHTML = `<span class="best-store-highlight">📍 ${data.bestStore.storeName}</span>`;
-        
-        if (data.bestStore.coveredCount < data.bestStore.totalCount && data.bestStore.missingItems?.length > 0) {
-            descEl.innerHTML = `❌ 缺少 ${data.bestStore.totalCount - data.bestStore.coveredCount} 項商品<br>
-                                <span style="font-size:11px;">缺少：${data.bestStore.missingItems.join("、")}</span>`;
-        } else {
-            descEl.innerText = data?.recommendation || "一站式購足最方便";
-        }
-    }
-    descEl.style.color = "#fbbf24";
+        const bs = data.bestStore; // 定義 bs
+        storePriceEl.innerText = `$${bs.total}`;
 
-    highlightRecommend(data?.bestStore ? "ONE_STORE" : "SPLIT");
+        // 計算與最省組合的差價 (如果有)
+        const diff = split?.total ? bs.total - split.total : 0;
+        const savingText = bs.preferred && diff > 0 ? `<small style="font-size:10px; display:block; color:#94a3b8;">(僅多出 $${diff})</small>` : "";
+
+        storeNameEl.innerHTML = `
+            <span class="${bs.preferred ? 'best-store-highlight' : ''}">
+                ${bs.preferred ? '👑 ' : '📍 '} ${bs.storeName}
+            </span>
+            ${savingText}
+        `;
+
+        descEl.innerText = data.message || "推薦策略分析";
+
+        // 渲染該店商品明細
+        if (bs.items && bs.items.length > 0) {
+            itemBox.innerHTML = bs.items.map(i => `
+                <div style="padding-left:10px; font-size:12px; border-left: 2px solid rgba(251,191,36,0.3); margin-top:6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    - ${i.productName}
+                    <span style="float:right; font-weight:600;">$${i.price}</span>
+                </div>
+            `).join("");
+        } else {
+            itemBox.innerHTML = `<div style="font-size:11px;color:#94a3b8;">無商品明細</div>`;
+        }
+
+        // 檢查是否缺項 (bs 在此範圍內仍有效)
+        if (bs.coveredCount < bs.totalCount) {
+            descEl.innerHTML += `<br>
+                <div style="margin-top:8px; background:rgba(239,68,68,0.1); color:#ef4444; padding:4px 8px; border-radius:4px; font-size:11px;">
+                    ⚠️ 缺 ${bs.totalCount - bs.coveredCount} 件商品需另購
+                </div>`;
+        }
+    } else {
+        storePriceEl.innerText = "--";
+        storeNameEl.innerText = "無合適店家";
+        itemBox.innerHTML = "";
+    }
+
+    // 4. 高亮顯示建議卡片
+    highlightRecommend(data.strategyType);
 }
 
 function highlightRecommend(type) {
     const mixCard = document.querySelector(".strategy-card.best-mix");
     const storeCard = document.querySelector(".strategy-card.best-store");
+
     if (!mixCard || !storeCard) return;
 
     mixCard.classList.remove("best-mix");
     storeCard.classList.remove("best-mix");
 
-    if (type === "SPLIT") mixCard.classList.add("best-mix");
-    else if (type === "ONE_STORE") storeCard.classList.add("best-mix");
+    if (type === "SPLIT") {
+        mixCard.classList.add("best-mix");
+    } 
+    else if (type === "ONE_STORE" || type === "PREFERRED_STORE") {
+        storeCard.classList.add("best-mix");
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

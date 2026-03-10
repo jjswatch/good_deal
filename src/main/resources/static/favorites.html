@@ -100,6 +100,11 @@
 	gap: 2px;
 }
 
+.best-price {
+	font-size: 14px;
+	color: #94a3b8;
+}
+
 .currency {
 	font-size: 12px;
 	color: #ef4444;
@@ -183,9 +188,10 @@
 }
 
 .removing {
-	transform: translateX(100px);
-	opacity: 0;
-	pointer-events: none;
+    transform: translateX(50px); /* 輕微向右滑出 */
+    opacity: 0;
+    transition: all 0.3s ease; /* 確保時間是 0.3 秒 */
+    pointer-events: none;
 }
 </style>
 </head>
@@ -253,27 +259,26 @@ async function loadFavorites() {
         }
 
         container.innerHTML = favorites.map(f => `
-            <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
-                <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
-                <div class="favorite-info">
-                    <div class="brand-label">${f.product.brand || '一般品牌'}</div>
-                    <div class="favorite-title">${f.product.productName}</div>
-                    <div class="price-tag">
-                        <span class="currency">$</span>
-                        <span class="amount">${f.product.lowestPrice || '--'}</span>
-                    </div>
-                    <div class="favorite-store">📍 最優：${f.product.bestStore || '比價中'}</div>
-                </div>
-                <div class="favorite-actions" onclick="event.stopPropagation()">
-                    <button class="btn btn-add" onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
-                        🛒 採買
-                    </button>
-                    <button class="btn btn-remove" onclick="confirmRemove(${f.product.productId})">
-                        移除
-                    </button>
+        <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
+            <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
+            <div class="favorite-info">
+                <div class="brand-label">${f.product.brand || '一般品牌'}</div>
+                <div class="favorite-title">${f.product.productName}</div>
+                <div class="price-tag">
+                	<span class="best-price">💰 最優：</span> <span class="currency">$</span>
+                    <span class="amount">${f.product.lowestPrice || '--'}</span>
                 </div>
             </div>
-        `).join("");
+           	<div class="favorite-actions" onclick="event.stopPropagation()">
+                <button class="btn btn-add" onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
+                    🛒 採買
+                </button>
+                <button class="btn btn-remove" onclick="confirmRemove(${f.product.productId})">
+                    移除
+                </button>
+            </div>
+        </div>
+    	`).join("");
 
     } catch (e) {
         showToast("❌ 無法讀取收藏清單，請稍後再試");
@@ -327,7 +332,7 @@ function confirmRemove(productId) {
 
 async function removeFavorite(productId) {
     const card = document.getElementById(`fav-item-${productId}`);
-    if (card) card.classList.add("removing"); // 觸發你 CSS 寫的動畫
+    if (card) card.classList.add("removing"); // 執行消失動畫
 
     try {
         const user = getCurrentUser();
@@ -335,16 +340,14 @@ async function removeFavorite(productId) {
             `/favorites?userId=${user.userId || user.id}&productId=${productId}`
         );
         
-        // 等待動畫跑完再真正移除 DOM
-        setTimeout(() => {
-            card?.remove();
-            // 如果刪光了，刷新頁面顯示空狀態
-            if (document.querySelectorAll('.favorite-card').length === 0) {
-                loadFavorites();
-            }
-        }, 4000); // 配合 CSS transition 時間
-
         showToast("已從我的最愛移除");
+
+        // ✨ 重新刷新頁面邏輯
+        // 等待動畫稍微執行完 (300ms) 後重新載入資料，確保畫面與資料庫同步
+        setTimeout(() => {
+            loadFavorites(); 
+        }, 300);
+
     } catch (err) {
         if (card) card.classList.remove("removing");
         showToast("❌ 移除失敗，請稍後再試");
