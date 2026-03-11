@@ -28,13 +28,11 @@ public class StrategyController {
             @PathVariable Integer productId,
             @RequestParam(required = false) Integer userId
     ) {
-        BasketStrategyResult result =
-                service.compareBasket(List.of(productId), userId);
+        BasketStrategyResult result = service.compareBasket(List.of(productId), userId);
 
         Map<String, Object> res = new HashMap<>();
 
-        if (result.getSplitStrategy() != null &&
-            !result.getSplitStrategy().getItems().isEmpty()) {
+        if (result.getSplitStrategy() != null && !result.getSplitStrategy().getItems().isEmpty()) {
 
             var item = result.getSplitStrategy().getItems().get(0);
 

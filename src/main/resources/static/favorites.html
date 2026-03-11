@@ -247,14 +247,15 @@ async function loadFavorites() {
 
         // 批次取得比價資訊
         for (let f of favorites) {
-            try {
-                const strategy = await apiGet(
-                  `/strategy/product/${f.product.productId}?userId=${user.userId || user.id}`
-                );
-                f.product.lowestPrice = strategy.price;
-                f.product.bestStore = strategy.store;
+        	try {
+                const bestInfo = await apiGet(`/prices/product/${f.product.productId}/best`);
+                
+                f.product.lowestPrice = bestInfo.price;
+                f.product.bestStore = bestInfo.store;
             } catch (e) {
-                console.warn("比價失敗", f.product.productId);
+                console.warn("取得最優價失敗", f.product.productId);
+                f.product.lowestPrice = "--";
+                f.product.bestStore = "未指定";
             }
         }
 

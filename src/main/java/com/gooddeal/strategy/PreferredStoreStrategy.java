@@ -46,8 +46,9 @@ public class PreferredStoreStrategy {
                     );
 
                 })
-                .min(Comparator.comparing(StoreStrategy::getCoveredCount).reversed() // 件數多的優先
-                	      .thenComparing(StoreStrategy::getTotal))
+                .filter(s -> (double)s.getCoveredCount() / productIds.size() >= 0.5) 
+                .min(Comparator.comparing(StoreStrategy::getCoveredCount).reversed()
+                      .thenComparing(StoreStrategy::getTotal))
                 .orElse(null);
     }
     

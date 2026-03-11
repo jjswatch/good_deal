@@ -58,4 +58,21 @@ public class ProductPricesController {
     ) {
         return service.updatePrice(id, body.get("price"));
     }
+    
+    @GetMapping("/product/{productId}/best")
+    public Map<String, Object> getLatestBestPrice(@PathVariable Integer productId) {
+        ProductPrices best = repo.findFirstByProductProductIdOrderByPriceAscUpdatedAtDesc(productId);
+        
+        Map<String, Object> response = new java.util.HashMap<>();
+        
+        if (best != null && best.getStore() != null) {
+            response.put("price", best.getPrice());
+            response.put("store", best.getStore().getStoreName());
+        } else {
+            response.put("price", 0);
+            response.put("store", "暫無報價");
+        }
+        
+        return response;
+    }
 }

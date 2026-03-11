@@ -261,59 +261,85 @@
 	color: #cbd5e1;
 	text-decoration: line-through;
 }
+
+#strategyReason {
+    font-size: 13px;
+    color: #fbbf24;
+    font-weight: 500;
+    background: rgba(251, 191, 36, 0.1); /* 淡淡的黃色背景 */
+    padding: 8px 12px;
+    border-radius: 10px;
+    border-left: 3px solid #fbbf24; /* 左側金條 */
+    margin: 10px 0;
+    display: none; /* 初始隱藏，有資料再顯示 */
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 修正 Badge 容器 */
+.badge-container {
+    display: flex;
+    flex-direction: column; /* 讓標籤跟文字垂直排列，避免太擠 */
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 15px;
+}
 </style>
 </head>
 <body>
-	<nav>
-		<div class="nav-container">
-			<div style="margin-left: auto; display: flex; align-items: center;">
-				<div class="nav-close" onclick="location.href='profile.html'">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-						stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-						stroke-linejoin="round">
+<nav>
+	<div class="nav-container">
+		<div style="margin-left: auto; display: flex; align-items: center;">
+			<div class="nav-close" onclick="location.href='profile.html'">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-				</div>
-			</div>
-		</div>
-	</nav>
-	<div class="analysis-dashboard" id="comparisonDashboard">
-		<h3 style="margin-top: 0; font-size: 16px;">💡 採買策略分析</h3>
-		<div id="strategyBadge"
-			style="font-size: 12px; background: #fbbf24; color: #1e293b; display: inline-block; padding: 4px 8px; border-radius: 8px; margin-top: 6px;"></div>
-		<div class="strategy-grid">
-			<div class="strategy-card best-mix">
-				<div class="strategy-label">最省組合 (分開買)</div>
-				<div class="strategy-price" id="mixPrice">$0</div>
-				<div class="strategy-desc" id="splitDetail"></div>
-			</div>
-			<div class="strategy-card best-store">
-				<div class="strategy-label" id="bestStoreName">最佳單一店家</div>
-				<div class="strategy-price" id="bestStorePrice">$0</div>
-				<div class="strategy-desc" id="bestStoreDesc"></div>
-				<div id="bestStoreItems" class="strategy-desc"></div>
 			</div>
 		</div>
 	</div>
+</nav>
 
-	<div class="container">
-		<div id="wishlistContent"></div>
+<div class="analysis-dashboard" id="comparisonDashboard">
+	<h3 style="margin-top: 0; font-size: 16px;">💡 採買策略分析</h3>
+	<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+		<div id="strategyBadge" style="font-size: 12px; background: #fbbf24; color: #1e293b; display: inline-block; padding: 4px 8px; border-radius: 8px;"></div>
+		<div id="strategyReason" style="font-size: 13px; color: #fbbf24; font-weight: 500;"></div>
 	</div>
-
-	<div class="summary-bar" id="summaryBar" style="display: none;">
-		<div>
-			<span class="total-label">預計採買總額</span>
-			<div class="total-amount" id="grandTotal">$0</div>
+	<div class="strategy-grid">
+		<div class="strategy-card" id="splitCard">
+			<div class="strategy-label">最省組合 (分開買)</div>
+			<div class="strategy-price" id="mixPrice">$0</div>
+			<div class="strategy-desc" id="splitDetail"></div>
 		</div>
-		<button onclick="clearChecked()"
-			style="background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px;">清除已購項目</button>
+		<div class="strategy-card" id="storeCard">
+			<div class="strategy-label" id="bestStoreName">最佳單一店家</div>
+			<div class="strategy-price" id="bestStorePrice">$0</div>
+			<div id="bestStoreItems" class="strategy-desc"></div>
+		</div>
 	</div>
+</div>
 
-	<script src="js/api.js"></script>
-	<script src="js/auth.js"></script>
-	<script src="js/components.js"></script>
-	<script>
+<div class="container">
+	<div id="wishlistContent"></div>
+</div>
+
+<div class="summary-bar" id="summaryBar" style="display: none;">
+	<div>
+		<span class="total-label">預計採買總額</span>
+		<div class="total-amount" id="grandTotal">$0</div>
+	</div>
+	<button onclick="clearChecked()" style="background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 12px;">清除已購項目</button>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/components.js"></script>
+<script>
 async function calculateBestStrategy(wishlist) {
 	const dashboard = document.getElementById("comparisonDashboard");
     const badge = document.getElementById("strategyBadge");
@@ -346,33 +372,37 @@ async function calculateBestStrategy(wishlist) {
 }
 
 function renderStrategyDashboard(data) {
-    if (!data) {
-        document.getElementById("comparisonDashboard").style.display = "none";
-        return;
-    }
+    if (!data) return;
 
-    const badge = document.getElementById("strategyBadge");
     const dashboard = document.getElementById("comparisonDashboard");
+    const badge = document.getElementById("strategyBadge");
+    const reasonEl = document.getElementById("strategyReason");
     dashboard.style.display = "block";
 
-    // 1. 設定推薦標籤
-    if (data.strategyType === "PREFERRED_STORE") {
-        badge.innerText = "⭐ 推薦：偏好店家";
-    } else if (data.strategyType === "ONE_STORE") {
-        badge.innerText = "🚶 推薦：一站購齊";
+    if (data.recommendation) {
+        reasonEl.innerText = data.recommendation;
+        reasonEl.style.display = "block";
     } else {
-        badge.innerText = "💰 推薦：最省價格";
+        reasonEl.style.display = "none";
     }
+
+    const typeMap = {
+        'PREFERRED_STORE': { text: '⭐ 推薦：偏好店家', color: '#fbbf24' },
+        'ONE_STORE': { text: '🚶 推薦：一站購齊', color: '#60a5fa' },
+        'SPLIT': { text: '💰 推薦：最省價格', color: '#34d399' }
+    };
+
+    const config = typeMap[data.recommend] || { text: '🔍 策略分析', color: '#94a3b8' };
+    badge.innerText = config.text;
+    badge.style.background = config.color;
 
     // 2. 渲染「最省組合 (分開買)」
     const split = data?.splitStrategy;
-    if (split?.total != null) {
+    if (split) {
         const storeNames = [...new Set(split.items.map(i => i.storeName))];
         document.getElementById("mixPrice").innerHTML = `
-            $${split.total ?? 0}
-            <small style="font-size:10px; display:block; color:#94a3b8;">
-                (需跑 ${storeNames.length} 家店)
-            </small>
+            $${split.total}
+            <small style="font-size:10px; display:block; color:#94a3b8;">(需跑 ${storeNames.length} 家店)</small>
         `;
         const detailEl = document.getElementById("splitDetail");
         const grouped = split.items.reduce((acc, item) => {
@@ -397,76 +427,57 @@ function renderStrategyDashboard(data) {
                 </div>
             `;
         }).join("");
-    } else {
-        document.getElementById("mixPrice").innerText = "--";
-        document.getElementById("splitDetail").innerText = "無拆單建議";
     }
 
-    // 3. 渲染「最佳單一店家」
-    const storePriceEl = document.getElementById("bestStorePrice");
-    const storeNameEl = document.getElementById("bestStoreName");
-    const descEl = document.getElementById("bestStoreDesc");
-    const itemBox = document.getElementById("bestStoreItems");
+    // 3. 渲染「最佳單一/偏好店家」
+    const bs = data.bestStore;
+    if (bs) {
+        const storePriceEl = document.getElementById("bestStorePrice");
+        const storeNameEl = document.getElementById("bestStoreName");
+        const itemBox = document.getElementById("bestStoreItems");
 
-    if (data?.bestStore) {
-        const bs = data.bestStore; // 定義 bs
         storePriceEl.innerText = `$${bs.total}`;
-
-        // 計算與最省組合的差價 (如果有)
-        const diff = split?.total ? bs.total - split.total : 0;
-        const savingText = bs.preferred && diff > 0 ? `<small style="font-size:10px; display:block; color:#94a3b8;">(僅多出 $${diff})</small>` : "";
+        
+        const diff = split ? bs.total - split.total : 0;
+        const diffText = diff > 0 ? `<div style="font-size:10px; color:#94a3b8; font-weight:normal;">(多出 $${diff})</div>` : "";
 
         storeNameEl.innerHTML = `
-            <span class="${bs.preferred ? 'best-store-highlight' : ''}">
-                ${bs.preferred ? '👑 ' : '📍 '} ${bs.storeName}
+            <span style="display:flex; align-items:center; gap:4px;">
+                ${bs.preferred ? '👑' : '📍'} ${bs.storeName}
             </span>
-            ${savingText}
+            ${diffText}
         `;
 
-        descEl.innerText = data.message || "推薦策略分析";
+        let itemsHtml = bs.items.map(i => `
+            <div style="font-size:11px; margin-top:4px;">- ${i.productName} <span style="float:right;">$${i.price}</span></div>
+        `).join("");
 
-        // 渲染該店商品明細
-        if (bs.items && bs.items.length > 0) {
-            itemBox.innerHTML = bs.items.map(i => `
-                <div style="padding-left:10px; font-size:12px; border-left: 2px solid rgba(251,191,36,0.3); margin-top:6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    - ${i.productName}
-                    <span style="float:right; font-weight:600;">$${i.price}</span>
-                </div>
-            `).join("");
-        } else {
-            itemBox.innerHTML = `<div style="font-size:11px;color:#94a3b8;">無商品明細</div>`;
-        }
-
-        // 檢查是否缺項 (bs 在此範圍內仍有效)
         if (bs.coveredCount < bs.totalCount) {
-            descEl.innerHTML += `<br>
-                <div style="margin-top:8px; background:rgba(239,68,68,0.1); color:#ef4444; padding:4px 8px; border-radius:4px; font-size:11px;">
-                    ⚠️ 缺 ${bs.totalCount - bs.coveredCount} 件商品需另購
+            itemsHtml += `
+                <div style="margin-top:8px; color:#ef4444; font-size:11px; font-weight:bold;">
+                    ⚠️ 缺 ${bs.totalCount - bs.coveredCount} 件需另購
                 </div>`;
         }
-    } else {
-        storePriceEl.innerText = "--";
-        storeNameEl.innerText = "無合適店家";
-        itemBox.innerHTML = "";
+        itemBox.innerHTML = itemsHtml;
     }
 
-    // 4. 高亮顯示建議卡片
-    highlightRecommend(data.strategyType);
+    // ✅ 修正 3：高亮邏輯也使用 data.recommend
+    highlightRecommend(data.recommend);
 }
 
 function highlightRecommend(type) {
-    const mixCard = document.querySelector(".strategy-card.best-mix");
-    const storeCard = document.querySelector(".strategy-card.best-store");
+    const splitCard = document.getElementById("splitCard");
+    const storeCard = document.getElementById("storeCard");
 
-    if (!mixCard || !storeCard) return;
-
-    mixCard.classList.remove("best-mix");
+    // 先移除所有高亮
+    splitCard.classList.remove("best-mix");
     storeCard.classList.remove("best-mix");
 
+    // 根據後端給的 strategyType 決定誰變黃色
     if (type === "SPLIT") {
-        mixCard.classList.add("best-mix");
-    } 
-    else if (type === "ONE_STORE" || type === "PREFERRED_STORE") {
+        splitCard.classList.add("best-mix");
+    } else {
+        // ONE_STORE 或 PREFERRED_STORE 都高亮右邊卡片
         storeCard.classList.add("best-mix");
     }
 }
