@@ -127,7 +127,7 @@ public class PriceReportServiceImpl implements PriceReportService {
 
 			// 更新價格
 			latest.setPrice(report.getReportedPrice());
-			latest.setPriceDate(LocalDate.now());
+			//latest.setPriceDate(LocalDate.now());
 			priceRepo.save(latest);
 		} else {
 			// 3️⃣ 若沒有 → 新增一筆價格 → 寫入歷史
