@@ -70,17 +70,31 @@ public class RecommendationEngine {
 
     public String message(SplitStrategy split, StoreStrategy oneStore, StoreStrategy preferred, StrategyType type) {
         BigDecimal savings = oneStore.getTotal().subtract(split.getTotal());
+        int compareResult = savings.compareTo(BigDecimal.ZERO);
         
         return switch (type) {
-            case PREFERRED_STORE -> "這家是你常去的店，而且能「一次買齊」所有商品！";
-            case ONE_STORE -> "雖然分開買更划算，但在這家店能「一次買齊」最省事。";
-            case SPLIT -> {
-                if (oneStore.getCoveredCount() < oneStore.getTotalCount()) {
-                    yield "目前沒有單一店家能買齊所有商品，建議分開採買。";
-                }
-                yield String.format("雖然這家店能買齊，但分開買能幫你省下 $%s，建議分開跑！", savings);
-            }
-            default -> "已為您找出最佳採買方案";
+        	case PREFERRED_STORE -> {
+        		if (compareResult == 0) {
+        			yield "太棒了！你常去的店就是最划算的選擇，且能「一次買齊」所有商品。";
+        		}
+        		yield "這家是你常去的店，雖然多花一點點錢，但能「一次買齊」最省心！";
+        	}
+        
+        	case ONE_STORE -> {
+        		if (compareResult == 0) {
+        			yield "這家店就是市場最低價！在一站就能「購齊全餐」，省錢更省時間。";
+        		}
+        		yield String.format("雖然分開採買能再省 $%s，但在這家店「一次買齊」可以省去奔波勞碌。", savings);
+        	}
+
+        	case SPLIT -> {
+        		if (oneStore.getCoveredCount() < oneStore.getTotalCount()) {
+        			yield "目前沒有單一店家能買齊所有商品，建議分開採買以確保貨源。";
+        		}
+        		yield String.format("雖然有店家能買齊，但分開買能幫你省下不少錢 ($%s)，推薦分開採購！", savings);
+        	}
+        
+        	default -> "已為您找出目前最平衡的採買方案。";
         };
     }
 }
