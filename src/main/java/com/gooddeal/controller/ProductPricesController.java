@@ -66,9 +66,11 @@ public class ProductPricesController {
         Map<String, Object> response = new java.util.HashMap<>();
         
         if (best != null && best.getStore() != null) {
+        	response.put("priceId", best.getPriceId());
             response.put("price", best.getPrice());
             response.put("store", best.getStore().getStoreName());
         } else {
+        	response.put("priceId", 0);
             response.put("price", 0);
             response.put("store", "暫無報價");
         }

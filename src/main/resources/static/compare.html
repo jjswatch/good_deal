@@ -250,7 +250,7 @@ function renderPrices() {
     list.innerHTML = sortedPrices.map(p => {
         const displayDate = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('zh-TW') : '今日';
         const logoPath = `assets/stores/${logoMap[p.store.storeGroup] || 'placeholder.png'}`;
-        const isAdded = savedIds.includes(String(p.priceId));
+        const isAdded = p.priceId && savedIds.includes(String(p.priceId));
 
         return `
         <div class="price-card">
@@ -264,14 +264,13 @@ function renderPrices() {
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:15px;">
-                <div class="price-value">$${p.price}</div>
-                <button id="btn-${p.priceId}" 
-                    onclick="toggleWishlist(this, '${productId}', '${p.priceId}', '${p.store.storeName}', ${p.price})" 
-                    class="${isAdded ? 'btn-added' : ''}"
-                    style="background:${isAdded ? '#e8f5e9' : '#f1f5f9'}; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:0.2s;">
-                    ${isAdded ? '✅' : '🛒'}
-                </button>
-            </div>
+            	<div class="price-value">$${p.price}</div>
+            	<button id="btn-${p.priceId}" onclick="toggleWishlist(this, '${getQueryParam('id')}', '${p.priceId}', '${p.store.storeName}', ${p.price})" 
+                	class="${isAdded ? 'btn-added' : ''}"
+                	style="background:${isAdded ? '#e8f5e9' : '#f1f5f9'}; border:none; cursor:pointer; padding:8px; border-radius:50%; transition:0.2s;">
+                	${isAdded ? '✅' : '🛒'}
+            	</button>
+        	</div>
         </div>
     `;}).join("");
 }

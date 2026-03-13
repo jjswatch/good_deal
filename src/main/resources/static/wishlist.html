@@ -288,6 +288,17 @@
     gap: 8px;
     margin-bottom: 15px;
 }
+
+@media (max-width: 480px) {
+    .strategy-grid {
+        grid-template-columns: 1fr; /* 改成一欄 */
+        gap: 12px;
+    }
+    
+    .strategy-card {
+        padding: 12px;
+    }
+}
 </style>
 </head>
 <body>
@@ -533,19 +544,19 @@ function renderWishlist() {
                     <span class="store-subtotal">共 ${items.length} 項, 小計 $${subtotal}</span>
                 </div>
                 ${items.map((item) => `
-                    <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.priceId}">
-                        <div class="check-btn" onclick="toggleCheck('${item.priceId}')">${item.checked ? '✓' : ''}</div>
-                        <img src="${item.productImg}" alt="">
-                        <div class="wish-info">
-                            <div class="wish-title">
-                                ${item.brand ? `<span class="brand-label">${item.brand}</span>` : ''} 
-                                ${item.productName}
-                            </div>
-                            <div class="wish-price">$${item.price}</div>
+                <div class="wish-item ${item.checked ? 'checked' : ''}" id="item-${item.productId}">
+                    <div class="check-btn" onclick="toggleCheck('${item.productId}')">${item.checked ? '✓' : ''}</div>
+                    <img src="${item.productImg}" alt="">
+                    <div class="wish-info">
+                        <div class="wish-title">
+                            ${item.brand ? `<span class="brand-label">${item.brand}</span>` : ''} 
+                            ${item.productName}
                         </div>
-                        <button onclick="confirmRemoveItem('${item.priceId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px; cursor:pointer;">✕</button>
+                        <div class="wish-price">$${item.price}</div>
                     </div>
-                `).join('')}
+                    <button onclick="confirmRemoveItem('${item.productId}')" style="background:none; border:none; color:#cbd5e1; font-size:18px; cursor:pointer;">✕</button>
+                </div>
+            `).join('')}
             </div>
         `;
     }
@@ -557,12 +568,12 @@ function renderWishlist() {
     calculateBestStrategy(wishlist);
 }
 
-function toggleCheck(priceId) {
+function toggleCheck(productId) {
     const user = getCurrentUser();
     if (!user) return;
     const uid = user.userId || user.id;
     let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
-    const index = wishlist.findIndex(i => i.priceId === priceId);
+    const index = wishlist.findIndex(i => String(i.productId) === String(productId));
     if (index !== -1) {
         wishlist[index].checked = !wishlist[index].checked;
         localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
@@ -570,13 +581,13 @@ function toggleCheck(priceId) {
     }
 }
 
-function confirmRemoveItem(priceId) {
+function confirmRemoveItem(productId) {
     showToast("要將此商品從清單移除嗎？", "確認移除", () => {
         const user = getCurrentUser();
         if (!user) return;
         const uid = user.userId || user.id;
         let wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`));
-        wishlist = wishlist.filter(i => i.priceId !== priceId);
+        wishlist = wishlist.filter(i => String(i.productId) !== String(productId));
         localStorage.setItem(`wishlist_${uid}`, JSON.stringify(wishlist));
         renderWishlist();
         showToast("已移除商品");

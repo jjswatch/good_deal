@@ -152,6 +152,12 @@
 	color: white;
 }
 
+.btn-added {
+    background: #e8f5e9 !important;
+    color: #2e7d32 !important;
+    border-color: #bbf7d0 !important;
+}
+
 .btn-remove {
 	background: #fff1f2;
 	color: #e11d48;
@@ -230,6 +236,9 @@ async function loadFavorites() {
         return;
     }
 
+    const uid = user.userId || user.id;
+    const wishlist = JSON.parse(localStorage.getItem(`wishlist_${uid}`)) || [];
+
     try {
         const favorites = await apiGet(`/favorites/user/${user.userId || user.id}`);
         const container = document.getElementById("favoriteList");
@@ -247,39 +256,47 @@ async function loadFavorites() {
 
         // 批次取得比價資訊
         for (let f of favorites) {
-        	try {
+            try {
                 const bestInfo = await apiGet(`/prices/product/${f.product.productId}/best`);
-                
+                // 確保這裡抓到的是資料庫的 priceId
+                f.product.priceId = bestInfo.priceId ? String(bestInfo.priceId) : null;
                 f.product.lowestPrice = bestInfo.price;
-                f.product.bestStore = bestInfo.store;
+                f.product.bestStore = (typeof bestInfo.store === 'object') ? bestInfo.store.storeName : bestInfo.store;
             } catch (e) {
-                console.warn("取得最優價失敗", f.product.productId);
+                f.product.priceId = null;
                 f.product.lowestPrice = "--";
-                f.product.bestStore = "未指定";
             }
         }
 
-        container.innerHTML = favorites.map(f => `
-        <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
-            <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
-            <div class="favorite-info">
-                <div class="brand-label">${f.product.brand || '一般品牌'}</div>
-                <div class="favorite-title">${f.product.productName}</div>
-                <div class="price-tag">
-                	<span class="best-price">💰 最優：</span> <span class="currency">$</span>
-                    <span class="amount">${f.product.lowestPrice || '--'}</span>
+        container.innerHTML = favorites.map(f => {
+            // ✨ 修正點 1：改用 productId 判斷，且確保 productId 存在
+            const isAdded = wishlist.some(item => 
+                item.productId && f.product.productId && 
+                String(item.productId) === String(f.product.productId)
+            );
+
+            return `
+            <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
+                <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
+                <div class="favorite-info">
+                    <div class="brand-label">${f.product.brand || '一般品牌'}</div>
+                    <div class="favorite-title">${f.product.productName}</div>
+                    <div class="price-tag">
+                        <span class="best-price">💰 最優：</span> <span class="currency">$</span>
+                        <span class="amount">${f.product.lowestPrice || '--'}</span>
+                    </div>
                 </div>
-            </div>
-           	<div class="favorite-actions" onclick="event.stopPropagation()">
-                <button class="btn btn-add" onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
-                    🛒 採買
-                </button>
-                <button class="btn btn-remove" onclick="confirmRemove(${f.product.productId})">
-                    移除
-                </button>
-            </div>
-        </div>
-    	`).join("");
+            	<div class="favorite-actions" onclick="event.stopPropagation()">
+            		<button class="btn ${isAdded ? 'btn-added' : 'btn-add'}" 
+                    	onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
+                		${isAdded ? '✅ 已在清單' : '🛒 採買'}
+            		</button>
+                    <button class="btn btn-remove" onclick="confirmRemove(${f.product.productId})">
+                        移除
+                    </button>
+                </div>
+            </div>`;
+        }).join("");
 
     } catch (e) {
         showToast("❌ 無法讀取收藏清單，請稍後再試");
@@ -307,7 +324,7 @@ function addToWishlist(product) {
 
     wishlist.push({
         productId: product.productId,
-        priceId: `fav-${product.productId}-${Date.now()}`,
+        priceId: product.priceId ? String(product.priceId) : `temp_${product.productId}`,
         brand: product.brand || "",
         productName: product.productName,
         price: product.lowestPrice || 0,
@@ -322,6 +339,8 @@ function addToWishlist(product) {
     showToast("✅ 已加入採買清單！", "立即分析", () => {
         location.href = "wishlist.html";
     });
+
+    loadFavorites();
 }
 
 // ✨ 優化後的「移除收藏」：確認機制換成 Toast
