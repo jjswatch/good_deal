@@ -14,6 +14,7 @@ import com.gooddeal.model.PriceHistory;
 import com.gooddeal.model.Products;
 import com.gooddeal.model.Stores;
 import com.gooddeal.repository.PriceHistoryRepository;
+import com.gooddeal.repository.PriceReportRepository;
 import com.gooddeal.repository.ProductsRepository;
 import com.gooddeal.repository.StoresRepository;
 
@@ -30,6 +31,9 @@ public class PriceHistoryService {
 
     @Autowired
     private StoresRepository storesRepository;
+    
+    @Autowired
+    private PriceReportRepository priceReportRepository;
     
     public List<PriceHistoryResponse> getAllHistory(int limit) {
         // 這裡可以使用 Pageable 來處理 limit
@@ -112,6 +116,10 @@ public class PriceHistoryService {
     	return entities.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+    
+    public List<PriceHistory> getUserHistory(Integer userId) {
+    	return priceReportRepository.findHistoryByUserId(userId);
     }
 }
 

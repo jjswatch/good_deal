@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>貢獻紀錄｜CoSave 一塊省</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+:root {
+	--primary-red: #FF4500;
+	--secondary-red: #ef4444;
+	--text-dark: #1e293b;
+	--text-gray: #64748b;
+	--bg-light: #f8fafc;
+	--border-color: #e2e8f0;
+}
+
+.container {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 20px 16px 100px;
+}
+
+.contribution-item {
+	background: white;
+	padding: 16px;
+	border-radius: 15px;
+	margin-bottom: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.header-bar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.nav-close {
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	border-radius: 50%;
+	transition: background 0.2s;
+}
+
+.nav-close:hover { background: #f1f5f9; }
+        
+.nav-title {
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.page-title {
+	font-size: 20px;
+	font-weight: 800;
+	color: #1e293b;
+}
+
+.status-badge {
+	font-size: 11px;
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-weight: bold;
+}
+
+.status-verified {
+	background: #dcfce7;
+	color: #16a34a;
+} /* 已採用 */
+.status-pending {
+	background: #fef3c7;
+	color: #d97706;
+} /* 審核中 */
+.status-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+} /* 遭拒絕 */
+.item-info h4 {
+	margin: 0 0 4px 0;
+	font-size: 15px;
+	color: #1e293b;
+}
+
+.item-info p {
+	margin: 0;
+	font-size: 12px;
+	color: #64748b;
+}
+
+.price-tag {
+	font-weight: 800;
+	color: #ef4444;
+	font-size: 16px;
+}
+</style>
+</head>
+<body>
+<nav>
+	<div class="nav-container">
+		<div style="margin-left: auto; display: flex; align-items: center;">
+			<div class="nav-close" onclick="location.href='profile.html'">
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+		</div>
+	</div>
+</nav>
+
+<div class="container">
+	<div class="header-bar">
+		<div class="page-title">📝 歷史回報貢獻</div>
+	</div>
+	
+	<div id="contributionList">
+		<div style="text-align: center; color: #94a3b8; margin-top: 50px;">載入中...</div>
+	</div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+async function loadContributions() {
+    const user = getCurrentUser();
+    const listEl = document.getElementById("contributionList");
+
+    // 1. 安全檢查：如果沒登入，導向登入頁
+    if (!user) {
+        listEl.innerHTML = `<div style="text-align:center; margin-top:50px;">請先登入以查看紀錄</div>`;
+        return;
+    }
+
+    const uid = user.userId || user.id;
+        
+    try {
+        const data = await apiGet(`/price-reports/user/${uid}`);
+            
+        if (!data || data.length === 0) {
+            listEl.innerHTML = `<div style="text-align:center; padding:40px;">尚未有回報紀錄，快去賣場幫大家找便宜吧！</div>`;
+            return;
+        }
+
+        listEl.innerHTML = data.map(item => {
+            // 2. 處理狀態標籤與文字 (對應後端 Enum: APPROVED, PENDING, REJECTED)
+            let statusClass = 'status-pending';
+            let statusText = '⏳ 審核中';
+
+            if (item.status === 'APPROVED') {
+                statusClass = 'status-verified';
+                statusText = '✓ 已採用';
+            } else if (item.status === 'REJECTED') {
+                statusClass = 'status-rejected';
+                statusText = '✕ 未採用';
+            }
+
+            // 3. 格式化時間 (讓 2023-10-27T10:00 變成 2023/10/27)
+            const dateStr = item.reportedAt ? new Date(item.reportedAt).toLocaleDateString() : '未知時間';
+
+            return `
+                <div class="contribution-item">
+                    <div class="item-info">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                            <span class="status-badge ${statusClass}">
+                                ${statusText}
+                            </span>
+                            <span style="font-size:11px; color:#94a3b8;">${dateStr}</span>
+                        </div>
+                        <h4>${item.brand || '未知品牌'} ${item.productName || '未知商品'}</h4>
+                        <p>📍 ${item.storeName || '未知店家'}</p>
+                    </div>
+                    <div class="price-tag">$${item.reportedPrice}</div>
+                </div>
+            `;
+        }).join('');
+            
+    } catch (err) {
+        console.error("載入失敗:", err);
+        listEl.innerHTML = `<div style="text-align:center; color:red; padding:20px;">資料載入失敗，請稍後再試</div>`;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadContributions);
+</script>
+</body>
+</html>

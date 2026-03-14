@@ -196,89 +196,96 @@
 }
 .point-value { font-size: 18px; font-weight: 700; color: #fbbf24; }
 .point-label { font-size: 12px; color: #cbd5e1; }
+
+.contribution-entrance {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #bbf7d0 !important;
+}
+.contribution-entrance::after { content: '📝'; }
+.contribution-entrance h2 { color: #16a34a; }
+.contribution-summary-text { color: #166534; }
 </style>
 </head>
 <body>
-
-	<nav>
-		<div class="nav-container">
-			<span class="nav-title">個人頁面</span>
-			<div style="margin-left: auto;">
-				<div class="nav-notification" onclick="location.href='setting.html'">
-					<svg class="nav-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> 
-						<circle cx="12" cy="12" r="3"></circle> 
-						<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path> 
-					</svg>
-				</div>
+<nav>
+	<div class="nav-container">
+		<span class="nav-title">個人頁面</span>
+		<div style="margin-left: auto;">
+			<div class="nav-notification" onclick="location.href='setting.html'">
+				<svg class="nav-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> 
+					<circle cx="12" cy="12" r="3"></circle> 
+					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path> 
+				</svg>
 			</div>
-		</div>
-	</nav>
-
-	<div class="container">
-		<div class="profile-header">
-			<div class="avatar">👤</div>
-			<h1 class="user-name" id="displayUserName">載入中...</h1>
-			<p class="user-email" id="displayUserEmail">---</p>
-		</div>
-
-		<div class="card points-card">
-			<div style="display: flex; align-items: center;">
-				<h2>成就等級</h2>
-				<span id="userLevelTag" class="wishlist-stats"
-					style="background: #fbbf24; color: #1e293b;">LV.1</span>
-			</div>
-			<div class="points-grid">
-				<div class="point-item">
-					<div class="point-label">目前點數</div>
-					<div class="point-value" id="displayPoints">0</div>
-				</div>
-				<div class="point-item">
-					<div class="point-label">信用評分</div>
-					<div class="point-value" id="displayTrust">100.0</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="card store-entrance"
-			onclick="location.href='preferred-stores.html'">
-			<div style="display: flex; align-items: center;">
-				<h2>🏪 常去賣場設定</h2>
-				<span id="storeCountTag" class="wishlist-stats"
-					style="display: none;">0/3</span>
-			</div>
-			<p id="storeSummary" class="summary-desc store-summary-text">設定您最常去的
-				3 間賣場，比價更精準</p>
-			<div class="view-all-label" style="color: #7c3aed;">立即設定 →</div>
-		</div>
-
-		<div class="card favorite-entrance"
-			onclick="location.href='favorites.html'">
-			<div style="display: flex; align-items: center;">
-				<h2>❤️ 最愛</h2>
-				<span id="favoriteCountTag" class="wishlist-stats"
-					style="display: none;">0</span>
-			</div>
-			<p id="favoriteSummary" class="summary-desc favorite-summary-text">尚未加入最愛</p>
-			<div class="view-all-label" style="color: #ea580c;">查看全部 →</div>
-		</div>
-
-		<div class="card wishlist-entrance"
-			onclick="location.href='wishlist.html'">
-			<div style="display: flex; align-items: center;">
-				<h2>🛒 購物清單</h2>
-				<span id="wishlistCountTag" class="wishlist-stats"
-					style="display: none;">0</span>
-			</div>
-			<p id="wishlistSummary" class="summary-desc wishlist-summary-text">載入清單中...</p>
-			<div class="view-all-label" style="color: #ea580c;">前往採買 →</div>
 		</div>
 	</div>
+</nav>
 
-	<script src="js/auth.js"></script>
-	<script src="js/api.js"></script>
-	<script src="js/components.js"></script>
-	<script>
+<div class="container">
+	<div class="profile-header">
+		<div class="avatar">👤</div>
+		<h1 class="user-name" id="displayUserName">載入中...</h1>
+		<p class="user-email" id="displayUserEmail">---</p>
+	</div>
 
+	<div class="card points-card">
+		<div style="display: flex; align-items: center;">
+			<h2>成就等級</h2>
+			<span id="userLevelTag" class="wishlist-stats" style="background: #fbbf24; color: #1e293b;">LV.1</span>
+		</div>
+		<div class="points-grid">
+			<div class="point-item">
+				<div class="point-label">目前點數</div>
+				<div class="point-value" id="displayPoints">0</div>
+			</div>
+			<div class="point-item">
+				<div class="point-label">信用評分</div>
+				<div class="point-value" id="displayTrust">100.0</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="card contribution-entrance" onclick="location.href='contributions.html'">
+    	<div style="display: flex; align-items: center;">
+        	<h2>📝 價格回報貢獻</h2>
+        	<span id="contributionCountTag" class="wishlist-stats" style="background: #22c55e;">0</span>
+    	</div>
+    	<p id="contributionSummary" class="summary-desc contribution-summary-text">載入貢獻紀錄中...</p>
+    	<div class="view-all-label" style="color: #16a34a;">查看歷史回報 →</div>
+	</div>
+
+	<div class="card store-entrance" onclick="location.href='preferred-stores.html'">
+		<div style="display: flex; align-items: center;">
+			<h2>🏪 常去賣場設定</h2>
+			<span id="storeCountTag" class="wishlist-stats" style="display: none;">0/3</span>
+		</div>
+		<p id="storeSummary" class="summary-desc store-summary-text">設定您最常去的 3 間賣場，比價更精準</p>
+		<div class="view-all-label" style="color: #7c3aed;">立即設定 →</div>
+	</div>
+
+	<div class="card favorite-entrance" onclick="location.href='favorites.html'">
+		<div style="display: flex; align-items: center;">
+			<h2>❤️ 最愛</h2>
+			<span id="favoriteCountTag" class="wishlist-stats" style="display: none;">0</span>
+		</div>
+		<p id="favoriteSummary" class="summary-desc favorite-summary-text">尚未加入最愛</p>
+		<div class="view-all-label" style="color: #ea580c;">查看全部 →</div>
+	</div>
+
+	<div class="card wishlist-entrance" onclick="location.href='wishlist.html'">
+		<div style="display: flex; align-items: center;">
+			<h2>🛒 購物清單</h2>
+			<span id="wishlistCountTag" class="wishlist-stats" style="display: none;">0</span>
+		</div>
+		<p id="wishlistSummary" class="summary-desc wishlist-summary-text">載入清單中...</p>
+		<div class="view-all-label" style="color: #ea580c;">前往採買 →</div>
+	</div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
 async function init() {
     const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
     
@@ -293,12 +300,12 @@ async function init() {
                 loadStoreSummary(uid);
                 loadFavoriteSummary(uid);
                 loadUserPoints(uid);
+                loadContributionSummary(uid);
             }
         } catch (err) {
             console.warn("API 連線失敗");
         }
     } else {
-        // 未登入處理
         document.getElementById("wishlistSummary").innerText = "請先登入以同步清單";
     }
 }
@@ -329,6 +336,41 @@ async function loadUserPoints(userId) {
         }
     } catch (e) {
         console.error("無法載入點數資訊");
+    }
+}
+
+async function loadContributionSummary(userId) {
+    const summaryElement = document.getElementById("contributionSummary");
+    const tagElement = document.getElementById("contributionCountTag");
+
+    try {
+        // 呼叫我們之前寫好的 Controller 介面
+        const contributions = await apiGet(`/price-reports/user/${userId}`);
+
+        if (contributions && contributions.length > 0) {
+            const count = contributions.length;
+            // 取得最近一筆回報 (假設後端已按時間排序)
+            const latest = contributions[0]; 
+            
+            // 更新數字標籤
+            tagElement.innerText = count;
+            tagElement.style.display = "block";
+
+            // 更新摘要文字：顯示最近回報的商品與價格
+            const statusEmoji = latest.status === 'APPROVED' ? '✅' : '⏳';
+            const statusColor = latest.status === 'APPROVED' ? '#16a34a' : '#d97706';
+
+            summaryElement.innerHTML = `
+                ${statusEmoji} 最近：<b>${latest.brand} ${latest.productName}</b> 
+                <span style="color: ${statusColor}; font-size: 12px;">(${latest.status === 'APPROVED' ? '已採用' : '審核中'})</span>
+            `;
+        } else {
+            summaryElement.innerText = "尚未回報價格，快去賣場助人省錢！";
+            tagElement.style.display = "none";
+        }
+    } catch (e) {
+        console.error("無法載入貢獻摘要", e);
+        summaryElement.innerText = "暫時無法載入貢獻紀錄";
     }
 }
 

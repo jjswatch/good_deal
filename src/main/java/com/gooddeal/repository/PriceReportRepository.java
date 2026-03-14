@@ -1,5 +1,6 @@
 package com.gooddeal.repository;
 
+import com.gooddeal.model.PriceHistory;
 import com.gooddeal.model.PriceReport;
 import com.gooddeal.model.ReportStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,17 @@ import java.util.List;
 
 @Repository
 public interface PriceReportRepository extends JpaRepository<PriceReport, Integer> {
+	List<PriceReport> findByUserUserIdOrderByReportedAtDesc(Integer userId);
+	
+	@Query("SELECT r FROM PriceReport r JOIN FETCH r.product JOIN FETCH r.store WHERE r.user.userId = :userId")
+	List<PriceReport> findByUserIdWithDetails(@Param("userId") Integer userId);
+	
+	@Query("SELECT ph FROM PriceHistory ph " +
+	           "JOIN FETCH ph.product " +
+	           "JOIN FETCH ph.store " +
+	           "WHERE ph.product.productId IN (SELECT pr.product.productId FROM PriceReport pr WHERE pr.user.userId = :userId) " +
+	           "ORDER BY ph.changedAt DESC")
+	    List<PriceHistory> findHistoryByUserId(@Param("userId") Integer userId);
 
     // 前台：顯示已通過回報
     List<PriceReport> findTop5ByProductProductIdAndStatusOrderByReportedAtDesc(
