@@ -319,7 +319,6 @@ async function loadProfile(currentUser) {
             
             // 抓取遠端摘要
             loadStoreSummary(user.userId);
-            loadFavoriteSummary(user.userId);
         }
     } catch (err) {
         console.warn("無法取得最新個人資訊");
@@ -371,16 +370,17 @@ async function loadContributionSummary(userId) {
 }
 
 async function loadFavoriteSummary(userId) {
+	const summaryElement = document.getElementById("favoriteSummary");
+    const tagElement = document.getElementById("favoriteCountTag");
     try {
         const favorites = await apiGet(`/favorites/user/${userId}`);
-        const summaryElement = document.getElementById("favoriteSummary");
-        const tagElement = document.getElementById("favoriteCountTag");
 
         if (favorites && favorites.length > 0) {
             const count = favorites.length;
-            const names = favorites.slice(0, 2).map(f => f.product.productName).join('、');
+            const names = favorites.slice(0, 2).map(f => f.productName || "未知名商品").join('、');
             const moreText = count > 2 ? `...等 ${count} 件` : ` 共 ${count} 件`;
             summaryElement.innerHTML = `目前已收藏：<b>${names}${moreText}</b>`;
+            
             tagElement.innerText = count;
             tagElement.style.display = "block";
         } else {
@@ -388,7 +388,10 @@ async function loadFavoriteSummary(userId) {
             tagElement.style.display = "none";
         }
     } catch (e) {
-        summaryElement.innerText = "無法載入收藏資訊";
+    	console.error("載入最愛摘要失敗:", e);
+        if (summaryElement) {
+            summaryElement.innerText = "無法載入收藏資訊";
+        }
     }
 }
 

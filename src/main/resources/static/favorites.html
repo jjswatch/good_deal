@@ -254,44 +254,28 @@ async function loadFavorites() {
             return;
         }
 
-        // 批次取得比價資訊
-        for (let f of favorites) {
-            try {
-                const bestInfo = await apiGet(`/prices/product/${f.product.productId}/best`);
-                // 確保這裡抓到的是資料庫的 priceId
-                f.product.priceId = bestInfo.priceId ? String(bestInfo.priceId) : null;
-                f.product.lowestPrice = bestInfo.price;
-                f.product.bestStore = (typeof bestInfo.store === 'object') ? bestInfo.store.storeName : bestInfo.store;
-            } catch (e) {
-                f.product.priceId = null;
-                f.product.lowestPrice = "--";
-            }
-        }
-
         container.innerHTML = favorites.map(f => {
-            // ✨ 修正點 1：改用 productId 判斷，且確保 productId 存在
             const isAdded = wishlist.some(item => 
-                item.productId && f.product.productId && 
-                String(item.productId) === String(f.product.productId)
+                String(item.productId) === String(f.productId)
             );
 
             return `
-            <div class="favorite-card" id="fav-item-${f.product.productId}" onclick="goToProduct(${f.product.productId})">
-                <img src="${f.product.imageUrl || 'img/no-image.png'}" alt="product">
+            <div class="favorite-card" id="fav-item-${f.productId}" onclick="goToProduct(${f.productId})">
+                <img src="${f.imageUrl || 'img/no-image.png'}" alt="product">
                 <div class="favorite-info">
-                    <div class="brand-label">${f.product.brand || '一般品牌'}</div>
-                    <div class="favorite-title">${f.product.productName}</div>
+                    <div class="brand-label">${f.brand || '一般品牌'}</div>
+                    <div class="favorite-title">${f.productName}</div>
                     <div class="price-tag">
                         <span class="best-price">💰 最優：</span> <span class="currency">$</span>
-                        <span class="amount">${f.product.lowestPrice || '--'}</span>
+                        <span class="amount">${f.lowestPrice || '--'}</span>
                     </div>
                 </div>
-            	<div class="favorite-actions" onclick="event.stopPropagation()">
-            		<button class="btn ${isAdded ? 'btn-added' : 'btn-add'}" 
-                    	onclick="addToWishlist(${JSON.stringify(f.product).replace(/"/g, '&quot;')})">
-                		${isAdded ? '✅ 已在清單' : '🛒 採買'}
-            		</button>
-                    <button class="btn btn-remove" onclick="confirmRemove(${f.product.productId})">
+                <div class="favorite-actions" onclick="event.stopPropagation()">
+                    <button class="btn ${isAdded ? 'btn-added' : 'btn-add'}" 
+                        onclick="addToWishlist(${JSON.stringify(f).replace(/"/g, '&quot;')})">
+                        ${isAdded ? '✅ 已在清單' : '🛒 採買'}
+                    </button>
+                    <button class="btn btn-remove" onclick="confirmRemove(${f.productId})">
                         移除
                     </button>
                 </div>

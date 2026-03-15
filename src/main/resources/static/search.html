@@ -416,7 +416,7 @@ async function initPage() {
         if (user) {
         	try {
                 const favs = await apiGet(`/favorites/user/${user.userId || user.id}`);
-                myFavIds = favs.map(f => f.product.productId);
+                myFavIds = favs.map(f => f.productId);
             } catch (e) {
                 console.warn("無法取得收藏清單", e);
             }

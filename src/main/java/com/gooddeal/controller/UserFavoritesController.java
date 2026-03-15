@@ -1,5 +1,6 @@
 package com.gooddeal.controller;
 
+import com.gooddeal.dto.FavoriteProjection;
 import com.gooddeal.model.UserFavorites;
 import com.gooddeal.repository.UserFavoritesRepository;
 import com.gooddeal.service.UserFavoritesService;
@@ -21,8 +22,8 @@ public class UserFavoritesController {
     private UserFavoritesService service;
 
     @GetMapping("/user/{userId}")
-    public List<UserFavorites> getByUser(@PathVariable Integer userId) {
-        return repo.findByUserUserId(userId);
+    public List<FavoriteProjection> getByUser(@PathVariable Integer userId) {
+        return repo.findFavoritesWithBestPrice(userId);
     }
     
     @GetMapping("/status")
