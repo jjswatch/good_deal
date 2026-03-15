@@ -57,9 +57,12 @@ public class OneStoreStrategy {
             	        false
             	);
 
-            if (best == null || total.compareTo(best.getTotal()) < 0) {
-                best = candidate;
-            }
+            	if (best == null || 
+            		    candidate.getCoveredCount() > best.getCoveredCount() || 
+            		    (candidate.getCoveredCount() == best.getCoveredCount() && total.compareTo(best.getTotal()) < 0)) {
+            		    
+            		    best = candidate;
+            		}
         }
 
         return best;
