@@ -16,7 +16,7 @@ import java.util.List;
 public interface PriceReportRepository extends JpaRepository<PriceReport, Integer> {
 	List<PriceReport> findByUserUserIdOrderByReportedAtDesc(Integer userId);
 	
-	@Query("SELECT r FROM PriceReport r JOIN FETCH r.product JOIN FETCH r.store WHERE r.user.userId = :userId")
+	@Query("SELECT r FROM PriceReport r JOIN FETCH r.product JOIN FETCH r.store WHERE r.user.userId = :userId ORDER BY r.reportedAt DESC")
 	List<PriceReport> findByUserIdWithDetails(@Param("userId") Integer userId);
 	
 	@Query("SELECT ph FROM PriceHistory ph " +

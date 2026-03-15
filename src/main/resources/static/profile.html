@@ -344,19 +344,15 @@ async function loadContributionSummary(userId) {
     const tagElement = document.getElementById("contributionCountTag");
 
     try {
-        // 呼叫我們之前寫好的 Controller 介面
         const contributions = await apiGet(`/price-reports/user/${userId}`);
 
         if (contributions && contributions.length > 0) {
             const count = contributions.length;
-            // 取得最近一筆回報 (假設後端已按時間排序)
             const latest = contributions[0]; 
             
-            // 更新數字標籤
             tagElement.innerText = count;
             tagElement.style.display = "block";
 
-            // 更新摘要文字：顯示最近回報的商品與價格
             const statusEmoji = latest.status === 'APPROVED' ? '✅' : '⏳';
             const statusColor = latest.status === 'APPROVED' ? '#16a34a' : '#d97706';
 
