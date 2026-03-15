@@ -35,7 +35,7 @@ public class StrategyCompareService {
 
         List<ProductPrices> prices = pricesRepo.findPricesForBasket(productIds);
 
-        SplitStrategy split = splitStrategy.calculate(prices);
+        SplitStrategy split = splitStrategy.calculate(prices, productIds);
         StoreStrategy oneStore = oneStoreStrategy.calculate(prices, productIds);
         StoreStrategy preferred = preferredStrategy.recommend(oneStore, split.getTotal(), userId);
 

@@ -177,6 +177,8 @@ function updateActiveNavItem() {
  */
 function renderFooter() {
 	if (document.querySelector('.site-footer')) return;
+	
+	const year = new Date().getFullYear();
 
 	const footerHTML = `
     <footer class="site-footer">
@@ -196,7 +198,7 @@ function renderFooter() {
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">© 2026 jjswatch</div>
+        <div class="footer-bottom">© ${year} jjswatch</div>
     </footer>`;
 
 	document.body.insertAdjacentHTML('beforeend', footerHTML);

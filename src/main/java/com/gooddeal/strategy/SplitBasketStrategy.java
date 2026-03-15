@@ -56,6 +56,6 @@ public class SplitBasketStrategy {
                 .map(SplitItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new SplitStrategy(total, items);
+        return new SplitStrategy(total, items, 0, 0, 0);
     }
 }

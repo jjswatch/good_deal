@@ -14,4 +14,7 @@ public class SplitStrategy {
 
     private BigDecimal total;
     private List<SplitItem> items;
+    private int coveredCount;      // 分開買總共買到幾件
+    private int totalCount;        // 應該要買幾件
+    private int uniqueStoreCount;  // 最終要去幾家不同的店
 }
